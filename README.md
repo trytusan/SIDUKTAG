@@ -1,6 +1,6 @@
-# SIDUKTAG (Sistem Informasi Penduduk Terintegrasi)
+# SIDUKTAG (Sistem Informasi Penduduk Berbasis Geotagging)
 
-**SIDUKTAG** adalah aplikasi manajemen kependudukan tingkat desa/kelurahan yang dirancang untuk mendigitalisasi layanan administrasi warga. Aplikasi ini mengintegrasikan data kependudukan, sistem pengajuan bantuan sosial yang dinamis, serta otomatisasi persuratan dalam satu platform.
+**SIDUKTAG** adalah Sistem Informasi Penduduk Berbasis Geotagging yang mengintegrasikan data kependudukan dengan koordinat geografis untuk pemetaan bantuan sosial dan persebaran warga yang lebih akurat.
 
 ## ✨ Fitur Unggulan
 
