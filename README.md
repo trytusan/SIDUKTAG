@@ -10,14 +10,6 @@
 - **Reporting System**: Ekspor data laporan penerima bantuan ke format PDF yang siap cetak.
 - **Keamanan Data**: Validasi input yang ketat dan sistem autentikasi user (Admin).
 
-## 🛠️ Tech Stack
-
-- **Framework:** [Laravel 11](https://laravel.com)
-- **Language:** PHP 8.2+
-- **Frontend:** Tailwind CSS & Blade Components
-- **Database:** MySQL / MariaDB
-- **PDF Engine:** Barryvdh Laravel DomPDF
-
 ## 📦 Panduan Instalasi
 
 Pastikan Anda sudah menginstal **Composer**, **Node.js**, dan **XAMPP/Laragon** di perangkat Anda.
@@ -27,12 +19,16 @@ Pastikan Anda sudah menginstal **Composer**, **Node.js**, dan **XAMPP/Laragon** 
    git clone [https://github.com/trytusan/SIDUKTAG.git](https://github.com/trytusan/SIDUKTAG.git)
    cd SIDUKTAG
 2. **Instalasi Library**
+    ```bash
     composer install
     npm install && npm run dev
 3. **Konfigurasi Environment**
+    ```bash
     cp .env.example .env
     php artisan key:generate
 4. **Migrasi Database & Seeding**
+    ```bash
     php artisan migrate --seed
 5. **Jalankan Server**
+    ```bash
     php artisan serve
