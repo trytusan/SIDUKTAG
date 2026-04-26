@@ -56,24 +56,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::delete('/{id}', [JenisBantuanController::class, 'destroy'])->name('destroy');
     });
 
-   Route::prefix('bantuan')->name('bantuan.')->group(function () {
-    Route::get('/', [BantuanController::class, 'index'])->name('index');
-    Route::get('/create', [BantuanController::class, 'create'])->name('create');
-    Route::post('/', [BantuanController::class, 'store'])->name('store');
-    Route::get('/get-programs-by-type', [BantuanController::class, 'getProgramsByType'])->name('get-programs');
-    Route::get('/{id}', [BantuanController::class, 'show'])->name('show');
-    Route::get('/{id}/edit', [BantuanController::class, 'edit'])->name('edit');
-    Route::put('/{id}', [BantuanController::class, 'update'])->name('update');
-    Route::delete('/{id}', [BantuanController::class, 'destroy'])->name('destroy');
-});
+    Route::prefix('bantuan')->name('bantuan.')->group(function () {
+        Route::get('/', [BantuanController::class, 'index'])->name('index');
+        Route::get('/create', [BantuanController::class, 'create'])->name('create');
+        Route::post('/', [BantuanController::class, 'store'])->name('store');
+        Route::get('/get-programs-by-type', [BantuanController::class, 'getProgramsByType'])->name('get-programs');
+        Route::get('/{id}', [BantuanController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [BantuanController::class, 'edit'])->name('edit');
+        Route::put('/{id}', [BantuanController::class, 'update'])->name('update');
+        Route::delete('/{id}', [BantuanController::class, 'destroy'])->name('destroy');
+    });
 
     Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
         Route::get('/', [PengaturanController::class, 'index'])->name('index');
         Route::get('/profil', [PengaturanController::class, 'profil'])->name('profil');
+        Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('profil.update');
         Route::get('/akun', [PengaturanController::class, 'akun'])->name('akun');
         Route::put('/akun', [PengaturanController::class, 'updateAkun'])->name('akun.update');
         Route::get('/password', [PengaturanController::class, 'password'])->name('password');
-        Route::get('/aplikasi', [PengaturanController::class, 'aplikasi'])->name('aplikasi');
+        Route::put('/pengaturan/password', [PengaturanController::class, 'updatePassword'])->name('password.update');
     });
 
     Route::prefix('jenis-surat')->name('jenis-surat.')->group(function () {

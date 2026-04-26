@@ -40,16 +40,6 @@
             <p class="mt-1 text-sm text-slate-500">Perbarui password untuk keamanan akun.</p>
         </a>
 
-        <a href="{{ route('admin.pengaturan.aplikasi') }}"
-           class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-md">
-            <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-100 text-rose-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.5 12a7.5 7.5 0 1 1 15 0 7.5 7.5 0 0 1-15 0Zm7.5-3v3l2.25 2.25" />
-                </svg>
-            </div>
-            <h2 class="mt-4 text-lg font-bold text-slate-800">Aplikasi</h2>
-            <p class="mt-1 text-sm text-slate-500">Pengaturan umum aplikasi dan sistem.</p>
-        </a>
 
     </div>
 

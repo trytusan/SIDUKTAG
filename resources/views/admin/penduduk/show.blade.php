@@ -232,18 +232,44 @@
                         </div>
                     </div>
 
-                    <div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                    <{{-- Bagian Kontak & Lokasi --}} <div
+                        class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
                         <div class="border-b border-slate-100 px-7 py-5">
                             <h4 class="text-lg font-bold text-slate-900">Kontak & Lokasi</h4>
                         </div>
                         <div class="p-7">
                             <div class="space-y-6">
-                                <div>
-                                    <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Nomor Telepon
-                                    </p>
-                                    <p class="mt-1 font-semibold text-slate-700">{{ $penduduk->nomor_telepon ?? '-' }}
-                                    </p>
+                                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Nomor
+                                            Telepon</p>
+                                        <p class="mt-1 font-semibold text-slate-700">
+                                            {{ $penduduk->nomor_telepon ?? '-' }}</p>
+                                    </div>
+
+                                    {{-- Tambahan Link Google Maps --}}
+                                    <div>
+                                        <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Titik
+                                            Koordinat</p>
+                                        @if($penduduk->latitude && $penduduk->longitude)
+                                            <a href="https://www.google.com/maps/search/?api=1&query={{ $penduduk->latitude }},{{ $penduduk->longitude }}"
+                                                target="_blank"
+                                                class="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:text-emerald-700 transition hover:underline">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                </svg>
+                                                Lihat di Google Maps
+                                            </a>
+                                        @else
+                                            <p class="mt-1 text-sm font-medium text-slate-400 italic">Koordinat belum
+                                                ditandai</p>
+                                        @endif
+                                    </div>
                                 </div>
+
                                 <div>
                                     <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Alamat Lengkap
                                     </p>
@@ -253,9 +279,9 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 </x-layouts.admin>
