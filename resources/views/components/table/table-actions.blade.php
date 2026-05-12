@@ -7,7 +7,7 @@
     'deleteAction' => null,
 ])
 
-<div class="flex items-center gap-2 justify-center">
+<div class="flex flex-wrap justify-center gap-2">
     @if($showDetail)
         <a
             href="{{ $detailHref }}"

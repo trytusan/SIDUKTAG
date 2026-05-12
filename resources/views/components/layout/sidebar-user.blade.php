@@ -1,5 +1,5 @@
-<aside
-    class="fixed top-0 left-0 z-40 flex h-screen w-72 min-w-[18rem] flex-col border-r border-white/10 bg-slate-950 text-slate-200">
+<aside id="sidebar"
+    class="fixed top-0 left-0 z-40 flex h-screen w-full max-w-xs lg:w-72 lg:min-w-[18rem] flex-col border-r border-white/10 bg-slate-950 text-slate-200 overflow-y-auto transform -translate-x-full transition-transform duration-300 ease-in-out lg:translate-x-0">
 
     <!-- Header -->
     <div class="border-b border-white/10 px-6 py-6">
@@ -62,8 +62,8 @@
         <!-- Pengaturan -->
         <a href="{{ route('user.pengaturan.index') }}"
             class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition {{ request()->routeIs('user.pengaturan.*') ? $active : $inactive }}">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor"
-                stroke-width="1.8" viewBox="0 0 24 24">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.8"
+                viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M12 15.75A3.75 3.75 0 1 0 12 8.25a3.75 3.75 0 0 0 0 7.5Z" />
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -76,15 +76,19 @@
 
     <!-- Logout -->
     <div class="border-t border-white/10 px-4 py-4">
-        <a href="{{ route('login') }}"
-            class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-red-300 transition hover:bg-red-500/10 hover:text-red-200">
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+            @csrf
+        </form>
+
+        <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+            class="flex items-center gap-3 rounded-2xl px-4 py-3 text-sm text-red-400 transition hover:bg-red-500/10 hover:text-red-300">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" stroke="currentColor"
-                stroke-width="1.8" viewBox="0 0 24 24">
+                stroke-width="1.8">
                 <path stroke-linecap="round" stroke-linejoin="round"
                     d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M18 12H9m0 0 3-3m-3 3 3 3" />
             </svg>
-            Logout
+            <span>Logout</span>
         </a>
     </div>
 

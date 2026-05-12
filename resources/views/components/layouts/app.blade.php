@@ -25,5 +25,32 @@
 
 
 </body>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        if (!sidebar || !backdrop) {
+            return;
+        }
+
+        sidebar.classList.toggle('-translate-x-full');
+        backdrop.classList.toggle('hidden');
+    }
+
+    function closeSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebar-backdrop');
+
+        if (!sidebar || !backdrop) {
+            return;
+        }
+
+        sidebar.classList.add('-translate-x-full');
+        backdrop.classList.add('hidden');
+    }
+</script>
+
 @stack('scripts')
 </html>

@@ -3,9 +3,33 @@
     'emptyText' => 'Belum ada data tersedia.',
 ])
 
-<div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-slate-200">
+<style>
+    @media (max-width: 768px) {
+        .responsive-table td {
+            white-space: normal !important;
+            word-break: break-word !important;
+        }
+
+        .responsive-table table {
+            min-width: max-content;
+        }
+    }
+</style>
+
+@php
+    $tableScrollId = 'table-scroll-' . uniqid();
+@endphp
+
+<div class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm responsive-table">
+    <div class="flex items-center justify-between gap-3 px-4 py-3 lg:hidden">
+        <div class="inline-flex items-center gap-2 rounded-full bg-slate-950/5 px-3 py-1 text-xs font-semibold text-slate-600 shadow-sm">
+            Geser tabel untuk melihat kolom kanan
+            <span class="text-slate-400">›</span>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto px-4 pb-3" id="{{ $tableScrollId }}">
+        <table class="min-w-max divide-y divide-slate-200 table-auto">
             <thead class="bg-slate-50">
                 <tr>
                     @foreach($headers as $header)
@@ -28,5 +52,24 @@
                 @endif
             </tbody>
         </table>
+    </div>
+
+    <div class="flex items-center justify-end gap-2 px-4 pb-4 lg:hidden">
+        <button
+            type="button"
+            aria-label="Geser kiri"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+            onclick="document.getElementById('{{ $tableScrollId }}').scrollBy({ left: -240, behavior: 'smooth' })"
+        >
+            ‹
+        </button>
+        <button
+            type="button"
+            aria-label="Geser kanan"
+            class="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:bg-slate-50"
+            onclick="document.getElementById('{{ $tableScrollId }}').scrollBy({ left: 240, behavior: 'smooth' })"
+        >
+            ›
+        </button>
     </div>
 </div>

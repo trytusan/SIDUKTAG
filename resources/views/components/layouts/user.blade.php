@@ -6,23 +6,29 @@
 
 <x-layouts.app :title="$title">
     <div class="min-h-screen bg-slate-100">
+        <div id="sidebar-backdrop" class="fixed inset-0 z-30 hidden bg-slate-900/40 lg:hidden" onclick="closeSidebar()"></div>
         <x-layout.sidebar-user />
 
-        <div class="ml-72 flex min-h-screen min-w-0 flex-col">
+        <div class="lg:ml-72 flex min-h-screen min-w-0 flex-col">
             <header class="border-b border-slate-200 bg-white px-6 py-5">
                 <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold text-slate-800">
-                            {{ $pageTitle }}
-                        </h1>
-                        <p class="mt-1 text-sm text-slate-500">
-                            Selamat datang kembali
-                        </p>
-
-                           
+                    <div class="flex items-center gap-4">
+                        <button type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 lg:hidden"
+                            onclick="toggleSidebar()" aria-label="Buka menu">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
+                            </svg>
+                        </button>
+                        <div>
+                            <h1 class="text-2xl font-bold text-slate-800">
+                                {{ $pageTitle }}
+                            </h1>
+                            <p class="mt-1 text-sm text-slate-500">
+                                Selamat datang kembali
+                            </p>
+                        </div>
                     </div>
 
-                               
                     <div class="flex items-center gap-4">
                         <div class="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                             @if(auth()->user()->penduduk && auth()->user()->penduduk->foto_profil)
