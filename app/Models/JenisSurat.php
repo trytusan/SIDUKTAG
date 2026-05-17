@@ -16,6 +16,7 @@ class JenisSurat extends Model
         'nama',
         'slug',
         'deskripsi',
+        'template_file',
         'is_active',
     ];
 

@@ -12,6 +12,7 @@ return new class extends Migration {
             $table->string('nama')->unique();
             $table->string('slug')->unique();
             $table->text('deskripsi')->nullable();
+            $table->string('template_file')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

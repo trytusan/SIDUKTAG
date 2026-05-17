@@ -8,7 +8,7 @@
     <div class="container mx-auto px-4 py-8">
         <div class="max-w-2xl mx-auto rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
             <h2 class="mb-6 text-xl font-bold text-slate-800">Tambah Jenis Surat Baru</h2>
-            <form action="{{ route('admin.jenis-surat.store') }}" method="POST">
+            <form action="{{ route('admin.jenis-surat.store') }}" method="POST" enctype="multipart/form-data" >
                 @csrf
                 @include('admin.jenis-surat.partials.form')
             </form>

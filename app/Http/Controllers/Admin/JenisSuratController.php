@@ -43,6 +43,7 @@ class JenisSuratController extends Controller
         $validated = $request->validate([
             'nama' => 'required|string|max:255|unique:jenis_surat,nama',
             'deskripsi' => 'nullable|string',
+            'template_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,docx|max:2048',
         ]);
 
         // 2. Generate slug otomatis dari nama surat
@@ -50,6 +51,11 @@ class JenisSuratController extends Controller
 
         // 3. Set status default menjadi aktif
         $validated['is_active'] = true;
+
+        if ($request->hasFile('template_file')) {
+            $path = $request->file('template_file')->store('templates', 'public');
+            $validated['template_file'] = $path;
+        }
 
         // 4. Simpan ke database
         \App\Models\JenisSurat::create($validated);
@@ -66,36 +72,53 @@ class JenisSuratController extends Controller
 
     public function update(Request $request, $id)
     {
+        $jenisSurat = JenisSurat::findOrFail($id);
+
         // 1. Validasi input
         $validated = $request->validate([
             'nama' => 'required|string|max:255|unique:jenis_surat,nama,' . $id,
             'deskripsi' => 'nullable|string',
+            'template_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,docx|max:2048',
         ]);
 
-        // 2. Cari data yang akan diupdate
-        $jenisSurat = \App\Models\JenisSurat::findOrFail($id);
-
-        // 3. Update data
-        $jenisSurat->update([
+        // 2. Siapkan data untuk update
+        $data = [
             'nama' => $validated['nama'],
-            'slug' => \Illuminate\Support\Str::slug($validated['nama']),
+            'slug' => Str::slug($validated['nama']),
             'deskripsi' => $validated['deskripsi'],
-            // Checkbox is_active hanya akan ada di request jika dicentang
             'is_active' => $request->has('is_active') ? true : false,
-        ]);
+        ];
 
-        // 4. Redirect ke index dengan pesan sukses
+        // 3. Handle Update File (Hapus yang lama jika ada file baru)
+        if ($request->hasFile('template_file')) {
+            // Hapus file lama dari storage jika ada
+            if ($jenisSurat->template_file) {
+                Storage::disk('public')->delete($jenisSurat->template_file);
+            }
+
+            // Simpan file baru
+            $data['template_file'] = $request->file('template_file')->store('templates', 'public');
+        }
+
+        // 4. Update data
+        $jenisSurat->update($data);
+
         return redirect()->route('admin.jenis-surat.index')
             ->with('status', 'Jenis surat "' . $jenisSurat->nama . '" berhasil diperbarui.');
     }
 
     public function destroy($id)
     {
-        $jenis = \App\Models\JenisSurat::findOrFail($id);
+        $jenis = JenisSurat::findOrFail($id);
 
-        // Opsional: Cek apakah jenis surat ini sedang digunakan oleh data pengajuan
+        // Cek relasi
         if ($jenis->pengajuanSurat()->exists()) {
             return redirect()->back()->with('error', 'Tidak bisa menghapus! Jenis surat ini sedang digunakan dalam pengajuan.');
+        }
+
+        // Hapus file template dari storage sebelum data dihapus
+        if ($jenis->template_file) {
+            Storage::disk('public')->delete($jenis->template_file);
         }
 
         $jenis->delete();

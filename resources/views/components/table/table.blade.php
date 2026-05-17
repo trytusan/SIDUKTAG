@@ -4,6 +4,10 @@
 ])
 
 <style>
+    .responsive-table table {
+        width: 100%;
+    }
+
     @media (max-width: 768px) {
         .responsive-table td {
             white-space: normal !important;
@@ -29,7 +33,7 @@
     </div>
 
     <div class="overflow-x-auto px-4 pb-3" id="{{ $tableScrollId }}">
-        <table class="min-w-max divide-y divide-slate-200 table-auto">
+        <table class="divide-y divide-slate-200 table-auto">
             <thead class="bg-slate-50">
                 <tr>
                     @foreach($headers as $header)
