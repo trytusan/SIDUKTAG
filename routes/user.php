@@ -6,6 +6,7 @@ use App\Http\Controllers\User\KartuKeluargaController;
 use App\Http\Controllers\User\PendudukController;
 use App\Http\Controllers\User\PengajuanSuratController;
 use App\Http\Controllers\User\PengaturanController;
+use App\Http\Controllers\User\PetaController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('user')->name('user.')->middleware(['auth', 'user'])->group(function () {
@@ -41,10 +42,10 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'user'])->group(functi
             Route::get('/', [PengaturanController::class, 'index'])->name('index');
 
             Route::get('/profil', [PendudukController::class, 'show'])->name('profil');
-            Route::put('/profil', [PendudukController::class, 'update'])->name('profil.update');
+            Route::match(['put', 'post'], '/profil', [PendudukController::class, 'update'])->name('profil.update');
 
             Route::get('/akun', [PengaturanController::class, 'akun'])->name('akun');
-            Route::put('/akun', [PengaturanController::class, 'updateAkun'])->name('akun.update');
+            Route::match(['put', 'post'], '/akun', [PengaturanController::class, 'updateAkun'])->name('akun.update');
 
             Route::get('/password', [PengaturanController::class, 'password'])->name('password');
         });
@@ -68,5 +69,7 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'user'])->group(functi
             Route::post('/', [BantuanController::class, 'store'])->name('store');
             Route::get('/{id}', [BantuanController::class, 'show'])->name('show');
         });
+
+        Route::get('/peta', [PetaController::class, 'index'])->name('peta.index');
     });
 });

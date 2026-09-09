@@ -6,11 +6,14 @@ import FormSelect from '../../../src/components/form/select'
 import AlertSuccess from '../../../src/components/ui/alert-success'
 import AlertError from '../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../src/components/ui/loading'
+import ConfirmModal from '../../../src/components/modal/Confirm'
 import api from '../../../src/lib/api'
 import { useAuth } from '../../../src/context/AuthContext'
+import { useAlert } from '../../../src/context/AlertContext'
 import { User } from '../../../src/types'
 
 export default function AdminPengaturanAkun() {
+  const { showAlert } = useAlert()
   const { user, refreshUser } = useAuth()
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -22,6 +25,7 @@ export default function AdminPengaturanAkun() {
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     async function fetchAkun() {
@@ -49,8 +53,12 @@ export default function AdminPengaturanAkun() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setSuccess(null)
     setError(null)
@@ -58,9 +66,17 @@ export default function AdminPengaturanAkun() {
 
     try {
       const res = await api.post('/admin/pengaturan/akun', formData)
-      setSuccess(res.data.message || 'Pengaturan akun berhasil diperbarui.')
+      const msg = res.data.message || 'Pengaturan akun berhasil diperbarui.'
+      setSuccess(msg)
+      setShowConfirm(false)
       await refreshUser()
+      showAlert({
+        type: 'success',
+        title: 'Akun Diperbarui!',
+        message: msg,
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -149,6 +165,18 @@ export default function AdminPengaturanAkun() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Simpan Pengaturan Akun"
+        message="Apakah Anda yakin ingin menyimpan perubahan pada informasi akun login administrator ini?"
+        confirmText="Ya, Simpan"
+        cancelText="Batal"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

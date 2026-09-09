@@ -7,11 +7,15 @@ import FormSelect from '../../../src/components/form/select'
 import Pagination from '../../../src/components/utils/pagination'
 import LoadingSpinner from '../../../src/components/ui/loading'
 import ConfirmModal from '../../../src/components/modal/Confirm'
+import CardStat from '../../../src/components/ui/card-stat'
+import { useAlert } from '../../../src/context/AlertContext'
 import api from '../../../src/lib/api'
 import { PengajuanSurat, PaginatedResponse, JenisSurat } from '../../../src/types'
 
 export default function AdminPengajuanSuratIndex() {
+  const { showAlert } = useAlert()
   const [data, setData] = useState<PaginatedResponse<PengajuanSurat> | null>(null)
+  const [stats, setStats] = useState<{ total?: number; menunggu?: number; diproses?: number; selesai?: number } | null>(null)
   const [jenisSuratList, setJenisSuratList] = useState<JenisSurat[]>([])
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
@@ -39,6 +43,9 @@ export default function AdminPengajuanSuratIndex() {
       if (res.data.listJenisSurat) {
         setJenisSuratList(res.data.listJenisSurat)
       }
+      if (res.data.stats) {
+        setStats(res.data.stats)
+      }
       setPage(p)
     } catch (err) {
       console.error('Failed to load pengajuan surat:', err)
@@ -58,8 +65,18 @@ export default function AdminPengajuanSuratIndex() {
       await api.delete('/admin/pengajuan-surat/' + deleteId)
       setDeleteId(null)
       fetchSurat(page, search, status, jenisSuratId, tanggal)
+      showAlert({
+        type: 'delete',
+        title: 'Berhasil Dihapus!',
+        message: 'Pengajuan surat telah berhasil dihapus.',
+      })
     } catch (err) {
       alert('Gagal menghapus pengajuan surat.')
+      showAlert({
+        type: 'error',
+        title: 'Gagal Menghapus',
+        message: 'Terjadi kesalahan saat menghapus pengajuan surat.',
+      })
     } finally {
       setDeleting(false)
     }
@@ -74,6 +91,11 @@ export default function AdminPengajuanSuratIndex() {
     if (tanggal) params.append('tanggal', tanggal)
     return `${apiUrl}/admin/pengajuan-surat?${params.toString()}`
   }
+
+  const totalSurat = stats?.total ?? (data?.total || 0)
+  const totalMenunggu = stats?.menunggu ?? (data?.data ? data.data.filter((s) => s.status === 'Menunggu').length : 0)
+  const totalDiproses = stats?.diproses ?? (data?.data ? data.data.filter((s) => s.status === 'Diproses').length : 0)
+  const totalSelesai = stats?.selesai ?? (data?.data ? data.data.filter((s) => s.status === 'Selesai').length : 0)
 
   return (
     <AdminLayout pageTitle="Pengajuan Surat" subtitle="Kelola dan verifikasi permohonan surat keterangan warga">
@@ -93,6 +115,54 @@ export default function AdminPengajuanSuratIndex() {
           <li className="text-slate-800 font-semibold">Pengajuan Surat</li>
         </ol>
       </nav>
+
+      {/* Top Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <CardStat
+          title="Total Permohonan"
+          value={totalSurat.toLocaleString('id-ID')}
+          description="Semua pengajuan surat warga"
+          variant="blue"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Menunggu Verifikasi"
+          value={totalMenunggu.toLocaleString('id-ID')}
+          description="Menunggu persetujuan petugas"
+          variant="amber"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Sedang Diproses"
+          value={totalDiproses.toLocaleString('id-ID')}
+          description="Dokumen dalam penanganan"
+          variant="violet"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Surat Selesai"
+          value={totalSelesai.toLocaleString('id-ID')}
+          description="Surat disetujui & diterbitkan"
+          variant="emerald"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+      </div>
 
       {/* Filter Box */}
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -196,7 +266,7 @@ export default function AdminPengajuanSuratIndex() {
                   return <span className="text-xs text-slate-500 font-semibold">{from + idx}</span>
                 },
               },
-              { key: 'nomor_pengajuan', label: 'No. Pengajuan' },
+              
               {
                 key: 'nama_pemohon',
                 label: 'Nama Pemohon',

@@ -5,73 +5,93 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\BantuanPenerima;
 use App\Models\Bantuan;
-use Illuminate\Http\RedirectResponse;
+use App\Models\Penduduk;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel; // Pastikan library terinstall
-use Barryvdh\DomPDF\Facade\Pdf;      // Pastikan library terinstall
-use Illuminate\Http\Response;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class BantuanController extends Controller
 {
-    public function index(Request $request): View|BinaryFileResponse|Response
+    public function index(Request $request)
     {
-        // 1. Gunakan model BantuanPenerima sebagai query dasar
-        // Gunakan with() untuk eager loading agar tidak berat saat memanggil relasi
-        $query = BantuanPenerima::with(['bantuan', 'penduduk'])
-            ->whereHas('penduduk', function ($q) use ($request) {
-                if ($request->filled('search')) {
-                    $q->where('nama', 'like', "%{$request->search}%")
-                        ->orWhere('nik', 'like', "%{$request->search}%");
-                }
-            })
-            ->when($request->filled('jenis'), function ($q) use ($request) {
-                // Filter berdasarkan jenis di tabel relasi 'bantuan'
-                $q->whereHas('bantuan', function ($sub) use ($request) {
-                    $sub->where('jenis_bantuan', $request->jenis);
-                });
-            })
-            ->when($request->filled('status'), function ($q) use ($request) {
-                // Filter status pengajuan/penerima
-                $q->where('status_penerima', $request->status);
-            })
-            ->when($request->filled('tanggal'), function ($q) use ($request) {
-                $q->whereDate('tanggal_menerima', $request->tanggal);
-            });
+        // 1. Query dasar dengan Eager Loading relasi penduduk dan bantuan
+        $query = BantuanPenerima::with(['bantuan', 'penduduk']);
 
-        // 2. Logika Ekspor (Tetap dipertahankan dengan data relasi)
+        // 2. Pencarian Nama Lengkap, NIK, atau Nama Program
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->whereHas('penduduk', function ($p) use ($search) {
+                    $p->where('nama_lengkap', 'like', "%{$search}%")
+                      ->orWhere('nik', 'like', "%{$search}%");
+                })->orWhereHas('bantuan', function ($b) use ($search) {
+                    $b->where('nama_program', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // 3. Filter Jenis Bantuan
+        if ($request->filled('jenis')) {
+            $jenis = $request->jenis;
+            $query->whereHas('bantuan', function ($sub) use ($jenis) {
+                $sub->where('jenis_bantuan', $jenis);
+            });
+        }
+
+        // 4. Filter Status Penerima
+        if ($request->filled('status')) {
+            $query->where('status_penerima', $request->status);
+        }
+
+        // 5. Filter Tanggal Menerima
+        if ($request->filled('tanggal')) {
+            $query->whereDate('tanggal_menerima', $request->tanggal);
+        }
+
+        // Export Excel
         if ($request->export === 'excel') {
             return Excel::download(new \App\Exports\BantuanExport($query->get()), 'Laporan-Penerima-Bantuan.xlsx');
         }
 
+        // Export PDF
         if ($request->export === 'pdf') {
             $data = $query->get();
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.bantuan.pdf', compact('data'))
-                ->setPaper('a4', 'landscape');
-
-            // Ini mengembalikan Illuminate\Http\Response
+            $pdf = Pdf::loadView('admin.bantuan.pdf', compact('data'))->setPaper('a4', 'landscape');
             return $pdf->download('Laporan-Bantuan.pdf');
         }
 
-        // 3. Data untuk View
+        // 6. Eksekusi Pagination
         $bantuan = $query->latest()->paginate(10)->withQueryString();
 
-        // Ambil daftar jenis dari master Bantuan untuk filter dropdown
+        // Ambil daftar program untuk dropdown filter
         $listProgram = Bantuan::select('jenis_bantuan')
             ->distinct()
             ->whereNotNull('jenis_bantuan')
             ->get();
 
+        // RESPONSE JSON UNTUK NEXT.JS
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'bantuan' => $bantuan,
+                'listProgram' => $listProgram,
+                'stats' => [
+                    'total_penerima' => BantuanPenerima::count(),
+                    'diterima' => BantuanPenerima::whereIn('status_penerima', ['Diterima', 'Selesai', 'Disalurkan'])->count(),
+                    'menunggu' => BantuanPenerima::whereIn('status_penerima', ['Menunggu', 'Pending', 'Diproses'])->count(),
+                    'total_program' => Bantuan::where('status_bantuan', 'Aktif')->count(),
+                ],
+            ]);
+        }
+
+        // RESPONSE VIEW UNTUK BLADE
         return view('admin.bantuan.index', compact('bantuan', 'listProgram'));
     }
 
     public function getProgramsByType(Request $request)
     {
-        // Kita ambil jenis bantuan dari parameter 'type'
         $jenis = $request->query('type');
 
-        $programs = \App\Models\Bantuan::where('jenis_bantuan', $jenis)
+        $programs = Bantuan::where('jenis_bantuan', $jenis)
             ->where('status_bantuan', 'Aktif')
             ->select('id', 'nama_program')
             ->get();
@@ -79,30 +99,38 @@ class BantuanController extends Controller
         return response()->json($programs);
     }
 
-    public function create(): View
+    public function create(Request $request)
     {
-        // 1. Ambil semua warga (sesuaikan 'nama_lengkap' dengan kolom di tabel Anda)
-        $listPenduduk = \App\Models\Penduduk::orderBy('nama_lengkap', 'asc')
-            ->get()
-            ->mapWithKeys(function ($item) {
-                // Gunakan $item->nama_lengkap di sini juga
-                return [$item->id => $item->nik . ' - ' . $item->nama_lengkap];
-            })
-            ->prepend('Pilih Warga', '');
+        $listPenduduk = Penduduk::orderBy('nama_lengkap', 'asc')
+            ->get(['id', 'nama_lengkap', 'nik']);
 
-        // 2. Ambil Jenis Bantuan secara dinamis
-        $listJenis = \App\Models\Bantuan::select('jenis_bantuan')
+        $listJenis = Bantuan::select('jenis_bantuan')
             ->distinct()
             ->whereNotNull('jenis_bantuan')
-            ->pluck('jenis_bantuan', 'jenis_bantuan')
+            ->pluck('jenis_bantuan');
+
+        $listProgram = Bantuan::where('status_bantuan', 'Aktif')
+            ->get(['id', 'nama_program', 'jenis_bantuan']);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'penduduk' => $listPenduduk,
+                'jenis_bantuan' => $listJenis,
+                'program' => $listProgram,
+            ]);
+        }
+
+        $listPendudukMap = $listPenduduk->mapWithKeys(fn($item) => [$item->id => $item->nik . ' - ' . $item->nama_lengkap])
+            ->prepend('Pilih Warga', '');
+
+        $listJenisMap = $listJenis->mapWithKeys(fn($j) => [$j => $j])
             ->prepend('Pilih jenis bantuan', '');
 
-        return view('admin.bantuan.create', compact('listPenduduk', 'listJenis'));
+        return view('admin.bantuan.create', ['listPenduduk' => $listPendudukMap, 'listJenis' => $listJenisMap]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
-        // Validasi disesuaikan dengan tabel bantuan_penerima
         $validated = $request->validate([
             'penduduk_id' => ['required', 'exists:penduduk,id'],
             'bantuan_id' => ['required', 'exists:bantuan,id'],
@@ -111,47 +139,74 @@ class BantuanController extends Controller
             'catatan' => ['nullable', 'string'],
         ]);
 
-        // Simpan ke tabel bantuan_penerima (Transaksi Pengajuan)
-        \App\Models\BantuanPenerima::create($validated);
+        $penerima = BantuanPenerima::create($validated);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Pengajuan bantuan berhasil dicatat.',
+                'data' => $penerima
+            ], 201);
+        }
 
         return redirect()->route('admin.bantuan.index')
             ->with('status', 'Pengajuan bantuan berhasil dicatat.');
     }
 
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        // Pastikan menggunakan with agar relasi 'bantuan' ikut terbawa
-        $bantuan = \App\Models\BantuanPenerima::with(['bantuan', 'penduduk'])->findOrFail($id);
+        $bantuan = BantuanPenerima::with(['bantuan', 'penduduk'])->findOrFail($id);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'bantuan' => $bantuan
+            ]);
+        }
 
         return view('admin.bantuan.show', compact('bantuan'));
     }
 
-    public function edit(int $id): View
+    public function edit(Request $request, $id)
     {
-        $bantuan = \App\Models\BantuanPenerima::with('bantuan')->findOrFail($id);
+        $bantuan = BantuanPenerima::with(['bantuan', 'penduduk'])->findOrFail($id);
 
-        $listPenduduk = \App\Models\Penduduk::orderBy('nama_lengkap', 'asc')
-            ->get()
-            ->mapWithKeys(fn($item) => [$item->id => $item->nik . ' - ' . $item->nama_lengkap])
+        $listPenduduk = Penduduk::orderBy('nama_lengkap', 'asc')
+            ->get(['id', 'nama_lengkap', 'nik']);
+
+        $listJenis = Bantuan::distinct()->whereNotNull('jenis_bantuan')
+            ->pluck('jenis_bantuan');
+
+        $listProgramTerpilih = Bantuan::where('jenis_bantuan', optional($bantuan->bantuan)->jenis_bantuan)
+            ->get(['id', 'nama_program']);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'bantuan' => $bantuan,
+                'penduduk' => $listPenduduk,
+                'jenis_bantuan' => $listJenis,
+                'program' => $listProgramTerpilih,
+            ]);
+        }
+
+        $listPendudukMap = $listPenduduk->mapWithKeys(fn($item) => [$item->id => $item->nik . ' - ' . $item->nama_lengkap])
             ->prepend('Pilih Warga', '');
 
-        $listJenis = \App\Models\Bantuan::distinct()->whereNotNull('jenis_bantuan')
-            ->pluck('jenis_bantuan', 'jenis_bantuan')
+        $listJenisMap = $listJenis->mapWithKeys(fn($j) => [$j => $j])
             ->prepend('Pilih jenis bantuan', '');
 
-        // AMBIL DAFTAR PROGRAM BERDASARKAN JENIS YANG SUDAH TERPILIH
-        $listProgramTerpilih = \App\Models\Bantuan::where('jenis_bantuan', $bantuan->bantuan->jenis_bantuan)
-            ->pluck('nama_program', 'id');
+        $listProgramMap = $listProgramTerpilih->pluck('nama_program', 'id');
 
-        return view('admin.bantuan.edit', compact('bantuan', 'listPenduduk', 'listJenis', 'listProgramTerpilih'));
+        return view('admin.bantuan.edit', [
+            'bantuan' => $bantuan,
+            'listPenduduk' => $listPendudukMap,
+            'listJenis' => $listJenisMap,
+            'listProgramTerpilih' => $listProgramMap,
+        ]);
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id)
     {
-        // 1. Cari data di tabel BantuanPenerima
-        $bantuan = \App\Models\BantuanPenerima::findOrFail($id);
+        $bantuan = BantuanPenerima::findOrFail($id);
 
-        // 2. Validasi sesuai field yang ada di form pengajuan
         $validated = $request->validate([
             'penduduk_id' => ['required', 'exists:penduduk,id'],
             'bantuan_id' => ['required', 'exists:bantuan,id'],
@@ -160,16 +215,31 @@ class BantuanController extends Controller
             'catatan' => ['nullable', 'string'],
         ]);
 
-        // 3. Update data pengajuan
         $bantuan->update($validated);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data pengajuan bantuan berhasil diperbarui.',
+                'data' => $bantuan
+            ]);
+        }
 
         return redirect()->route('admin.bantuan.index')
             ->with('status', 'Data pengajuan bantuan berhasil diperbarui.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id)
     {
-        Bantuan::destroy($id);
-        return redirect()->route('admin.bantuan.index')->with('status', 'Program bantuan berhasil dihapus.');
+        // HAPUS DARI MODEL BantuanPenerima (BUKAN Bantuan)
+        $penerima = BantuanPenerima::findOrFail($id);
+        $penerima->delete();
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data penerima bantuan berhasil dihapus.'
+            ]);
+        }
+
+        return redirect()->route('admin.bantuan.index')->with('status', 'Data penerima bantuan berhasil dihapus.');
     }
 }

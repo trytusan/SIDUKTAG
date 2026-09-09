@@ -25,13 +25,58 @@ Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set', 'csrf_token' => csrf_token()]);
 });
 
+Route::get('/api/berita', function (\Illuminate\Http\Request $request) {
+    $query = \App\Models\Berita::published()->latest('tanggal_publikasi')->latest('id');
+
+    if ($request->filled('kategori') && $request->kategori !== 'Semua') {
+        $query->where('kategori', $request->kategori);
+    }
+
+    if ($request->filled('search')) {
+        $search = $request->search;
+        $query->where(function ($q) use ($search) {
+            $q->where('judul', 'like', "%{$search}%")
+              ->orWhere('ringkasan', 'like', "%{$search}%")
+              ->orWhere('konten', 'like', "%{$search}%");
+        });
+    }
+
+    $limit = $request->has('limit') ? (int) $request->limit : 12;
+    $berita = $query->take($limit)->get();
+
+    return response()->json([
+        'berita' => $berita,
+    ]);
+});
+
+Route::get('/api/berita/{idOrSlug}', function ($idOrSlug) {
+    $berita = \App\Models\Berita::published()
+        ->where(function ($q) use ($idOrSlug) {
+            $q->where('slug', $idOrSlug)->orWhere('id', $idOrSlug);
+        })
+        ->firstOrFail();
+
+    $berita->increment('views');
+
+    $related = \App\Models\Berita::published()
+        ->where('id', '!=', $berita->id)
+        ->latest('tanggal_publikasi')
+        ->take(3)
+        ->get();
+
+    return response()->json([
+        'berita' => $berita,
+        'related' => $related,
+    ]);
+});
+
 Route::middleware('auth')->group(function () {
     Route::get('/api/user', function (\Illuminate\Http\Request $request) {
         $user = $request->user()->load(['penduduk.kartuKeluarga']);
         return response()->json([
             'user' => $user,
             'role' => $user->role,
-            'is_profile_completed' => (bool) ($user->penduduk?->is_profile_completed ?? false),
+            'is_profile_completed' => $user->role === 'admin' ? true : (bool) ($user->penduduk?->is_profile_completed ?? false),
         ]);
     })->name('api.user');
 

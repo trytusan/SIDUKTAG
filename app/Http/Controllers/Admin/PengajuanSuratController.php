@@ -50,6 +50,12 @@ class PengajuanSuratController extends Controller
             return response()->json([
                 'pengajuanSurat' => $pengajuanSurat,
                 'listJenisSurat' => $listJenisSurat,
+                'stats' => [
+                    'total' => PengajuanSurat::count(),
+                    'menunggu' => PengajuanSurat::where('status', 'Menunggu')->count(),
+                    'diproses' => PengajuanSurat::where('status', 'Diproses')->count(),
+                    'selesai' => PengajuanSurat::where('status', 'Selesai')->count(),
+                ],
             ]);
         }
 

@@ -7,11 +7,15 @@ import FormSelect from '../../../src/components/form/select'
 import Pagination from '../../../src/components/utils/pagination'
 import LoadingSpinner from '../../../src/components/ui/loading'
 import ConfirmModal from '../../../src/components/modal/Confirm'
+import CardStat from '../../../src/components/ui/card-stat'
+import { useAlert } from '../../../src/context/AlertContext'
 import api from '../../../src/lib/api'
 import { BantuanPenerima, PaginatedResponse } from '../../../src/types'
 
 export default function AdminBantuanIndex() {
+  const { showAlert } = useAlert()
   const [data, setData] = useState<PaginatedResponse<BantuanPenerima> | null>(null)
+  const [stats, setStats] = useState<{ total_penerima?: number; diterima?: number; menunggu?: number; total_program?: number } | null>(null)
   const [listProgram, setListProgram] = useState<{ jenis_bantuan: string }[]>([])
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
@@ -39,6 +43,9 @@ export default function AdminBantuanIndex() {
       if (res.data.listProgram) {
         setListProgram(res.data.listProgram)
       }
+      if (res.data.stats) {
+        setStats(res.data.stats)
+      }
       setPage(p)
     } catch (err) {
       console.error('Failed to load bantuan data:', err)
@@ -58,8 +65,18 @@ export default function AdminBantuanIndex() {
       await api.delete('/admin/bantuan/' + deleteId)
       setDeleteId(null)
       fetchPenerima(page, search, status, jenis, tanggal)
+      showAlert({
+        type: 'delete',
+        title: 'Berhasil Dihapus!',
+        message: 'Data penerima bantuan telah berhasil dihapus.',
+      })
     } catch (err) {
       alert('Gagal menghapus data penerima bantuan.')
+      showAlert({
+        type: 'error',
+        title: 'Gagal Menghapus',
+        message: 'Terjadi kesalahan saat menghapus data penerima bantuan.',
+      })
     } finally {
       setDeleting(false)
     }
@@ -75,6 +92,11 @@ export default function AdminBantuanIndex() {
     return `${apiUrl}/admin/bantuan?${params.toString()}`
   }
 
+  const totalPenerima = stats?.total_penerima ?? (data?.total || 0)
+  const totalDiterima = stats?.diterima ?? (data?.data ? data.data.filter((b) => ['Diterima', 'Selesai', 'Disalurkan'].includes(b.status_penerima)).length : 0)
+  const totalMenunggu = stats?.menunggu ?? (data?.data ? data.data.filter((b) => ['Menunggu', 'Pending', 'Diproses'].includes(b.status_penerima)).length : 0)
+  const totalProgram = stats?.total_program ?? (listProgram.length || 0)
+
   return (
     <AdminLayout pageTitle="Data Bantuan" subtitle="Kelola dan pantau penyaluran bantuan sosial bagi warga">
       {/* Breadcrumb */}
@@ -87,12 +109,60 @@ export default function AdminBantuanIndex() {
           </li>
           <li>
             <svg className="h-3.5 w-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 01-1.414 0z" />
+              <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
             </svg>
           </li>
           <li className="text-slate-800 font-semibold">Bantuan</li>
         </ol>
       </nav>
+
+      {/* Top Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <CardStat
+          title="Total Penerima"
+          value={totalPenerima.toLocaleString('id-ID')}
+          description="Warga penerima program bansos"
+          variant="emerald"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Telah Disalurkan"
+          value={totalDiterima.toLocaleString('id-ID')}
+          description="Bantuan sukses diserahkan ke warga"
+          variant="blue"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Menunggu Penyaluran"
+          value={totalMenunggu.toLocaleString('id-ID')}
+          description="Alokasi verifikasi / belum diambil"
+          variant="amber"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Program Bantuan"
+          value={totalProgram.toLocaleString('id-ID')}
+          description="Total ragam program bansos"
+          variant="violet"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          }
+        />
+      </div>
 
       {/* Filter Box */}
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">

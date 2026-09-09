@@ -18,7 +18,8 @@ export default function AdminKartuKeluargaDetail() {
     async function fetchDetail() {
       try {
         const res = await api.get('/admin/kartu-keluarga/' + id)
-        setKartuKeluarga(res.data.kartuKeluarga)
+        const data = res.data?.kartuKeluarga || res.data?.kartu_keluarga || res.data?.data || res.data
+        setKartuKeluarga(data)
       } catch (err) {
         console.error('Failed to load detail KK:', err)
       } finally {

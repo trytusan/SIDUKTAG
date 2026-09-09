@@ -7,12 +7,15 @@ import FormInput from '../../../../src/components/form/input'
 import FormTextarea from '../../../../src/components/form/textarea'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
+import ConfirmModal from '../../../../src/components/modal/Confirm'
+import { useAlert } from '../../../../src/context/AlertContext'
 import api from '../../../../src/lib/api'
 import { KartuKeluarga } from '../../../../src/types'
 
 export default function AdminKartuKeluargaEdit() {
   const router = useRouter()
   const { id } = router.query
+  const { showAlert } = useAlert()
   const [kartuKeluarga, setKartuKeluarga] = useState<KartuKeluarga | null>(null)
   const [loadingInitial, setLoadingInitial] = useState(true)
 
@@ -24,6 +27,7 @@ export default function AdminKartuKeluargaEdit() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -53,16 +57,28 @@ export default function AdminKartuKeluargaEdit() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setError(null)
     setValidationErrors({})
 
     try {
       await api.put('/admin/kartu-keluarga/' + id, formData)
+      setShowConfirm(false)
       router.push('/admin/kartu-keluarga')
+      showAlert({
+        type: 'success',
+        title: 'Berhasil Diperbarui!',
+        message: 'Data Kartu Keluarga telah berhasil diperbarui di database.',
+        onClose: () => router.push('/admin/kartu-keluarga'),
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -97,7 +113,7 @@ export default function AdminKartuKeluargaEdit() {
       <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
         <AlertError message={error} errors={validationErrors} />
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleFormSubmit} className="mt-6 space-y-5">
           <FormInput
             label="Nomor Kartu Keluarga (16 Digit)"
             name="nomor_kk"
@@ -144,6 +160,18 @@ export default function AdminKartuKeluargaEdit() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Simpan Perubahan"
+        message="Apakah Anda yakin data Kartu Keluarga yang diubah sudah benar dan ingin menyimpan perubahan ini ke sistem?"
+        confirmText="Ya, Simpan Perubahan"
+        cancelText="Batal / Cek Kembali"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

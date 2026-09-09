@@ -4,9 +4,12 @@ import AdminLayout from '../../../src/components/layouts/admin'
 import FormInput from '../../../src/components/form/input'
 import AlertSuccess from '../../../src/components/ui/alert-success'
 import AlertError from '../../../src/components/ui/alert-error'
+import ConfirmModal from '../../../src/components/modal/Confirm'
 import { changePassword } from '../../../src/lib/auth'
+import { useAlert } from '../../../src/context/AlertContext'
 
 export default function AdminPengaturanPassword() {
+  const { showAlert } = useAlert()
   const [currentPassword, setCurrentPassword] = useState('')
   const [password, setPassword] = useState('')
   const [passwordConfirmation, setPasswordConfirmation] = useState('')
@@ -14,9 +17,14 @@ export default function AdminPengaturanPassword() {
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setSuccess(null)
     setError(null)
@@ -30,10 +38,19 @@ export default function AdminPengaturanPassword() {
       })
 
       setSuccess(res.message || 'Password administrator berhasil diperbarui.')
+      const msg = res.message || 'Password administrator berhasil diperbarui.'
+      setSuccess(msg)
       setCurrentPassword('')
       setPassword('')
       setPasswordConfirmation('')
+      setShowConfirm(false)
+      showAlert({
+        type: 'success',
+        title: 'Password Diperbarui!',
+        message: msg,
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -77,7 +94,7 @@ export default function AdminPengaturanPassword() {
         <AlertSuccess message={success} onClose={() => setSuccess(null)} />
         <AlertError message={error} errors={validationErrors} onClose={() => setError(null)} />
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleFormSubmit} className="mt-6 space-y-5">
           <FormInput
             label="Password Saat Ini"
             type="password"
@@ -121,6 +138,18 @@ export default function AdminPengaturanPassword() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Ubah Password"
+        message="Apakah Anda yakin ingin memperbarui kata sandi akun administrator ini?"
+        confirmText="Ya, Perbarui Password"
+        cancelText="Batal / Cek Kembali"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

@@ -69,7 +69,7 @@ class LoginController extends Controller
                 'message' => 'Login berhasil.',
                 'user' => $user,
                 'role' => $user->role,
-                'is_profile_completed' => ($user->penduduk && $user->penduduk->is_profile_completed) ? true : false,
+                'is_profile_completed' => $user->role === 'admin' ? true : (bool) ($user->penduduk?->is_profile_completed ?? false),
                 'redirect' => $redirectPath,
             ]);
         }

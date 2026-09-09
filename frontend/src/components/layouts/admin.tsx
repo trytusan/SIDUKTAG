@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { useAuth } from '../../context/AuthContext'
+import { useSidebar } from '../../context/SidebarContext'
 import SidebarAdmin from '../layout/sidebar-admin'
 import Navbar from '../layout/navbar'
 import Footer from '../layout/footer'
@@ -15,11 +16,11 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({
   children,
-  title = 'Admin Panel — SIDUKTAG',
+  title = 'Admin Dashboard — SIDUKTAG',
   pageTitle = 'Dashboard Admin',
   subtitle = 'Kelola data kependudukan dan layanan warga',
 }: AdminLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const { isOpen, closeSidebar } = useSidebar()
   const { user, role, loading } = useAuth()
   const router = useRouter()
 
@@ -50,13 +51,16 @@ export default function AdminLayout({
         <title>{title}</title>
       </Head>
 
-      <SidebarAdmin isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <SidebarAdmin isOpen={isOpen} onClose={closeSidebar} />
 
-      <div className="lg:ml-72 flex min-h-screen flex-1 flex-col min-w-0">
+      <div
+        className={`flex min-h-screen flex-1 flex-col min-w-0 transition-all duration-300 ease-in-out ${
+          isOpen ? 'lg:ml-72' : 'lg:ml-0'
+        }`}
+      >
         <Navbar
           title={pageTitle}
           subtitle={subtitle}
-          onToggleSidebar={() => setSidebarOpen(true)}
         />
 
         <main className="flex-1 p-4 md:p-6 lg:p-8 overflow-x-hidden">

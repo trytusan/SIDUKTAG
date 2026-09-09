@@ -25,6 +25,8 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => {},
 })
 
+const AUTH_STORAGE_KEY = 'siduktag_auth_cache'
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [role, setRole] = useState<'admin' | 'user' | null>(null)
@@ -32,51 +34,110 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState<boolean>(true)
   const router = useRouter()
 
+  const saveCache = (u: User | null, r: 'admin' | 'user' | null, comp: boolean) => {
+    if (typeof window === 'undefined') return
+    try {
+      if (u) {
+        localStorage.setItem(
+          AUTH_STORAGE_KEY,
+          JSON.stringify({ user: u, role: r, isProfileCompleted: comp })
+        )
+      } else {
+        localStorage.removeItem(AUTH_STORAGE_KEY)
+      }
+    } catch (e) {}
+  }
+
   const refreshUser = async () => {
     try {
       const data = await getUser()
-      if (data) {
+      if (data && data.user) {
         setUser(data.user)
         setRole(data.role)
         setIsProfileCompleted(data.is_profile_completed)
+        saveCache(data.user, data.role, data.is_profile_completed)
       } else {
         setUser(null)
         setRole(null)
         setIsProfileCompleted(false)
+        saveCache(null, null, false)
       }
-    } catch (e) {
-      setUser(null)
-      setRole(null)
-      setIsProfileCompleted(false)
+    } catch (e: any) {
+      if (e?.response?.status === 401 || e?.response?.status === 419) {
+        setUser(null)
+        setRole(null)
+        setIsProfileCompleted(false)
+        saveCache(null, null, false)
+      }
     } finally {
       setLoading(false)
     }
   }
 
+  // Hydrate immediately from cache on client mount
   useEffect(() => {
+    try {
+      const cached = localStorage.getItem(AUTH_STORAGE_KEY)
+      if (cached) {
+        const parsed = JSON.parse(cached)
+        if (parsed.user) {
+          setUser(parsed.user)
+          setRole(parsed.role)
+          setIsProfileCompleted(Boolean(parsed.isProfileCompleted))
+          setLoading(false)
+        }
+      }
+    } catch (e) {}
+
+    // Verify session in background
     refreshUser()
   }, [])
 
   const login = async (credentials: LoginCredentials) => {
     const res = await authLogin(credentials)
-    await refreshUser()
+    if (res?.user) {
+      const userObj = res.user
+      const roleVal = res.role || userObj.role || 'user'
+      const completedVal = res.is_profile_completed ?? (roleVal === 'admin' ? true : false)
+
+      setUser(userObj)
+      setRole(roleVal)
+      setIsProfileCompleted(completedVal)
+      setLoading(false)
+      saveCache(userObj, roleVal, completedVal)
+    } else {
+      await refreshUser()
+    }
     return res
   }
 
   const logout = async () => {
     try {
-      await authLogout()
-    } finally {
+      saveCache(null, null, false)
       setUser(null)
       setRole(null)
       setIsProfileCompleted(false)
+      await authLogout()
+    } finally {
       router.push('/login')
     }
   }
 
   const register = async (payload: RegisterPayload) => {
     const res = await authRegister(payload)
-    await refreshUser()
+    if (res?.user) {
+      const userObj = res.user
+      const roleVal = res.role || userObj.role || 'user'
+      const completedVal = res.is_profile_completed ?? (roleVal === 'admin' ? true : false)
+
+      setUser(userObj)
+      setRole(roleVal)
+      setIsProfileCompleted(completedVal)
+      setLoading(false)
+      saveCache(userObj, roleVal, completedVal)
+    } else {
+      await refreshUser()
+    }
     return res
   }
 

@@ -8,6 +8,9 @@ use App\Http\Controllers\Admin\JenisSuratController;
 use App\Http\Controllers\Admin\PendudukController;
 use App\Http\Controllers\Admin\PengajuanSuratController;
 use App\Http\Controllers\Admin\PengaturanController;
+use App\Http\Controllers\Admin\WilayahController;
+use App\Http\Controllers\Admin\BeritaController;
+use App\Http\Controllers\Admin\PetaController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -51,6 +54,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/', [JenisBantuanController::class, 'index'])->name('index');
         Route::get('/create', [JenisBantuanController::class, 'create'])->name('create');
         Route::post('/', [JenisBantuanController::class, 'store'])->name('store');
+        Route::get('/{id}', [JenisBantuanController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [JenisBantuanController::class, 'edit'])->name('edit');
         Route::put('/{id}', [JenisBantuanController::class, 'update'])->name('update');
         Route::delete('/{id}', [JenisBantuanController::class, 'destroy'])->name('destroy');
@@ -70,19 +74,41 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('pengaturan')->name('pengaturan.')->group(function () {
         Route::get('/', [PengaturanController::class, 'index'])->name('index');
         Route::get('/profil', [PengaturanController::class, 'profil'])->name('profil');
-        Route::put('/pengaturan/profil', [PengaturanController::class, 'updateProfil'])->name('profil.update');
+        Route::match(['put', 'post'], '/profil', [PengaturanController::class, 'updateProfil'])->name('profil.update');
         Route::get('/akun', [PengaturanController::class, 'akun'])->name('akun');
-        Route::put('/akun', [PengaturanController::class, 'updateAkun'])->name('akun.update');
+        Route::match(['put', 'post'], '/akun', [PengaturanController::class, 'updateAkun'])->name('akun.update');
         Route::get('/password', [PengaturanController::class, 'password'])->name('password');
-        Route::put('/pengaturan/password', [PengaturanController::class, 'updatePassword'])->name('password.update');
+        Route::match(['put', 'post'], '/password', [PengaturanController::class, 'updatePassword'])->name('password.update');
     });
 
     Route::prefix('jenis-surat')->name('jenis-surat.')->group(function () {
         Route::get('/', [JenisSuratController::class, 'index'])->name('index');
         Route::get('/create', [JenisSuratController::class, 'create'])->name('create');
         Route::post('/', [JenisSuratController::class, 'store'])->name('store');
+        Route::get('/{id}', [JenisSuratController::class, 'show'])->name('show');
         Route::get('/{id}/edit', [JenisSuratController::class, 'edit'])->name('edit');
         Route::put('/{id}', [JenisSuratController::class, 'update'])->name('update');
         Route::delete('/{id}', [JenisSuratController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('wilayah')->name('wilayah.')->group(function () {
+        Route::get('/', [WilayahController::class, 'index'])->name('index');
+        Route::post('/', [WilayahController::class, 'store'])->name('store');
+        Route::get('/{id}', [WilayahController::class, 'show'])->name('show');
+        Route::put('/{id}', [WilayahController::class, 'update'])->name('update');
+        Route::delete('/{id}', [WilayahController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('berita')->name('berita.')->group(function () {
+        Route::get('/', [BeritaController::class, 'index'])->name('index');
+        Route::post('/', [BeritaController::class, 'store'])->name('store');
+        Route::get('/{id}', [BeritaController::class, 'show'])->name('show');
+        Route::put('/{id}', [BeritaController::class, 'update'])->name('update');
+        Route::delete('/{id}', [BeritaController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('peta')->name('peta.')->group(function () {
+        Route::get('/', [PetaController::class, 'index'])->name('index');
+        Route::get('/data', [PetaController::class, 'data'])->name('data');
     });
 });

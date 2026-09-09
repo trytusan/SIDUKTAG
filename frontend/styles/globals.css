@@ -1,7 +1,105 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 html,body,#__next { height: 100%; }
 body { margin: 0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; }
 /* Removed global `main` sizing to allow Tailwind layout classes to control width */
+
+@keyframes bounceInModal {
+  0% {
+    opacity: 0;
+    transform: scale(0.65);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+  80% {
+    transform: scale(0.97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes popIconCircle {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  65% {
+    transform: scale(1.15);
+  }
+  85% {
+    transform: scale(0.92);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes drawCheckmark {
+  0% {
+    stroke-dashoffset: 60;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes ripplePulseSuccess {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+@keyframes ripplePulseDanger {
+  0% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgba(239, 68, 68, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+  }
+}
+
+@keyframes progressBarShrink {
+  0% {
+    width: 100%;
+  }
+  100% {
+    width: 0%;
+  }
+}
+
+.anim-bounce-in {
+  animation: bounceInModal 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.anim-pop-icon {
+  animation: popIconCircle 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.anim-draw-check {
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: drawCheckmark 0.5s 0.25s ease-in-out forwards;
+}
+
+.anim-ripple-success {
+  animation: ripplePulseSuccess 2s infinite;
+}
+
+.anim-ripple-danger {
+  animation: ripplePulseDanger 2s infinite;
+}
+

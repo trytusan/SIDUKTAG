@@ -11,14 +11,20 @@ use Illuminate\Validation\Rules\Password;
 
 class PengaturanController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => auth()->user()]);
+        }
         return view('admin.pengaturan.index');
     }
 
-    public function profil()
+    public function profil(Request $request)
     {
         $user = auth()->user();
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => $user]);
+        }
         return view('admin.pengaturan.profil', compact('user'));
     }
 
@@ -35,27 +41,37 @@ class PengaturanController extends Controller
 
         $user->update($validated);
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Profil berhasil diperbarui!',
+                'user' => $user->fresh(),
+            ]);
+        }
+
         return back()->with('status', 'Profil berhasil diperbarui!');
     }
 
-    public function akun()
+    public function akun(Request $request)
     {
         $user = auth()->user();
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => $user]);
+        }
         return view('admin.pengaturan.akun', compact('user'));
     }
 
-    public function password()
+    public function password(Request $request)
     {
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => auth()->user()]);
+        }
         return view('admin.pengaturan.password');
     }
 
     public function updatePassword(Request $request)
     {
         $validated = $request->validate([
-            // Memastikan password lama sesuai dengan yang ada di database
             'current_password' => ['required', 'current_password'],
-
-            // Memastikan password baru kuat dan cocok dengan konfirmasi
             'password' => [
                 'required',
                 'confirmed',
@@ -66,10 +82,15 @@ class PengaturanController extends Controller
             'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
 
-        // Update password user yang sedang login
         $request->user()->update([
             'password' => Hash::make($validated['password']),
         ]);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Password berhasil diperbarui.',
+            ]);
+        }
 
         return back()->with('status', 'Password berhasil diperbarui.');
     }
@@ -79,14 +100,19 @@ class PengaturanController extends Controller
         $user = auth()->user();
 
         $validated = $request->validate([
-            // Username biasanya merujuk ke kolom 'name' atau jika Anda punya kolom 'username' sendiri
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
-            'status_akun' => ['required', 'in:Aktif,Nonaktif'],
+            'status_akun' => ['nullable', 'in:Aktif,Nonaktif'],
         ]);
 
-        // Update data ke database
         $user->update($validated);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Pengaturan akun berhasil diperbarui.',
+                'user' => $user->fresh(),
+            ]);
+        }
 
         return back()->with('status', 'Pengaturan akun berhasil diperbarui.');
     }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
 import UserLayout from '../../../src/components/layouts/user'
@@ -22,6 +23,8 @@ const MapPreview = dynamic(
 )
 
 export default function UserKartuKeluargaPage() {
+  const router = useRouter()
+  const { id } = router.query
   const [kartuKeluarga, setKartuKeluarga] = useState<KartuKeluarga | null>(null)
   const [penduduk, setPenduduk] = useState<Penduduk | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,9 +32,10 @@ export default function UserKartuKeluargaPage() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const res = await api.get('/user/kartu-keluarga')
-        setKartuKeluarga(res.data.kartuKeluarga)
-        setPenduduk(res.data.penduduk)
+        const endpoint = id ? `/user/kartu-keluarga/${id}` : '/user/kartu-keluarga'
+        const res = await api.get(endpoint)
+        setKartuKeluarga(res.data?.kartuKeluarga || res.data?.kartu_keluarga || res.data?.data || null)
+        setPenduduk(res.data?.penduduk || null)
       } catch (err) {
         console.error('Failed to load KK:', err)
       } finally {
@@ -39,7 +43,7 @@ export default function UserKartuKeluargaPage() {
       }
     }
     fetchData()
-  }, [])
+  }, [id])
 
   if (loading) {
     return (

@@ -9,12 +9,15 @@ import FormSelect from '../../../../src/components/form/select'
 import FormFile from '../../../../src/components/form/file'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
+import ConfirmModal from '../../../../src/components/modal/Confirm'
+import { useAlert } from '../../../../src/context/AlertContext'
 import api, { getStorageUrl } from '../../../../src/lib/api'
 import { JenisSurat } from '../../../../src/types'
 
 export default function AdminJenisSuratEdit() {
   const router = useRouter()
   const { id } = router.query
+  const { showAlert } = useAlert()
   const [jenisSurat, setJenisSurat] = useState<JenisSurat | null>(null)
   const [loadingInitial, setLoadingInitial] = useState(true)
 
@@ -28,6 +31,7 @@ export default function AdminJenisSuratEdit() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -58,8 +62,12 @@ export default function AdminJenisSuratEdit() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setError(null)
     setValidationErrors({})
@@ -79,8 +87,16 @@ export default function AdminJenisSuratEdit() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
+      setShowConfirm(false)
       router.push('/admin/jenis-surat')
+      showAlert({
+        type: 'success',
+        title: 'Berhasil Diperbarui!',
+        message: 'Jenis surat telah berhasil diperbarui.',
+        onClose: () => router.push('/admin/jenis-surat'),
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -115,7 +131,7 @@ export default function AdminJenisSuratEdit() {
       <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
         <AlertError message={error} errors={validationErrors} />
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+        <form onSubmit={handleFormSubmit} className="mt-6 space-y-5">
           <FormInput
             label="Nama Jenis Surat"
             name="nama"
@@ -178,6 +194,18 @@ export default function AdminJenisSuratEdit() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Simpan Perubahan"
+        message="Apakah Anda yakin data jenis surat yang diubah sudah benar dan ingin menyimpan perubahan ini ke sistem?"
+        confirmText="Ya, Simpan Perubahan"
+        cancelText="Batal / Cek Kembali"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

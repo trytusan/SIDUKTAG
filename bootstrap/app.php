@@ -22,7 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'profile.completed' => \App\Http\Middleware\EnsureProfileCompleted::class,
         ]);
 
-        // 2. Logika redirect yang kita buat sebelumnya
+        // 2. Izinkan same-site request (Next.js di port 3000 ke Laravel di port 8000)
+        $middleware->preventRequestForgery(allowSameSite: true);
+
+        // 3. Logika redirect yang kita buat sebelumnya
         $middleware->redirectUsersTo(function () {
             $user = auth()->user();
             if ($user && $user->role === 'admin') {

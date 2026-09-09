@@ -14,9 +14,6 @@ use Illuminate\Support\Facades\Storage;
 
 class PendudukController extends Controller
 {
-    /**
-     * Helper untuk menentukan kategori umur secara otomatis.
-     */
     private function hitungKategoriUmur($tanggal_lahir): ?string
     {
         if (!$tanggal_lahir) return null;
@@ -29,13 +26,16 @@ class PendudukController extends Controller
         return 'Lansia';
     }
 
-    public function step1(Request $request): View
+    public function step1(Request $request)
     {
         $data = session('onboarding.step1', []);
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['data' => $data]);
+        }
         return view('user.onboarding.step-1', compact('data'));
     }
 
-    public function storeStep1(Request $request): RedirectResponse
+    public function storeStep1(Request $request)
     {
         $validated = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
@@ -51,16 +51,24 @@ class PendudukController extends Controller
         ]);
 
         session(['onboarding.step1' => $validated]);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Langkah 1 berhasil disimpan.']);
+        }
+
         return redirect()->route('user.onboarding.step-2');
     }
 
-    public function step2(Request $request): View
+    public function step2(Request $request)
     {
         $data = session('onboarding.step2', []);
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['data' => $data]);
+        }
         return view('user.onboarding.step-2', compact('data'));
     }
 
-    public function storeStep2(Request $request): RedirectResponse
+    public function storeStep2(Request $request)
     {
         $validated = $request->validate([
             'alamat' => ['required', 'string'],
@@ -70,16 +78,24 @@ class PendudukController extends Controller
         ]);
 
         session(['onboarding.step2' => $validated]);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'Langkah 2 berhasil disimpan.']);
+        }
+
         return redirect()->route('user.onboarding.step-3');
     }
 
-    public function step3(Request $request): View
+    public function step3(Request $request)
     {
         $data = session('onboarding.step3', []);
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['data' => $data]);
+        }
         return view('user.onboarding.step-3', compact('data'));
     }
 
-    public function storeStep3(Request $request): RedirectResponse
+    public function storeStep3(Request $request)
     {
         $validated = $request->validate([
             'foto_profil' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -140,19 +156,36 @@ class PendudukController extends Controller
 
         session()->forget(['onboarding.step1', 'onboarding.step2', 'onboarding.step3']);
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data diri berhasil dilengkapi.',
+                'user' => $user->fresh(['penduduk']),
+            ]);
+        }
+
         return redirect()->route('user.dashboard')->with('status', 'Data diri berhasil dilengkapi.');
     }
 
-    public function show(Request $request): View
+    public function show(Request $request)
     {
-        $penduduk = $request->user()->penduduk;
+        $user = $request->user() ?: auth()->user();
+        $penduduk = $user?->penduduk;
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['penduduk' => $penduduk]);
+        }
         return view('user.pengaturan.profil', compact('penduduk'));
     }
 
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request)
     {
-        $penduduk = $request->user()->penduduk;
-        if (!$penduduk) return back()->with('error', 'Data profil tidak ditemukan.');
+        $user = $request->user() ?: auth()->user();
+        $penduduk = $user?->penduduk;
+        if (!$penduduk) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Data profil tidak ditemukan.'], 404);
+            }
+            return back()->with('error', 'Data profil tidak ditemukan.');
+        }
 
         $validated = $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
@@ -185,6 +218,13 @@ class PendudukController extends Controller
             KartuKeluarga::where('nomor_kk', $penduduk->nomor_kk)->update([
                 'nama_kepala_keluarga' => $penduduk->nama_lengkap,
                 'alamat_keluarga' => $penduduk->alamat_lengkap
+            ]);
+        }
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Profil berhasil diperbarui.',
+                'penduduk' => $penduduk->fresh(),
             ]);
         }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { useAuth } from '../context/AuthContext'
@@ -12,6 +12,13 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Preload potential destination routes into browser cache
+  useEffect(() => {
+    router.prefetch('/admin/dashboard')
+    router.prefetch('/user/dashboard')
+    router.prefetch('/user/onboarding/step-1')
+  }, [router])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
@@ -19,19 +26,19 @@ export default function LoginForm() {
 
     try {
       const res = await login({ email, password, remember: remember ? 1 : 0 })
-      if (res?.redirect) {
+      if (res?.role === 'admin' || res?.redirect === '/admin/dashboard') {
+        router.replace('/admin/dashboard')
+      } else if (res?.redirect) {
         if (res.redirect.startsWith('http://') || res.redirect.startsWith('https://')) {
           const url = new URL(res.redirect)
-          router.push(url.pathname)
+          router.replace(url.pathname)
         } else {
-          router.push(res.redirect)
+          router.replace(res.redirect)
         }
-      } else if (res?.role === 'admin') {
-        router.push('/admin/dashboard')
       } else if (res?.is_profile_completed) {
-        router.push('/user/dashboard')
+        router.replace('/user/dashboard')
       } else {
-        router.push('/user/onboarding/step-1')
+        router.replace('/user/onboarding/step-1')
       }
     } catch (err: any) {
       setError(

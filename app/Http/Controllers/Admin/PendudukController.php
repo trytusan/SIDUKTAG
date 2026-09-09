@@ -16,9 +16,6 @@ use Illuminate\Support\Facades\Storage;
 
 class PendudukController extends Controller
 {
-    /**
-     * Export ke Excel & PDF (Tetap sama)
-     */
     public function exportExcel(Request $request)
     {
         return Excel::download(new PendudukExport($request), 'data-penduduk.xlsx');
@@ -40,7 +37,7 @@ class PendudukController extends Controller
     /**
      * Logika Penyimpanan Data (Store)
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         // 1. Validasi (Hapus 'exists:kartu_keluarga,nomor_kk')
         $validated = $request->validate([
@@ -106,10 +103,17 @@ class PendudukController extends Controller
         $validated['is_profile_completed'] = true;
 
         // 5. Simpan Penduduk
-        Penduduk::create($validated);
+        $penduduk = Penduduk::create($validated);
 
         // 6. Sinkronisasi Jumlah Anggota
         $this->sinkronkanJumlahAnggota($request->nomor_kk);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data penduduk dan KK berhasil diproses.',
+                'penduduk' => $penduduk->load('kartuKeluarga'),
+            ], 201);
+        }
 
         return redirect()->route('admin.penduduk.index')->with('status', 'Data penduduk dan KK berhasil diproses.');
     }
@@ -117,7 +121,7 @@ class PendudukController extends Controller
     /**
      * Logika Update Data
      */
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id)
     {
         $penduduk = Penduduk::findOrFail($id);
         $old_kk = $penduduk->nomor_kk;
@@ -158,6 +162,13 @@ class PendudukController extends Controller
         // Sinkronisasi KK
         $this->sinkronkanJumlahAnggota($old_kk);
         $this->sinkronkanJumlahAnggota($request->nomor_kk);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data penduduk berhasil diperbarui.',
+                'penduduk' => $penduduk->fresh('kartuKeluarga'),
+            ]);
+        }
 
         return redirect()->route('admin.penduduk.index')->with('status', 'Data penduduk berhasil diperbarui.');
     }
@@ -219,13 +230,14 @@ class PendudukController extends Controller
     }
 
     // Index, Show, Edit, Destroy (Tetap sama, pastikan data Lat/Lng terambil)
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         // 1. Inisialisasi Query dengan Eager Loading
         $query = Penduduk::with('kartuKeluarga');
 
         // 2. Filter Pencarian (Nama, NIK, No KK)
-        $query->when($request->search, function ($q, $search) {
+        $query->when($request->filled('search'), function ($q) use ($request) {
+            $search = $request->search;
             $q->where(function ($inner) use ($search) {
                 $inner->where('nama_lengkap', 'like', "%{$search}%")
                     ->orWhere('nik', 'like', "%{$search}%")
@@ -233,26 +245,40 @@ class PendudukController extends Controller
             });
         });
 
-        // 3. Filter Dropdown (Pastikan name di select Blade sesuai dengan ini)
-        $query->when($request->jenis_kelamin, function ($q, $jk) {
-            return $q->where('jenis_kelamin', $jk);
+        // 3. Filter Dropdown
+        $query->when($request->filled('jenis_kelamin'), function ($q) use ($request) {
+            return $q->where('jenis_kelamin', $request->jenis_kelamin);
         });
 
-        $query->when($request->kategori_umur, function ($q, $kat) {
-            return $q->where('kategori_umur', $kat);
+        $query->when($request->filled('kategori_umur'), function ($q) use ($request) {
+            return $q->where('kategori_umur', $request->kategori_umur);
         });
 
-        $query->when($request->status_kependudukan, function ($q, $st) {
-            return $q->where('status_kependudukan', $st);
+        $query->when($request->filled('status_kependudukan'), function ($q) use ($request) {
+            return $q->where('status_kependudukan', $request->status_kependudukan);
         });
 
-        $query->when($request->status_perkawinan, function ($q, $sp) {
-            return $q->where('status_perkawinan', $sp);
+        $query->when($request->filled('status_perkawinan'), function ($q) use ($request) {
+            return $q->where('status_perkawinan', $request->status_perkawinan);
         });
 
         // 4. Eksekusi dengan Pagination
         $penduduk = $query->latest()->paginate(10)->withQueryString();
 
+        // Jika request datang dari Next.js / Axios (JSON)
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'penduduk' => $penduduk,
+                'stats' => [
+                    'total' => Penduduk::count(),
+                    'laki' => Penduduk::where('jenis_kelamin', 'Laki-laki')->count(),
+                    'perempuan' => Penduduk::where('jenis_kelamin', 'Perempuan')->count(),
+                    'tetap' => Penduduk::where('status_kependudukan', 'Tetap')->count(),
+                ],
+            ]);
+        }
+
+        // Jika request datang dari Blade biasa
         return view('admin.penduduk.index', compact('penduduk'));
     }
 
@@ -260,31 +286,53 @@ class PendudukController extends Controller
     {
         return view('admin.penduduk.create');
     }
-    public function show(int $id): View
+    public function show(Request $request, int $id)
     {
-        // Cukup ambil datanya dulu, lalu masukkan ke compact
         $penduduk = Penduduk::with('kartuKeluarga')->findOrFail($id);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'penduduk' => $penduduk,
+            ]);
+        }
 
         return view('admin.penduduk.show', compact('penduduk'));
     }
-    public function edit(int $id): View
-    {
-        // Mengambil data penduduk berdasarkan ID
-        $penduduk = Penduduk::findOrFail($id);
 
-        // Mengirimkan variabel $penduduk ke view
+    public function edit(Request $request, int $id)
+    {
+        $penduduk = Penduduk::with('kartuKeluarga')->findOrFail($id);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'penduduk' => $penduduk,
+            ]);
+        }
+
         return view('admin.penduduk.edit', compact('penduduk'));
     }
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id)
     {
         $penduduk = Penduduk::findOrFail($id);
         $nomor_kk = $penduduk->nomor_kk;
-        if ($penduduk->foto_profil)
+
+        if ($penduduk->foto_profil) {
             Storage::disk('public')->delete($penduduk->foto_profil);
-        if ($penduduk->dokumen_pendukung)
+        }
+        if ($penduduk->dokumen_pendukung) {
             Storage::disk('public')->delete($penduduk->dokumen_pendukung);
+        }
+
         $penduduk->delete();
         $this->sinkronkanJumlahAnggota($nomor_kk);
+
+        // Respon JSON jika dihapus dari Next.js modal
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data penduduk berhasil dihapus.'
+            ]);
+        }
+
         return redirect()->route('admin.penduduk.index')->with('status', 'Data penduduk berhasil dihapus.');
     }
 }

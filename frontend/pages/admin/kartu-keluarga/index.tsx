@@ -8,11 +8,15 @@ import FilterBar from '../../../src/components/table/filter-bar'
 import Pagination from '../../../src/components/utils/pagination'
 import LoadingSpinner from '../../../src/components/ui/loading'
 import ConfirmModal from '../../../src/components/modal/Confirm'
+import CardStat from '../../../src/components/ui/card-stat'
+import { useAlert } from '../../../src/context/AlertContext'
 import api from '../../../src/lib/api'
 import { KartuKeluarga, PaginatedResponse } from '../../../src/types'
 
 export default function AdminKartuKeluargaIndex() {
+  const { showAlert } = useAlert()
   const [data, setData] = useState<PaginatedResponse<KartuKeluarga> | null>(null)
+  const [stats, setStats] = useState<{ total_kk?: number; total_jiwa?: number; rata_rata?: number; kk_terisi?: number } | null>(null)
   const [search, setSearch] = useState('')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
@@ -24,10 +28,15 @@ export default function AdminKartuKeluargaIndex() {
     try {
       const params = new URLSearchParams()
       params.append('page', String(p))
-      if (s) params.append('search', s)
+      if (s.trim()) params.append('search', s.trim())
 
       const res = await api.get('/admin/kartu-keluarga?' + params.toString())
-      setData(res.data.kartuKeluarga)
+      
+      // PERBAIKAN: Sesuaikan dengan key 'kartu_keluarga' dari controller
+      setData(res.data.kartu_keluarga || res.data)
+      if (res.data.stats) {
+        setStats(res.data.stats)
+      }
       setPage(p)
     } catch (err) {
       console.error('Failed to load KK:', err)
@@ -47,12 +56,27 @@ export default function AdminKartuKeluargaIndex() {
       await api.delete('/admin/kartu-keluarga/' + deleteId)
       setDeleteId(null)
       fetchKK(page, search)
+      showAlert({
+        type: 'delete',
+        title: 'Berhasil Dihapus!',
+        message: 'Data Kartu Keluarga telah berhasil dihapus.',
+      })
     } catch (err) {
       alert('Gagal menghapus Kartu Keluarga.')
+      showAlert({
+        type: 'error',
+        title: 'Gagal Menghapus',
+        message: 'Terjadi kesalahan saat menghapus data Kartu Keluarga.',
+      })
     } finally {
       setDeleting(false)
     }
   }
+
+  const totalKK = stats?.total_kk ?? (data?.total || 0)
+  const totalJiwa = stats?.total_jiwa ?? (data?.data ? data.data.reduce((sum, k) => sum + (Number(k.jumlah_anggota) || 0), 0) : 0)
+  const rataRata = stats?.rata_rata ?? (data?.data && data.data.length > 0 ? (totalJiwa / data.data.length).toFixed(1) : '0')
+  const kkTerisi = stats?.kk_terisi ?? (data?.data ? data.data.filter((k) => (Number(k.jumlah_anggota) || 0) > 0).length : 0)
 
   return (
     <AdminLayout pageTitle="Data Kartu Keluarga" subtitle="Kelola data Kartu Keluarga dan susunan anggota warga">
@@ -72,6 +96,54 @@ export default function AdminKartuKeluargaIndex() {
         ]}
       />
 
+      {/* Overview Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <CardStat
+          title="Total Kartu Keluarga"
+          value={totalKK.toLocaleString('id-ID')}
+          description="Kepala keluarga terdata di desa"
+          variant="emerald"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Total Jiwa Terdaftar"
+          value={totalJiwa.toLocaleString('id-ID')}
+          description="Akumulasi anggota seluruh KK"
+          variant="blue"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Rata-Rata Anggota"
+          value={`${rataRata} Jiwa/KK`}
+          description="Rata-rata tanggungan per keluarga"
+          variant="amber"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="KK Aktif & Terisi"
+          value={kkTerisi.toLocaleString('id-ID')}
+          description="KK dengan susunan anggota aktif"
+          variant="violet"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          }
+        />
+      </div>
+
       <FilterBar onReset={() => setSearch('')}>
         <SearchBox
           value={search}
@@ -86,6 +158,15 @@ export default function AdminKartuKeluargaIndex() {
         <div className="space-y-4">
           <Table
             columns={[
+              {
+                key: 'no',
+                label: 'No',
+                className: 'w-12 text-center',
+                render: (_: any, idx: number) => {
+                  const from = data?.from || 1
+                  return <span className="text-xs text-slate-500 font-semibold">{from + idx}</span>
+                },
+              },
               { key: 'nomor_kk', label: 'Nomor KK' },
               {
                 key: 'nama_kepala_keluarga',
@@ -102,7 +183,7 @@ export default function AdminKartuKeluargaIndex() {
               {
                 key: 'jumlah_anggota',
                 label: 'Jumlah Anggota',
-                render: (item: KartuKeluarga) => (item.jumlah_anggota || 0) + ' Jiwa',
+                render: (item: any) => ((item.anggota_count ?? item.jumlah_anggota ?? 0) + ' Jiwa'),
               },
               {
                 key: 'actions',

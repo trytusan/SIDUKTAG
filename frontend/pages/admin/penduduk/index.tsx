@@ -7,11 +7,15 @@ import FormSelect from '../../../src/components/form/select'
 import Pagination from '../../../src/components/utils/pagination'
 import LoadingSpinner from '../../../src/components/ui/loading'
 import ConfirmModal from '../../../src/components/modal/Confirm'
+import CardStat from '../../../src/components/ui/card-stat'
+import { useAlert } from '../../../src/context/AlertContext'
 import api from '../../../src/lib/api'
 import { Penduduk, PaginatedResponse } from '../../../src/types'
 
 export default function AdminPendudukIndex() {
+  const { showAlert } = useAlert()
   const [data, setData] = useState<PaginatedResponse<Penduduk> | null>(null)
+  const [stats, setStats] = useState<{ total?: number; laki?: number; perempuan?: number; tetap?: number } | null>(null)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [gender, setGender] = useState('')
@@ -35,6 +39,9 @@ export default function AdminPendudukIndex() {
 
       const res = await api.get('/admin/penduduk?' + params.toString())
       setData(res.data.penduduk)
+      if (res.data.stats) {
+        setStats(res.data.stats)
+      }
       setPage(p)
     } catch (err) {
       console.error('Failed to load penduduk:', err)
@@ -61,8 +68,18 @@ export default function AdminPendudukIndex() {
       await api.delete('/admin/penduduk/' + deleteId)
       setDeleteId(null)
       fetchPenduduk(page, search, status, gender, kategoriUmur)
+      showAlert({
+        type: 'delete',
+        title: 'Berhasil Dihapus!',
+        message: 'Data penduduk telah berhasil dihapus dari sistem.',
+      })
     } catch (err) {
       alert('Gagal menghapus data penduduk.')
+      showAlert({
+        type: 'error',
+        title: 'Gagal Menghapus',
+        message: 'Terjadi kesalahan saat menghapus data penduduk.',
+      })
     } finally {
       setDeleting(false)
     }
@@ -76,6 +93,11 @@ export default function AdminPendudukIndex() {
     if (kategoriUmur) params.append('kategori_umur', kategoriUmur)
     return `${apiUrl}/admin/penduduk/export/${type}?${params.toString()}`
   }
+
+  const totalPenduduk = stats?.total ?? (data?.total || 0)
+  const totalLaki = stats?.laki ?? (data?.data ? data.data.filter((p) => p.jenis_kelamin === 'Laki-laki').length : 0)
+  const totalPerempuan = stats?.perempuan ?? (data?.data ? data.data.filter((p) => p.jenis_kelamin === 'Perempuan').length : 0)
+  const totalTetap = stats?.tetap ?? (data?.data ? data.data.filter((p) => p.status_kependudukan === 'Tetap').length : 0)
 
   return (
     <AdminLayout pageTitle="Data Penduduk" subtitle="Kelola seluruh data identitas warga desa/kelurahan">
@@ -95,6 +117,54 @@ export default function AdminPendudukIndex() {
           <li className="text-slate-800 font-semibold">Data Penduduk</li>
         </ol>
       </nav>
+
+      {/* Top Stat Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <CardStat
+          title="Total Penduduk"
+          value={totalPenduduk.toLocaleString('id-ID')}
+          description="Total warga terdata dalam sistem"
+          variant="emerald"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Laki-Laki"
+          value={totalLaki.toLocaleString('id-ID')}
+          description="Warga berjenis kelamin laki-laki"
+          variant="blue"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Perempuan"
+          value={totalPerempuan.toLocaleString('id-ID')}
+          description="Warga berjenis kelamin perempuan"
+          variant="rose"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Penduduk Tetap"
+          value={totalTetap.toLocaleString('id-ID')}
+          description="Warga berstatus domisili tetap"
+          variant="violet"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          }
+        />
+      </div>
 
       {/* Filter Box */}
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">

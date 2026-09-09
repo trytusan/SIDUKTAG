@@ -8,12 +8,15 @@ import FormInput from '../../../../src/components/form/input'
 import FormTextarea from '../../../../src/components/form/textarea'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
+import ConfirmModal from '../../../../src/components/modal/Confirm'
+import { useAlert } from '../../../../src/context/AlertContext'
 import api from '../../../../src/lib/api'
 import { Penduduk, Bantuan, BantuanPenerima } from '../../../../src/types'
 
 export default function AdminBantuanEdit() {
   const router = useRouter()
   const { id } = router.query
+  const { showAlert } = useAlert()
   const [bantuanData, setBantuanData] = useState<BantuanPenerima | null>(null)
   const [pendudukList, setPendudukList] = useState<Penduduk[]>([])
   const [allPrograms, setAllPrograms] = useState<Bantuan[]>([])
@@ -27,6 +30,7 @@ export default function AdminBantuanEdit() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -53,8 +57,12 @@ export default function AdminBantuanEdit() {
     fetchEdit()
   }, [id])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setError(null)
     setValidationErrors({})
@@ -68,8 +76,16 @@ export default function AdminBantuanEdit() {
         catatan,
       })
 
+      setShowConfirm(false)
       router.push('/admin/bantuan')
+      showAlert({
+        type: 'success',
+        title: 'Berhasil Diperbarui!',
+        message: 'Data penerima bantuan telah berhasil diperbarui.',
+        onClose: () => router.push('/admin/bantuan'),
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -104,7 +120,7 @@ export default function AdminBantuanEdit() {
       <div className="mx-auto max-w-2xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
         <AlertError message={error} errors={validationErrors} />
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-5">
+        <form onSubmit={handleFormSubmit} className="mt-4 space-y-5">
           <FormSelect
             label="Warga Penerima"
             name="penduduk_id"
@@ -178,6 +194,18 @@ export default function AdminBantuanEdit() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Simpan Perubahan"
+        message="Apakah Anda yakin data penerima bantuan yang diubah sudah benar dan ingin menyimpan perubahan ini ke sistem?"
+        confirmText="Ya, Simpan Perubahan"
+        cancelText="Batal / Cek Kembali"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

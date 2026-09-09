@@ -8,12 +8,15 @@ import FormTextarea from '../../../../src/components/form/textarea'
 import FormFile from '../../../../src/components/form/file'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
+import ConfirmModal from '../../../../src/components/modal/Confirm'
+import { useAlert } from '../../../../src/context/AlertContext'
 import api from '../../../../src/lib/api'
 import { PengajuanSurat } from '../../../../src/types'
 
 export default function AdminPengajuanSuratVerifikasi() {
   const router = useRouter()
   const { id } = router.query
+  const { showAlert } = useAlert()
   const [surat, setSurat] = useState<PengajuanSurat | null>(null)
   const [loadingInitial, setLoadingInitial] = useState(true)
 
@@ -23,6 +26,7 @@ export default function AdminPengajuanSuratVerifikasi() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -44,8 +48,12 @@ export default function AdminPengajuanSuratVerifikasi() {
     fetchVerifikasi()
   }, [id])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setError(null)
     setValidationErrors({})
@@ -63,8 +71,16 @@ export default function AdminPengajuanSuratVerifikasi() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
+      setShowConfirm(false)
       router.push('/admin/pengajuan-surat')
+      showAlert({
+        type: 'success',
+        title: 'Status Berhasil Diperbarui!',
+        message: 'Status verifikasi pengajuan surat telah berhasil disimpan.',
+        onClose: () => router.push('/admin/pengajuan-surat'),
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -114,7 +130,7 @@ export default function AdminPengajuanSuratVerifikasi() {
 
         <AlertError message={error} errors={validationErrors} />
 
-        <form onSubmit={handleSubmit} className="mt-4 space-y-5">
+        <form onSubmit={handleFormSubmit} className="mt-4 space-y-5">
           <FormSelect
             label="Ubah Status Pengajuan"
             name="status"
@@ -167,6 +183,18 @@ export default function AdminPengajuanSuratVerifikasi() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Perubahan Status Surat"
+        message="Apakah Anda yakin ingin menyimpan perubahan status verifikasi pengajuan surat ini?"
+        confirmText="Ya, Simpan Status"
+        cancelText="Batal / Cek Kembali"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

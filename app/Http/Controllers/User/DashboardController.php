@@ -7,11 +7,10 @@ use App\Models\BantuanPenerima;
 use App\Models\KartuKeluarga;
 use App\Models\PengajuanSurat;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $user = $request->user();
         $penduduk = $user->penduduk;
@@ -40,16 +39,44 @@ class DashboardController extends Controller
             $totalAnggotaKeluarga = $kartuKeluarga?->anggota?->count() ?? 0;
         }
 
-        $pengajuanTerbaru = PengajuanSurat::where('user_id', $user->id)
+        // Eager load jenisSurat dan format nama kolom untuk tabel Next.js
+        $pengajuanTerbaru = PengajuanSurat::with('jenisSurat')
+            ->where('user_id', $user->id)
             ->latest()
             ->take(5)
-            ->get();
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'id' => $item->id,
+                    'nomor_pengajuan' => $item->nomor_pengajuan ?? ('REG-' . str_pad($item->id, 5, '0', STR_PAD_LEFT)),
+                    'jenis_surat_nama' => optional($item->jenisSurat)->nama ?? '-',
+                    'tanggal_pengajuan' => $item->created_at ? $item->created_at->format('d/m/Y') : '-',
+                    'status' => $item->status,
+                ];
+            });
 
-        $aktivitasTerbaru = PengajuanSurat::where('user_id', $user->id)
+        $aktivitasTerbaru = PengajuanSurat::with('jenisSurat')
+            ->where('user_id', $user->id)
             ->latest()
             ->take(3)
             ->get();
 
+        // JIKA REQUEST DARI NEXT.JS / AXIOS -> RETURN JSON
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'user' => $user,
+                'penduduk' => $penduduk,
+                'kartuKeluarga' => $kartuKeluarga,
+                'totalPengajuan' => $totalPengajuan,
+                'totalSuratSelesai' => $totalSuratSelesai,
+                'totalBantuanAktif' => $totalBantuanAktif,
+                'totalAnggotaKeluarga' => $totalAnggotaKeluarga,
+                'pengajuanTerbaru' => $pengajuanTerbaru,
+                'aktivitasTerbaru' => $aktivitasTerbaru,
+            ]);
+        }
+
+        // JIKA REQUEST DARI BROWSER BLADE
         return view('user.dashboard.index', compact(
             'user',
             'penduduk',

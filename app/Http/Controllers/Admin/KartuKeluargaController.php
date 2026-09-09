@@ -4,35 +4,31 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\KartuKeluarga;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Maatwebsite\Excel\Facades\Excel; // TAMBAHKAN INI
-use App\Exports\KartuKeluargaExport; // TAMBAHKAN INI
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\KartuKeluargaExport;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class KartuKeluargaController extends Controller
 {
-    public function index(Request $request): View|\Symfony\Component\HttpFoundation\BinaryFileResponse|\Illuminate\Http\Response
+    public function index(Request $request)
     {
-
         // 1. Inisialisasi query dengan hitung anggota otomatis
         $query = KartuKeluarga::withCount('anggota');
 
-        // Export Excel
+        // 2. Export Excel
         if ($request->export === 'excel') {
-            // Kita gunakan $query agar hasil yang di-export sesuai dengan hasil pencarian/filter
-            return Excel::download(new \App\Exports\KartuKeluargaExport($query), 'data-kartu-keluarga.xlsx');
+            return Excel::download(new KartuKeluargaExport($query), 'data-kartu-keluarga.xlsx');
         }
 
-        // Export PDF
+        // 3. Export PDF
         if ($request->export === 'pdf') {
-            $data = $query->get(); // Ambil semua data sesuai filter (tanpa pagination)
-            $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('admin.kartu-keluarga.pdf', compact('data'));
+            $data = $query->get();
+            $pdf = Pdf::loadView('admin.kartu-keluarga.pdf', compact('data'));
             return $pdf->download('laporan-kartu-keluarga.pdf');
         }
 
-        // 2. Logika Pencarian (Nomor KK atau Nama Kepala Keluarga)
+        // 4. Logika Pencarian (Nomor KK atau Nama Kepala Keluarga)
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -41,23 +37,37 @@ class KartuKeluargaController extends Controller
             });
         }
 
-        // 3. (Opsional) Jika ingin menambah filter lain, contoh RT/RW
+        // 5. Filter tambahan (misal RT)
         if ($request->filled('rt')) {
             $query->where('rt', $request->rt);
         }
 
-        // 4. Eksekusi pagination dengan tetap membawa query string (agar search tidak hilang saat pindah hal)
+        // 6. Eksekusi pagination
         $kartuKeluarga = $query->latest()->paginate(10)->withQueryString();
 
+        // JIKA REQUEST DARI NEXT.JS / AXIOS -> KEMBALIKAN JSON
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'kartu_keluarga' => $kartuKeluarga,
+                'stats' => [
+                    'total_kk' => KartuKeluarga::count(),
+                    'total_jiwa' => (int) KartuKeluarga::sum('jumlah_anggota'),
+                    'rata_rata' => KartuKeluarga::count() > 0 ? round(KartuKeluarga::avg('jumlah_anggota'), 1) : 0,
+                    'kk_terisi' => KartuKeluarga::where('jumlah_anggota', '>', 0)->count(),
+                ],
+            ]);
+        }
+
+        // JIKA BUKAN -> RENDER VIEW BLADE
         return view('admin.kartu-keluarga.index', compact('kartuKeluarga'));
     }
 
-    public function create(): View
+    public function create()
     {
         return view('admin.kartu-keluarga.create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request)
     {
         $validated = $request->validate([
             'nomor_kk' => ['required', 'digits:16', 'unique:kartu_keluarga,nomor_kk'],
@@ -67,26 +77,47 @@ class KartuKeluargaController extends Controller
 
         $validated['jumlah_anggota'] = 0;
 
-        KartuKeluarga::create($validated);
+        $kartuKeluarga = KartuKeluarga::create($validated);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data kartu keluarga berhasil ditambahkan.',
+                'data' => $kartuKeluarga
+            ], 201);
+        }
 
         return redirect()->route('admin.kartu-keluarga.index')->with('status', 'Data kartu keluarga berhasil ditambahkan.');
     }
 
-    public function show(int $id): View
+    public function show(Request $request, int $id)
     {
         $kartuKeluarga = KartuKeluarga::with('anggota')->findOrFail($id);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'kartuKeluarga' => $kartuKeluarga,
+                'kartu_keluarga' => $kartuKeluarga,
+                'data' => $kartuKeluarga,
+            ]);
+        }
 
         return view('admin.kartu-keluarga.show', compact('kartuKeluarga'));
     }
 
-    public function edit(int $id): View
+    public function edit(Request $request, int $id)
     {
         $kartuKeluarga = KartuKeluarga::findOrFail($id);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'kartuKeluarga' => $kartuKeluarga
+            ]);
+        }
 
         return view('admin.kartu-keluarga.edit', compact('kartuKeluarga'));
     }
 
-    public function update(Request $request, int $id): RedirectResponse
+    public function update(Request $request, int $id)
     {
         $kartuKeluarga = KartuKeluarga::findOrFail($id);
 
@@ -98,13 +129,26 @@ class KartuKeluargaController extends Controller
 
         $kartuKeluarga->update($validated);
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data kartu keluarga berhasil diperbarui.',
+                'data' => $kartuKeluarga
+            ]);
+        }
+
         return redirect()->route('admin.kartu-keluarga.index')->with('status', 'Data kartu keluarga berhasil diperbarui.');
     }
 
-    public function destroy(int $id): RedirectResponse
+    public function destroy(Request $request, int $id)
     {
         $kartuKeluarga = KartuKeluarga::findOrFail($id);
         $kartuKeluarga->delete();
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Data kartu keluarga berhasil dihapus.'
+            ]);
+        }
 
         return redirect()->route('admin.kartu-keluarga.index')->with('status', 'Data kartu keluarga berhasil dihapus.');
     }

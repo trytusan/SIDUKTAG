@@ -14,6 +14,7 @@ export default function UserBantuanIndex() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
 
+
   async function fetchBantuan(p = 1) {
     setLoading(true)
     try {

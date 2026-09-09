@@ -3,23 +3,27 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
 
 class PengaturanController extends Controller
 {
-    public function index(): View
+    public function index(Request $request)
     {
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => $request->user()]);
+        }
         return view('user.pengaturan.index');
     }
 
-    public function akun(): View
+    public function akun(Request $request)
     {
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => $request->user()]);
+        }
         return view('user.pengaturan.akun');
     }
 
-    public function updateAkun(Request $request): RedirectResponse
+    public function updateAkun(Request $request)
     {
         $user = $request->user();
 
@@ -35,11 +39,21 @@ class PengaturanController extends Controller
 
         $user->update($validated);
 
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Informasi akun berhasil diperbarui.',
+                'user' => $user->fresh(),
+            ]);
+        }
+
         return back()->with('status', 'Informasi akun berhasil diperbarui.');
     }
 
-    public function password(): View
+    public function password(Request $request)
     {
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['user' => $request->user()]);
+        }
         return view('user.pengaturan.password');
     }
 }

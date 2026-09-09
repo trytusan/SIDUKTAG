@@ -84,6 +84,15 @@ export default function UserDashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <Link
+              href="/"
+              className="inline-flex items-center gap-2 rounded-2xl border border-white/30 bg-white/15 px-4 py-3 text-sm font-semibold text-white backdrop-blur-sm transition duration-200 hover:bg-white/25 active:scale-95"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3" />
+              </svg>
+              <span>Landing Page</span>
+            </Link>
+            <Link
               href="/user/pengajuan-surat/create"
               className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 text-sm font-bold text-emerald-700 shadow-md transition duration-200 hover:bg-emerald-50 active:scale-95"
             >

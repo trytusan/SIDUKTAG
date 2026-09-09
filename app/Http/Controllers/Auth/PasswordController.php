@@ -85,7 +85,7 @@ class PasswordController extends Controller
         return view('auth.change-password');
     }
 
-    public function changePassword(Request $request): RedirectResponse
+    public function changePassword(Request $request)
     {
         $request->validate([
             'current_password' => ['required'],
@@ -94,12 +94,19 @@ class PasswordController extends Controller
             'current_password.required' => 'Password lama wajib diisi.',
             'password.required' => 'Password baru wajib diisi.',
             'password.min' => 'Password baru minimal 8 karakter.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
+            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
         ]);
 
         $user = $request->user();
 
         if (!$user || !Hash::check($request->current_password, $user->password)) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Password lama tidak sesuai.',
+                    'errors' => ['current_password' => ['Password lama tidak sesuai.']]
+                ], 422);
+            }
+
             return back()->withErrors([
                 'current_password' => 'Password lama tidak sesuai.',
             ]);
@@ -108,6 +115,12 @@ class PasswordController extends Controller
         $user->update([
             'password' => Hash::make($request->password),
         ]);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Password berhasil diperbarui.',
+            ]);
+        }
 
         return back()->with('status', 'Password berhasil diperbarui.');
     }

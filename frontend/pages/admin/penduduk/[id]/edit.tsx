@@ -11,6 +11,8 @@ import FormRadio from '../../../../src/components/form/radio'
 import FormFile from '../../../../src/components/form/file'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
+import ConfirmModal from '../../../../src/components/modal/Confirm'
+import { useAlert } from '../../../../src/context/AlertContext'
 import api, { getStorageUrl } from '../../../../src/lib/api'
 import { Penduduk } from '../../../../src/types'
 
@@ -29,6 +31,7 @@ const FormMapPicker = dynamic(
 export default function AdminPendudukEdit() {
   const router = useRouter()
   const { id } = router.query
+  const { showAlert } = useAlert()
   const [penduduk, setPenduduk] = useState<Penduduk | null>(null)
   const [loadingInitial, setLoadingInitial] = useState(true)
 
@@ -57,6 +60,7 @@ export default function AdminPendudukEdit() {
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+  const [showConfirm, setShowConfirm] = useState(false)
 
   useEffect(() => {
     if (!id) return
@@ -103,8 +107,12 @@ export default function AdminPendudukEdit() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    setShowConfirm(true)
+  }
+
+  const handleExecuteSave = async () => {
     setSubmitting(true)
     setError(null)
     setValidationErrors({})
@@ -124,8 +132,16 @@ export default function AdminPendudukEdit() {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
 
+      setShowConfirm(false)
       router.push('/admin/penduduk')
+      showAlert({
+        type: 'success',
+        title: 'Berhasil Diperbarui!',
+        message: 'Data penduduk telah berhasil diperbarui di database.',
+        onClose: () => router.push('/admin/penduduk'),
+      })
     } catch (err: any) {
+      setShowConfirm(false)
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
       }
@@ -160,7 +176,7 @@ export default function AdminPendudukEdit() {
       <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
         <AlertError message={error} errors={validationErrors} />
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+        <form onSubmit={handleFormSubmit} className="mt-6 space-y-6">
           <div className="space-y-4">
             <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">
               1. Identitas Pokok
@@ -374,6 +390,18 @@ export default function AdminPendudukEdit() {
           </div>
         </form>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Konfirmasi Simpan Perubahan"
+        message="Apakah Anda yakin data penduduk yang diubah sudah benar dan ingin menyimpan perubahan ini ke sistem?"
+        confirmText="Ya, Simpan Perubahan"
+        cancelText="Batal / Cek Kembali"
+        variant="primary"
+        loading={submitting}
+        onConfirm={handleExecuteSave}
+        onCancel={() => setShowConfirm(false)}
+      />
     </AdminLayout>
   )
 }

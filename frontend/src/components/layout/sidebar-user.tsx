@@ -19,6 +19,12 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
     return router.pathname.startsWith(path)
   }
 
+  const handleNavClick = () => {
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      if (onClose) onClose()
+    }
+  }
+
   const activeClass = 'bg-emerald-500/15 text-emerald-300 font-semibold'
   const inactiveClass = 'text-slate-300 hover:bg-white/5 hover:text-white'
 
@@ -60,6 +66,15 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
       ),
     },
     {
+      label: 'Peta Wilayah',
+      href: '/user/peta',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 6.75V15m6-6v8.25m.503-14.406C14.713 2.39 13.376 2.25 12 2.25s-2.713.14-3.503.594l-4.5 2.571A1.5 1.5 0 003 6.72v11.558a1.5 1.5 0 002.003 1.407l4.497-2.57 5 2.857 4.5-2.571A1.5 1.5 0 0020 16.02V4.462a1.5 1.5 0 00-1.497-1.407l-3.003.539z" />
+        </svg>
+      ),
+    },
+    {
       label: 'Pengaturan Profil',
       href: '/user/pengaturan',
       icon: (
@@ -82,23 +97,24 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
 
       <aside
         id="sidebar"
-        className={`fixed top-0 left-0 z-40 flex h-screen w-72 flex-col border-r border-white/10 bg-slate-950 text-slate-200 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-40 flex h-screen w-72 flex-col border-r border-white/10 bg-slate-950 text-slate-200 transition-all duration-300 ease-in-out ${
           isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
-          <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">SIDUKTAG</h2>
+          <Link href="/" className="group block" title="Lihat Landing Page">
+            <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition">SIDUKTAG</h2>
             <p className="mt-1 text-xs font-medium text-emerald-400">Portal Warga / Masyarakat</p>
-          </div>
+          </Link>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-1.5 text-slate-400 hover:bg-white/10 hover:text-white lg:hidden"
+            className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white transition active:scale-95"
+            title="Tutup / Sembunyikan Menu Navigasi"
             aria-label="Tutup menu"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -112,7 +128,8 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={onClose}
+                prefetch={true}
+                onClick={handleNavClick}
                 className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm transition-all duration-200 ${
                   active ? activeClass : inactiveClass
                 }`}
@@ -124,18 +141,30 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
           })}
         </nav>
 
-        {/* Logout */}
-        <div className="border-t border-white/10 p-4">
+        {/* Landing Page & Logout */}
+        <div className="border-t border-white/10 p-4 space-y-1">
+          <Link
+            href="/"
+            prefetch={true}
+            onClick={handleNavClick}
+            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3" />
+            </svg>
+            <span>Landing Page</span>
+          </Link>
+
           <button
             type="button"
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0 3-3m-3 3 3 3" />
             </svg>
-            <span>Keluar (Logout)</span>
+            <span>Logout</span>
           </button>
         </div>
       </aside>
