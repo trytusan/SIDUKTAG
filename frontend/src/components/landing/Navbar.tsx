@@ -1,8 +1,10 @@
 import React from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { useAuth } from '../../context/AuthContext'
 
 export default function Navbar() {
+  const router = useRouter()
   const { user, role, isProfileCompleted } = useAuth()
 
   const dashboardHref =
@@ -12,8 +14,11 @@ export default function Navbar() {
       ? '/user/dashboard'
       : '/user/onboarding/step-1'
 
+  const isBerita = router.pathname.startsWith('/berita')
+  const isBeranda = !isBerita
+
   return (
-    <header className="border-b border-white/10 px-6 py-5">
+    <header className="sticky top-0 z-40 border-b border-white/10 px-6 py-5 bg-slate-950/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <Link href="/" className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500 text-slate-950 font-bold">
@@ -26,10 +31,20 @@ export default function Navbar() {
         </Link>
 
         <nav className="hidden sm:flex items-center gap-6">
-          <Link href="/" className="text-sm font-semibold text-emerald-400">
+          <Link
+            href="/"
+            className={`text-sm font-semibold transition ${
+              isBeranda ? 'text-emerald-400' : 'text-slate-300 hover:text-white'
+            }`}
+          >
             Beranda
           </Link>
-          <Link href="/berita" className="text-sm font-semibold text-slate-300 hover:text-white transition">
+          <Link
+            href="/berita"
+            className={`text-sm font-semibold transition ${
+              isBerita ? 'text-emerald-400' : 'text-slate-300 hover:text-white'
+            }`}
+          >
             Berita & Informasi
           </Link>
         </nav>

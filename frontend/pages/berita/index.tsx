@@ -3,6 +3,7 @@ import Head from 'next/head'
 import Link from 'next/link'
 import api, { getBeritaImageUrl, DEFAULT_BERITA_FALLBACK } from '../../src/lib/api'
 import { Berita } from '../../src/types'
+import Navbar from '../../src/components/landing/Navbar'
 
 const KATEGORI_OPTIONS = [
   'Semua',
@@ -60,43 +61,7 @@ export default function PublicBeritaIndex() {
       </Head>
 
       {/* Header / Navbar */}
-      <header className="border-b border-white/10 px-6 py-5 sticky top-0 z-40 bg-slate-950/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500 text-slate-950 font-bold">
-              S
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight text-white">SIDUKTAG</span>
-              <p className="text-[10px] uppercase font-semibold tracking-wider text-emerald-400">Sistem Terintegrasi</p>
-            </div>
-          </Link>
-
-          <nav className="hidden sm:flex items-center gap-6">
-            <Link href="/" className="text-sm font-semibold text-slate-300 hover:text-white transition">
-              Beranda
-            </Link>
-            <Link href="/berita" className="text-sm font-semibold text-emerald-400">
-              Berita & Informasi
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="rounded-2xl border border-white/20 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/10"
-            >
-              Masuk
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-2xl bg-emerald-500 px-4 py-2 text-sm font-bold text-slate-950 shadow-md transition hover:bg-emerald-400"
-            >
-              Daftar Warga
-            </Link>
-          </div>
-        </div>
-      </header>
+      <Navbar />
 
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 py-12">
