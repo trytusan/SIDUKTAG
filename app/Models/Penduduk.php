@@ -31,6 +31,13 @@ class Penduduk extends Model
         'kategori_umur',
         'status_dalam_keluarga',
         'status_kependudukan',
+        'tanggal_meninggal',
+        'tempat_meninggal',
+        'akta_kematian',
+        'tanggal_pindah',
+        'alamat_tujuan',
+        'daerah_asal',
+        'tujuan_menetap',
         'nomor_telepon',
         'alamat_lengkap',
         'foto_profil',
@@ -42,6 +49,8 @@ class Penduduk extends Model
 
     protected $casts = [
         'tanggal_lahir' => 'date',
+        'tanggal_meninggal' => 'date',
+        'tanggal_pindah' => 'date',
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
         'is_profile_completed' => 'boolean',

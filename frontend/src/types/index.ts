@@ -28,6 +28,14 @@ export interface Penduduk {
   kategori_umur?: string | null
   status_dalam_keluarga?: string | null
   status_kependudukan?: 'Tetap' | 'Pendatang' | 'Pindah' | 'Meninggal' | string | null
+  // Kolom Kondisional Status Kependudukan
+  tanggal_meninggal?: string | null
+  tempat_meninggal?: string | null
+  akta_kematian?: string | null
+  tanggal_pindah?: string | null
+  alamat_tujuan?: string | null
+  daerah_asal?: string | null
+  tujuan_menetap?: string | null
   nomor_telepon?: string | null
   alamat_lengkap?: string | null
   foto_profil?: string | null

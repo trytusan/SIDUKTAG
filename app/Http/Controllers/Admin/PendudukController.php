@@ -39,73 +39,81 @@ class PendudukController extends Controller
      */
     public function store(Request $request)
     {
-        // 1. Validasi (Hapus 'exists:kartu_keluarga,nomor_kk')
-        $validated = $request->validate([
-            'nama_lengkap' => ['required', 'string', 'max:255'],
-            'nik' => ['required', 'digits:16', 'unique:penduduk,nik'],
-            'nomor_kk' => ['required', 'digits:16'], // Hapus 'exists' agar nomor baru bisa masuk
-            'tanggal_lahir' => ['nullable', 'date'],
-            // ... (validasi lainnya tetap sama)
-            'latitude' => ['nullable', 'string'],
-            'longitude' => ['nullable', 'string'],
-        ]);
+        // 1. Validasi Terpusat
+        $validated = $this->validatePenduduk($request);
 
         // 2. Logika Auto-Create Kartu Keluarga
-        // Cek apakah KK sudah ada, jika belum maka buat baru
-        // Logika Auto-Create Kartu Keluarga
         $kk = KartuKeluarga::firstOrCreate(
             ['nomor_kk' => $request->nomor_kk],
             [
                 'nama_kepala_keluarga' => ($request->status_dalam_keluarga == 'Kepala Keluarga')
                     ? $request->nama_lengkap
                     : 'Belum Diatur',
-
-                // SESUAIKAN DI SINI: Dari 'alamat' menjadi 'alamat_keluarga'
                 'alamat_keluarga' => $request->alamat_lengkap ?? '-',
-
                 'latitude' => $request->latitude,
                 'longitude' => $request->longitude,
                 'jumlah_anggota' => 0,
             ]
         );
 
-        // 3. Handle Files (Foto & Dokumen)
+        // 3. Handle Files (Foto, Dokumen, & Akta Kematian)
         if ($request->hasFile('foto_profil')) {
             $file = $request->file('foto_profil');
-
-            // Ambil nama asli file
-            $originalName = $file->getClientOriginalName();
-
-            // Opsional: Tambahkan NIK agar file tidak tertimpa jika ada nama file yang sama
-            $fileName = $request->nik . '_FOTO_' . $originalName;
-
-            // Simpan file dengan nama tersebut
+            $fileName = $request->nik . '_FOTO_' . time() . '.' . $file->getClientOriginalExtension();
             $validated['foto_profil'] = $file->storeAs('foto-profil', $fileName, 'public');
         }
 
-        // --- Bagian Handle Dokumen Pendukung ---
         if ($request->hasFile('dokumen')) {
             $file = $request->file('dokumen');
-
-            // Ambil nama asli file
-            $originalName = $file->getClientOriginalName();
-
-            // Opsional: Tambahkan NIK agar unik
-            $fileName = $request->nik . '_DOK_' . $originalName;
-
+            $fileName = $request->nik . '_DOK_' . time() . '.' . $file->getClientOriginalExtension();
             $validated['dokumen_pendukung'] = $file->storeAs('dokumen-penduduk', $fileName, 'public');
         }
 
-        // 4. Set Kategori Umur & Status
+        if ($request->hasFile('akta_kematian')) {
+            $file = $request->file('akta_kematian');
+            $fileName = $request->nik . '_AKTA_MENINGGAL_' . time() . '.' . $file->getClientOriginalExtension();
+            $validated['akta_kematian'] = $file->storeAs('akta-kematian', $fileName, 'public');
+        }
+
+        // 4. Bersihkan data yang tidak sesuai status kependudukan
+        $status = $validated['status_kependudukan'] ?? 'Tetap';
+        if ($status === 'Tetap') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+            $validated['daerah_asal'] = null;
+            $validated['tujuan_menetap'] = null;
+        } elseif ($status === 'Meninggal') {
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+            $validated['daerah_asal'] = null;
+            $validated['tujuan_menetap'] = null;
+        } elseif ($status === 'Pindah') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['daerah_asal'] = null;
+            $validated['tujuan_menetap'] = null;
+        } elseif ($status === 'Pendatang') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+        }
+
+        // 5. Set Kategori Umur & Status
         if ($request->filled('tanggal_lahir')) {
             $validated['kategori_umur'] = $this->hitungKategoriUmur($request->tanggal_lahir);
         }
         $validated['is_profile_completed'] = true;
 
-        // 5. Simpan Penduduk
+        // 6. Simpan Penduduk
         $penduduk = Penduduk::create($validated);
 
-        // 6. Sinkronisasi Jumlah Anggota
+        // 7. Sinkronisasi Jumlah Anggota
         $this->sinkronkanJumlahAnggota($request->nomor_kk);
 
         if ($request->wantsJson() || $request->is('api/*')) {
@@ -128,28 +136,68 @@ class PendudukController extends Controller
 
         $validated = $this->validatePenduduk($request, $penduduk->id);
 
-        // 2. Update Foto Profil (Jika ada file baru)
+        // 2. Update Foto Profil
         if ($request->hasFile('foto_profil')) {
-            // Hapus foto lama jika ada
             if ($penduduk->foto_profil) {
                 Storage::disk('public')->delete($penduduk->foto_profil);
             }
-
             $file = $request->file('foto_profil');
-            $fileName = $request->nik . '_FOTO_' . $file->getClientOriginalName();
+            $fileName = $request->nik . '_FOTO_' . time() . '.' . $file->getClientOriginalExtension();
             $validated['foto_profil'] = $file->storeAs('foto-profil', $fileName, 'public');
         }
 
-        // 3. Update Dokumen Pendukung (Jika ada file baru)
+        // 3. Update Dokumen Pendukung
         if ($request->hasFile('dokumen')) {
-            // Hapus dokumen lama jika ada
             if ($penduduk->dokumen_pendukung) {
                 Storage::disk('public')->delete($penduduk->dokumen_pendukung);
             }
-
             $file = $request->file('dokumen');
-            $fileName = $request->nik . '_DOK_' . $file->getClientOriginalName();
+            $fileName = $request->nik . '_DOK_' . time() . '.' . $file->getClientOriginalExtension();
             $validated['dokumen_pendukung'] = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+        }
+
+        // 4. Update Akta Kematian
+        if ($request->hasFile('akta_kematian')) {
+            if ($penduduk->akta_kematian) {
+                Storage::disk('public')->delete($penduduk->akta_kematian);
+            }
+            $file = $request->file('akta_kematian');
+            $fileName = $request->nik . '_AKTA_MENINGGAL_' . time() . '.' . $file->getClientOriginalExtension();
+            $validated['akta_kematian'] = $file->storeAs('akta-kematian', $fileName, 'public');
+        }
+
+        // 5. Bersihkan data yang tidak sesuai status kependudukan
+        $status = $validated['status_kependudukan'] ?? 'Tetap';
+        if ($status !== 'Meninggal' && $penduduk->akta_kematian) {
+            Storage::disk('public')->delete($penduduk->akta_kematian);
+            $validated['akta_kematian'] = null;
+        }
+
+        if ($status === 'Tetap') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+            $validated['daerah_asal'] = null;
+            $validated['tujuan_menetap'] = null;
+        } elseif ($status === 'Meninggal') {
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+            $validated['daerah_asal'] = null;
+            $validated['tujuan_menetap'] = null;
+        } elseif ($status === 'Pindah') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['daerah_asal'] = null;
+            $validated['tujuan_menetap'] = null;
+        } elseif ($status === 'Pendatang') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
         }
 
         // Update Kategori Umur
@@ -181,7 +229,7 @@ class PendudukController extends Controller
         return $request->validate([
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'digits:16', 'unique:penduduk,nik,' . $id],
-            'nomor_kk' => ['required', 'digits:16', 'exists:kartu_keluarga,nomor_kk'],
+            'nomor_kk' => ['required', 'digits:16'],
             'tempat_lahir' => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['nullable', 'date'],
             'jenis_kelamin' => ['nullable', 'in:Laki-laki,Perempuan'],
@@ -192,13 +240,41 @@ class PendudukController extends Controller
             'nomor_telepon' => ['nullable', 'string', 'max:20'],
             'alamat_lengkap' => ['nullable', 'string'],
             'status_dalam_keluarga' => ['nullable', 'string', 'max:50'],
-            'status_kependudukan' => ['nullable', 'string', 'max:50'],
+            'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pindah,Meninggal'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'dokumen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+
+            // Kolom Kondisional Status Kependudukan
+            'tanggal_meninggal' => ['required_if:status_kependudukan,Meninggal', 'nullable', 'date'],
+            'tempat_meninggal' => ['required_if:status_kependudukan,Meninggal', 'nullable', 'string', 'max:255'],
+            'akta_kematian' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+
+            'tanggal_pindah' => ['required_if:status_kependudukan,Pindah', 'nullable', 'date'],
+            'alamat_tujuan' => ['required_if:status_kependudukan,Pindah', 'nullable', 'string'],
+
+            'daerah_asal' => ['required_if:status_kependudukan,Pendatang', 'nullable', 'string', 'max:255'],
+            'tujuan_menetap' => ['required_if:status_kependudukan,Pendatang', 'nullable', 'string', 'max:255'],
 
             // GEOTAGGING FIELDS
             'latitude' => ['nullable', 'string', 'max:50'],
             'longitude' => ['nullable', 'string', 'max:50'],
+        ], [
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.digits' => 'NIK harus berjumlah 16 digit.',
+            'nik.unique' => 'NIK sudah terdaftar di sistem.',
+            'nomor_kk.required' => 'Nomor KK wajib diisi.',
+            'nomor_kk.digits' => 'Nomor KK harus berjumlah 16 digit.',
+            'status_kependudukan.required' => 'Status kependudukan wajib dipilih.',
+            'status_kependudukan.in' => 'Status kependudukan tidak valid.',
+            'tanggal_meninggal.required_if' => 'Tanggal meninggal wajib diisi untuk status Meninggal.',
+            'tempat_meninggal.required_if' => 'Keterangan/tempat meninggal wajib diisi untuk status Meninggal.',
+            'akta_kematian.mimes' => 'Bukti akta meninggal harus berformat JPG, JPEG, PNG, atau PDF.',
+            'akta_kematian.max' => 'Ukuran berkas akta meninggal maksimal 4 MB.',
+            'tanggal_pindah.required_if' => 'Tanggal pindah wajib diisi untuk status Pindah.',
+            'alamat_tujuan.required_if' => 'Alamat tujuan wajib diisi untuk status Pindah.',
+            'daerah_asal.required_if' => 'Daerah asal wajib diisi untuk status Pendatang.',
+            'tujuan_menetap.required_if' => 'Tujuan menetap wajib diisi untuk status Pendatang.',
         ]);
     }
 

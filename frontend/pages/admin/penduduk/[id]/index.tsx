@@ -53,6 +53,7 @@ export default function AdminPendudukDetail() {
 
   const fotoUrl = penduduk.foto_profil ? getStorageUrl(penduduk.foto_profil) : null
   const dokumenUrl = penduduk.dokumen_pendukung ? getStorageUrl(penduduk.dokumen_pendukung) : null
+  const aktaKematianUrl = penduduk.akta_kematian ? getStorageUrl(penduduk.akta_kematian) : null
   const pdfBiodataUrl = `${apiUrl}/admin/penduduk/export/pdf?id=${penduduk.id}`
 
   return (
@@ -136,9 +137,7 @@ export default function AdminPendudukDetail() {
               <p className="text-xs font-medium text-slate-500 mt-0.5">NIK: {penduduk.nik}</p>
 
               <div className="mt-4 flex flex-wrap justify-center gap-2">
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
-                  {penduduk.status_kependudukan || 'Tetap'}
-                </span>
+                <StatusBadge>{penduduk.status_kependudukan || 'Tetap'}</StatusBadge>
                 <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 border border-sky-200">
                   {penduduk.kategori_umur || 'Umur'}
                 </span>
@@ -181,6 +180,27 @@ export default function AdminPendudukDetail() {
               )}
             </div>
 
+            {penduduk.status_kependudukan === 'Meninggal' && (
+              <div className="pt-2 border-t border-slate-100">
+                <span className="text-xs text-slate-500 block mb-1.5 font-medium">Bukti Akta Kematian</span>
+                {aktaKematianUrl ? (
+                  <a
+                    href={aktaKematianUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 w-full justify-center transition"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span>Lihat Akta Kematian &rarr;</span>
+                  </a>
+                ) : (
+                  <p className="text-xs text-slate-400 italic">Belum ada akta kematian yang diunggah</p>
+                )}
+              </div>
+            )}
+
             <div className="pt-2 border-t border-slate-100">
               <a
                 href={pdfBiodataUrl}
@@ -199,6 +219,85 @@ export default function AdminPendudukDetail() {
 
         {/* Right Column (2/3) */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Card Status Kependudukan Khusus: Meninggal */}
+          {penduduk.status_kependudukan === 'Meninggal' && (
+            <div className="overflow-hidden rounded-3xl border border-rose-200 bg-rose-50/30 shadow-sm">
+              <div className="border-b border-rose-100 bg-rose-100/50 px-7 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
+                  <svg className="h-5 w-5 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Catatan Status Kependudukan: Meninggal</span>
+                </div>
+                <StatusBadge variant="danger">Meninggal</StatusBadge>
+              </div>
+              <div className="p-7 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-rose-500">Tanggal Meninggal</p>
+                  <p className="mt-1 font-semibold text-slate-800">
+                    {penduduk.tanggal_meninggal ? penduduk.tanggal_meninggal.substring(0, 10) : '-'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-rose-500">Keterangan / Tempat Meninggal</p>
+                  <p className="mt-1 font-semibold text-slate-800">{penduduk.tempat_meninggal || '-'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Card Status Kependudukan Khusus: Pindah */}
+          {penduduk.status_kependudukan === 'Pindah' && (
+            <div className="overflow-hidden rounded-3xl border border-sky-200 bg-sky-50/30 shadow-sm">
+              <div className="border-b border-sky-100 bg-sky-100/50 px-7 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-sky-800 font-bold text-sm">
+                  <svg className="h-5 w-5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <span>Catatan Status Kependudukan: Pindah</span>
+                </div>
+                <StatusBadge variant="danger">Pindah</StatusBadge>
+              </div>
+              <div className="p-7 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-sky-500">Tanggal Pindah</p>
+                  <p className="mt-1 font-semibold text-slate-800">
+                    {penduduk.tanggal_pindah ? penduduk.tanggal_pindah.substring(0, 10) : '-'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-sky-500">Alamat Tujuan Pindah</p>
+                  <p className="mt-1 font-semibold text-slate-800">{penduduk.alamat_tujuan || '-'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Card Status Kependudukan Khusus: Pendatang */}
+          {penduduk.status_kependudukan === 'Pendatang' && (
+            <div className="overflow-hidden rounded-3xl border border-emerald-200 bg-emerald-50/30 shadow-sm">
+              <div className="border-b border-emerald-100 bg-emerald-100/50 px-7 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                  <svg className="h-5 w-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Catatan Status Kependudukan: Pendatang</span>
+                </div>
+                <StatusBadge variant="warning">Pendatang</StatusBadge>
+              </div>
+              <div className="p-7 grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-600">Daerah Asal</p>
+                  <p className="mt-1 font-semibold text-slate-800">{penduduk.daerah_asal || '-'}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-emerald-600">Tujuan Menetap</p>
+                  <p className="mt-1 font-semibold text-slate-800">{penduduk.tujuan_menetap || '-'}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Data Identitas */}
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-100 px-7 py-5">

@@ -39,6 +39,12 @@ export default function AdminPendudukCreate() {
     pendidikan_terakhir: 'SMA / Sederajat',
     status_dalam_keluarga: 'Kepala Keluarga',
     status_kependudukan: 'Tetap',
+    tanggal_meninggal: '',
+    tempat_meninggal: '',
+    tanggal_pindah: '',
+    alamat_tujuan: '',
+    daerah_asal: '',
+    tujuan_menetap: '',
     nomor_telepon: '',
     alamat_lengkap: '',
   })
@@ -48,6 +54,7 @@ export default function AdminPendudukCreate() {
   })
   const [fotoProfil, setFotoProfil] = useState<File | null>(null)
   const [dokumen, setDokumen] = useState<File | null>(null)
+  const [aktaKematian, setAktaKematian] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
@@ -72,6 +79,9 @@ export default function AdminPendudukCreate() {
       payload.append('longitude', coords.longitude)
       if (fotoProfil) payload.append('foto_profil', fotoProfil)
       if (dokumen) payload.append('dokumen', dokumen)
+      if (formData.status_kependudukan === 'Meninggal' && aktaKematian) {
+        payload.append('akta_kematian', aktaKematian)
+      }
 
       await api.post('/admin/penduduk', payload, {
         headers: { 'Content-Type': 'multipart/form-data' },
@@ -206,6 +216,126 @@ export default function AdminPendudukCreate() {
                 options={['Tetap', 'Pendatang', 'Pindah', 'Meninggal']}
               />
             </div>
+
+            {/* Form Dinamis: Meninggal */}
+            {formData.status_kependudukan === 'Meninggal' && (
+              <div className="rounded-2xl border border-rose-200 bg-rose-50/40 p-5 space-y-4 transition-all">
+                <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
+                  <svg className="h-5 w-5 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Informasi Kematian (Status: Meninggal)</span>
+                </div>
+                <p className="text-xs text-rose-600/90">
+                  Wajib mengisi tanggal dan tempat/keterangan meninggal. Bukti akta kematian bersifat opsional dan dapat disusulkan.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormInput
+                    label="Tanggal Meninggal *"
+                    type="date"
+                    name="tanggal_meninggal"
+                    value={formData.tanggal_meninggal}
+                    onChange={handleChange}
+                    required
+                    error={validationErrors.tanggal_meninggal?.[0]}
+                  />
+                  <FormInput
+                    label="Keterangan / Tempat Meninggal *"
+                    name="tempat_meninggal"
+                    value={formData.tempat_meninggal}
+                    onChange={handleChange}
+                    placeholder="Contoh: RSUD Sambas / Sakit Tua / Rumah Duka"
+                    required
+                    error={validationErrors.tempat_meninggal?.[0]}
+                  />
+                </div>
+                <div>
+                  <FormFile
+                    label="Bukti Akta Meninggal (Opsional / Dapat Menyusul)"
+                    name="akta_kematian"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        setAktaKematian(e.target.files[0])
+                      }
+                    }}
+                    helperText="Format berkas yang didukung: PDF, JPG, JPEG, atau PNG (Maks. 4 MB)"
+                    error={validationErrors.akta_kematian?.[0]}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Form Dinamis: Pindah */}
+            {formData.status_kependudukan === 'Pindah' && (
+              <div className="rounded-2xl border border-sky-200 bg-sky-50/40 p-5 space-y-4 transition-all">
+                <div className="flex items-center gap-2 text-sky-800 font-bold text-sm">
+                  <svg className="h-5 w-5 text-sky-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                  </svg>
+                  <span>Informasi Kepindahan (Status: Pindah)</span>
+                </div>
+                <p className="text-xs text-sky-600/90">
+                  Wajib mengisi tanggal pindah dan alamat lengkap tujuan kepindahan.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormInput
+                    label="Tanggal Pindah *"
+                    type="date"
+                    name="tanggal_pindah"
+                    value={formData.tanggal_pindah}
+                    onChange={handleChange}
+                    required
+                    error={validationErrors.tanggal_pindah?.[0]}
+                  />
+                  <FormTextarea
+                    label="Alamat Tujuan *"
+                    name="alamat_tujuan"
+                    value={formData.alamat_tujuan}
+                    onChange={handleChange}
+                    placeholder="Contoh: Jl. Gajah Mada No. 10, Pontianak Barat, Kota Pontianak"
+                    rows={2}
+                    required
+                    error={validationErrors.alamat_tujuan?.[0]}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Form Dinamis: Pendatang */}
+            {formData.status_kependudukan === 'Pendatang' && (
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 space-y-4 transition-all">
+                <div className="flex items-center gap-2 text-emerald-800 font-bold text-sm">
+                  <svg className="h-5 w-5 text-emerald-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                  </svg>
+                  <span>Informasi Warga Pendatang (Status: Pendatang)</span>
+                </div>
+                <p className="text-xs text-emerald-600/90">
+                  Wajib mengisi asal daerah dan alasan/tujuan menetap di wilayah ini.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormInput
+                    label="Daerah Asal *"
+                    name="daerah_asal"
+                    value={formData.daerah_asal}
+                    onChange={handleChange}
+                    placeholder="Contoh: Kab. Singkawang, Kalimantan Barat"
+                    required
+                    error={validationErrors.daerah_asal?.[0]}
+                  />
+                  <FormInput
+                    label="Tujuan Menetap *"
+                    name="tujuan_menetap"
+                    value={formData.tujuan_menetap}
+                    onChange={handleChange}
+                    placeholder="Contoh: Bekerja di Perkebunan / Menikah / Mengikuti Keluarga"
+                    required
+                    error={validationErrors.tujuan_menetap?.[0]}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormInput
