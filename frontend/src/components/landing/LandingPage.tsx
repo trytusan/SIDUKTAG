@@ -11,7 +11,7 @@ export default function LandingPage() {
   const { user, role } = useAuth()
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
         <title>SIDUKTAG — Sistem Informasi Kependudukan & Geotagging</title>
         <meta
@@ -32,4 +32,3 @@ export default function LandingPage() {
     </div>
   )
 }
-

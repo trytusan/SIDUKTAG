@@ -70,6 +70,8 @@ Route::get('/api/berita/{idOrSlug}', function ($idOrSlug) {
     ]);
 });
 
+Route::get('/api/peta', [\App\Http\Controllers\User\PetaController::class, 'index']);
+
 Route::middleware('auth')->group(function () {
     Route::get('/api/user', function (\Illuminate\Http\Request $request) {
         $user = $request->user()->load(['penduduk.kartuKeluarga']);

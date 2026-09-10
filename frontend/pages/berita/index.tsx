@@ -51,7 +51,7 @@ export default function PublicBeritaIndex() {
   }, [search, selectedKategori])
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between">
+    <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
         <title>Berita & Informasi Desa — SIDUKTAG</title>
         <meta
@@ -66,38 +66,36 @@ export default function PublicBeritaIndex() {
       {/* Main Content */}
       <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col px-6 py-12">
         {/* Breadcrumb */}
-        <nav className="flex mb-6 text-xs text-slate-400 font-medium" aria-label="Breadcrumb">
+        <nav className="flex mb-6 text-xs text-slate-500 font-medium" aria-label="Breadcrumb">
           <ol className="flex items-center space-x-2">
             <li>
-              <Link href="/" className="hover:text-emerald-400 transition">
+              <Link href="/" className="hover:text-emerald-700 transition">
                 Beranda
               </Link>
             </li>
             <li>
-              <svg className="h-3.5 w-3.5 text-slate-600" fill="currentColor" viewBox="0 0 20 20">
+              <svg className="h-3.5 w-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
               </svg>
             </li>
-            <li className="text-white font-semibold">Semua Berita & Informasi</li>
+            <li className="text-slate-900 font-semibold">Semua Berita & Informasi</li>
           </ol>
         </nav>
 
         {/* Hero Banner Section */}
-        <div className="mb-10 rounded-3xl border border-white/10 bg-gradient-to-r from-emerald-950/40 via-slate-900 to-sky-950/40 p-8 sm:p-12 relative overflow-hidden">
+        <div className="mb-10 rounded-3xl border border-slate-200 bg-white p-8 sm:p-12 relative overflow-hidden shadow-xs">
           <div className="relative z-10 max-w-2xl">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-400 mb-4">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1 text-xs font-bold text-emerald-800 mb-4 shadow-xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
               Pusat Informasi & Pengumuman Warga
             </span>
-            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
               Kabar & Pengumuman Desa
             </h1>
-            <p className="mt-3 text-sm sm:text-base text-slate-300 leading-relaxed">
+            <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
               Dapatkan update informasi resmi seputar kegiatan kemasyarakatan, agenda pemerintahan, layanan kependudukan, dan transparansi bantuan sosial.
             </p>
           </div>
-
-          <div className="absolute -right-16 -bottom-16 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         </div>
 
         {/* Search and Category Filter Bar */}
@@ -114,21 +112,21 @@ export default function PublicBeritaIndex() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Cari judul atau topik berita..."
-                className="w-full rounded-2xl border border-white/15 bg-white/5 pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 backdrop-blur-sm"
+                className="w-full rounded-2xl border border-slate-300 bg-white pl-11 pr-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 shadow-xs"
               />
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch('')}
-                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-bold text-slate-400 hover:text-white"
+                  className="absolute inset-y-0 right-0 flex items-center pr-4 text-xs font-bold text-slate-400 hover:text-slate-700"
                 >
                   Clear
                 </button>
               )}
             </div>
 
-            <div className="text-xs text-slate-400 font-medium">
-              Menampilkan <span className="font-bold text-white">{beritaList.length}</span> artikel berita
+            <div className="text-xs text-slate-500 font-medium">
+              Menampilkan <span className="font-bold text-slate-900">{beritaList.length}</span> artikel berita
             </div>
           </div>
 
@@ -141,8 +139,8 @@ export default function PublicBeritaIndex() {
                 onClick={() => setSelectedKategori(kat)}
                 className={`rounded-2xl px-4 py-2 text-xs font-semibold transition duration-150 ${
                   selectedKategori === kat
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-md shadow-emerald-500/20'
-                    : 'bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white'
+                    ? 'bg-emerald-600 text-white font-bold shadow-sm'
+                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
                 {kat}
@@ -155,18 +153,18 @@ export default function PublicBeritaIndex() {
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-80 rounded-3xl bg-white/5 border border-white/10 animate-pulse" />
+              <div key={i} className="h-80 rounded-3xl bg-slate-100 border border-slate-200 animate-pulse" />
             ))}
           </div>
         ) : beritaList.length === 0 ? (
-          <div className="rounded-3xl border border-white/10 bg-white/5 p-16 text-center backdrop-blur-sm">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white/10 text-slate-400">
+          <div className="rounded-3xl border border-slate-200 bg-white p-16 text-center shadow-xs">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.625 2.625 0 003 4.875v14.25a2.625 2.625 0 002.625 2.625h12.75A2.625 2.625 0 0021 19.125v-1.5a3.375 3.375 0 00-1.5-2.812Z" />
               </svg>
             </div>
-            <h3 className="text-lg font-bold text-white">Tidak Ada Berita Ditemukan</h3>
-            <p className="mt-1 text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+            <h3 className="text-lg font-bold text-slate-900">Tidak Ada Berita Ditemukan</h3>
+            <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
               {search || selectedKategori !== 'Semua'
                 ? 'Tidak ada artikel yang sesuai dengan kriteria pencarian atau kategori yang dipilih.'
                 : 'Belum ada pengumuman yang dipublikasikan oleh administrator saat ini.'}
@@ -178,7 +176,7 @@ export default function PublicBeritaIndex() {
                   setSearch('')
                   setSelectedKategori('Semua')
                 }}
-                className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-white/10 px-5 py-2.5 text-xs font-bold text-white hover:bg-white/20 transition"
+                className="mt-6 inline-flex items-center gap-2 rounded-2xl bg-slate-100 px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-200 transition"
               >
                 Reset Filter
               </button>
@@ -190,10 +188,10 @@ export default function PublicBeritaIndex() {
               <Link
                 key={item.id}
                 href={`/berita/${item.slug || item.id}`}
-                className="group flex flex-col justify-between rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/[0.08] hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-emerald-500/10"
+                className="group flex flex-col justify-between rounded-3xl border border-slate-200 bg-white p-5 shadow-xs transition-all duration-300 hover:border-emerald-300 hover:shadow-md hover:-translate-y-1.5"
               >
                 <div>
-                  <div className="h-48 w-full rounded-2xl overflow-hidden bg-slate-900 mb-4 border border-white/10 relative">
+                  <div className="h-48 w-full rounded-2xl overflow-hidden bg-slate-100 mb-4 border border-slate-100 relative">
                     <img
                       src={getBeritaImageUrl(item.gambar, item.kategori)}
                       alt={item.judul}
@@ -206,7 +204,7 @@ export default function PublicBeritaIndex() {
                         }
                       }}
                     />
-                    <span className="absolute top-3 left-3 rounded-full bg-slate-950/80 backdrop-blur-md px-3 py-1 text-[10px] font-bold text-emerald-400 border border-emerald-500/30 shadow-sm">
+                    <span className="absolute top-3 left-3 rounded-full bg-white/95 backdrop-blur-md px-3 py-1 text-[10px] font-bold text-emerald-800 border border-emerald-100 shadow-xs">
                       {item.kategori}
                     </span>
                   </div>
@@ -223,15 +221,15 @@ export default function PublicBeritaIndex() {
                     )}
                   </div>
 
-                  <h3 className="font-bold text-base text-white group-hover:text-emerald-400 transition line-clamp-2 leading-snug">
+                  <h3 className="font-bold text-base text-slate-900 group-hover:text-emerald-700 transition line-clamp-2 leading-snug">
                     {item.judul}
                   </h3>
-                  <p className="mt-2.5 text-xs text-slate-300 line-clamp-3 leading-relaxed">
+                  <p className="mt-2.5 text-xs text-slate-600 line-clamp-3 leading-relaxed">
                     {item.ringkasan}
                   </p>
                 </div>
 
-                <div className="mt-5 pt-3.5 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-emerald-400">
+                <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center justify-between text-xs font-bold text-emerald-700 group-hover:text-emerald-800">
                   <span>Baca Selengkapnya</span>
                   <span className="transition-transform duration-200 group-hover:translate-x-1">&rarr;</span>
                 </div>
@@ -242,10 +240,9 @@ export default function PublicBeritaIndex() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-6 text-center text-xs text-slate-500">
+      <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 font-medium">
         &copy; {new Date().getFullYear()} SIDUKTAG. Sistem Informasi Kependudukan & Geotagging.
       </footer>
     </div>
   )
 }
-
