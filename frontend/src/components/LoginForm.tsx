@@ -55,13 +55,13 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <div className="rounded-2xl border border-red-400/30 bg-red-500/20 p-4 text-xs font-medium text-red-200">
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="email" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+        <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700">
           Email
         </label>
         <div className="relative">
@@ -78,13 +78,13 @@ export default function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="nama@email.com"
             required
-            className="w-full rounded-2xl border border-white/10 bg-white/10 py-3 pl-12 pr-4 text-sm text-white placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 py-3 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
       </div>
 
       <div>
-        <label htmlFor="password" className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+        <label htmlFor="password" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700">
           Password
         </label>
         <div className="relative">
@@ -101,24 +101,24 @@ export default function LoginForm() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
             required
-            className="w-full rounded-2xl border border-white/10 bg-white/10 py-3 pl-12 pr-4 text-sm text-white placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20"
+            className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 py-3 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>
       </div>
 
       <div className="flex items-center justify-between text-xs">
-        <label className="flex items-center gap-2 text-slate-300 cursor-pointer select-none">
+        <label className="flex items-center gap-2 text-slate-600 cursor-pointer select-none">
           <input
             type="checkbox"
             name="remember"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-white/20 bg-white/10 text-emerald-400 focus:ring-emerald-400/40"
+            className="h-4 w-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
           />
           <span>Ingat saya</span>
         </label>
 
-        <Link href="/forgot-password" className="text-emerald-400 transition hover:text-emerald-300">
+        <Link href="/forgot-password" className="text-emerald-700 font-medium transition hover:text-emerald-800">
           Lupa password?
         </Link>
       </div>
@@ -126,11 +126,11 @@ export default function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full rounded-2xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/40 transition duration-200 hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50"
+        className="w-full rounded-2xl bg-emerald-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm shadow-emerald-600/20 transition duration-200 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50"
       >
         {loading ? (
           <div className="flex items-center justify-center gap-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-950 border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
             <span>Memproses...</span>
           </div>
         ) : (
@@ -138,9 +138,9 @@ export default function LoginForm() {
         )}
       </button>
 
-      <p className="pt-2 text-center text-xs text-slate-300">
+      <p className="pt-2 text-center text-xs text-slate-500">
         Belum punya akun warga?{' '}
-        <Link href="/register" className="font-semibold text-emerald-400 hover:text-emerald-300">
+        <Link href="/register" className="font-bold text-emerald-700 hover:text-emerald-800">
           Daftar Sekarang
         </Link>
       </p>

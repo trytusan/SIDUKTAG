@@ -25,8 +25,8 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
     }
   }
 
-  const activeClass = 'bg-emerald-500/15 text-emerald-300 font-semibold'
-  const inactiveClass = 'text-slate-300 hover:bg-white/5 hover:text-white'
+  const activeClass = 'bg-emerald-50 text-emerald-800 font-bold border-l-4 border-emerald-600 shadow-xs'
+  const inactiveClass = 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 font-medium'
 
   const navItems = [
     {
@@ -90,28 +90,32 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-30 bg-slate-900/40 backdrop-blur-sm lg:hidden transition-opacity"
           onClick={onClose}
         />
       )}
 
       <aside
         id="sidebar"
-        className={`fixed top-0 left-0 z-40 flex h-screen w-72 flex-col border-r border-white/10 bg-slate-950 text-slate-200 transition-all duration-300 ease-in-out ${
-          isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+        className={`fixed top-0 left-0 z-40 flex h-screen w-72 flex-col border-r border-slate-200 bg-white text-slate-700 transition-all duration-300 ease-in-out ${
+          isOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'
         }`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 px-6 py-6">
+        <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
           <Link href="/" className="group block" title="Lihat Landing Page">
-            <h2 className="text-2xl font-bold tracking-tight text-white group-hover:text-emerald-400 transition">SIDUKTAG</h2>
-            <p className="mt-1 text-xs font-medium text-emerald-400">Portal Warga / Masyarakat</p>
+            <h2 className="text-2xl font-black tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
+              SIDUKTAG
+            </h2>
+            <p className="mt-0.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700">
+              Portal Warga
+            </p>
           </Link>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-400 hover:bg-white/10 hover:text-white transition active:scale-95"
-            title="Tutup / Sembunyikan Menu Navigasi"
+            className="rounded-xl p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition active:scale-95 lg:hidden"
+            title="Tutup Menu Navigasi"
             aria-label="Tutup menu"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,7 +138,9 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
                   active ? activeClass : inactiveClass
                 }`}
               >
-                {item.icon}
+                <div className={active ? 'text-emerald-700' : 'text-slate-400'}>
+                  {item.icon}
+                </div>
                 <span>{item.label}</span>
               </Link>
             )
@@ -142,25 +148,25 @@ export default function SidebarUser({ isOpen = false, onClose }: SidebarUserProp
         </nav>
 
         {/* Landing Page & Logout */}
-        <div className="border-t border-white/10 p-4 space-y-1">
+        <div className="border-t border-slate-200 p-4 bg-slate-50/70 space-y-1.5">
           <Link
             href="/"
             prefetch={true}
             onClick={handleNavClick}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-emerald-400 transition hover:bg-emerald-500/10 hover:text-emerald-300"
+            className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-2xs transition hover:border-emerald-300 hover:text-emerald-700"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3" />
             </svg>
-            <span>Landing Page</span>
+            <span>Ke Landing Page</span>
           </Link>
 
           <button
             type="button"
             onClick={logout}
-            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-sm font-medium text-red-400 transition hover:bg-red-500/10 hover:text-red-300"
+            className="flex w-full items-center gap-3 rounded-2xl px-4 py-2.5 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 hover:text-rose-700"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6A2.25 2.25 0 0 0 5.25 5.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M18 12H9m0 0 3-3m-3 3 3 3" />
             </svg>

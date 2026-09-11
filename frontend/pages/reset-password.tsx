@@ -54,32 +54,32 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout title="Reset Password — SIDUKTAG">
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-2xl md:p-10">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Reset Password</h1>
-          <p className="mt-1 text-xs text-slate-300">Masukkan password baru Anda untuk mengamankan akun</p>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Reset Password</h1>
+          <p className="mt-1 text-xs text-slate-500 font-medium">Masukkan password baru Anda untuk mengamankan akun</p>
         </div>
 
         {status && (
-          <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/20 p-4 text-xs font-medium text-emerald-200">
+          <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800">
             {status}
           </div>
         )}
 
         {error && (
-          <div className="mb-4 rounded-2xl border border-red-400/30 bg-red-500/20 p-4 text-xs font-medium text-red-200">
+          <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-700">
               Email
             </label>
             <input
@@ -88,12 +88,12 @@ export default function ResetPasswordPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@email.com"
               required
-              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-700">
               Password Baru
             </label>
             <input
@@ -102,12 +102,12 @@ export default function ResetPasswordPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Minimal 8 karakter"
               required
-              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-700">
               Konfirmasi Password Baru
             </label>
             <input
@@ -116,20 +116,20 @@ export default function ResetPasswordPage() {
               onChange={(e) => setPasswordConfirmation(e.target.value)}
               placeholder="Ulangi password baru"
               required
-              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/40 transition duration-200 hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50"
+            className="w-full rounded-2xl bg-emerald-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm shadow-emerald-600/20 transition duration-200 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50"
           >
             {loading ? 'Menyimpan Password...' : 'Simpan Password Baru'}
           </button>
 
-          <p className="pt-2 text-center text-xs text-slate-300">
-            <Link href="/login" className="font-semibold text-emerald-400 hover:text-emerald-300">
+          <p className="pt-2 text-center text-xs text-slate-500">
+            <Link href="/login" className="font-bold text-emerald-700 hover:text-emerald-800">
               Kembali ke Login
             </Link>
           </p>

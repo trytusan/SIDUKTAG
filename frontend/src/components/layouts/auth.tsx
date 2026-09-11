@@ -1,5 +1,6 @@
 import React from 'react'
 import Head from 'next/head'
+import Link from 'next/link'
 
 interface AuthLayoutProps {
   children: React.ReactNode
@@ -8,19 +9,27 @@ interface AuthLayoutProps {
 
 export default function AuthLayout({ children, title = 'Autentikasi — SIDUKTAG' }: AuthLayoutProps) {
   return (
-    <div className="relative min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 flex items-center justify-center p-4 overflow-hidden">
+    <div className="relative min-h-screen bg-slate-50 text-slate-800 flex items-center justify-center p-4 selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
         <title>{title}</title>
       </Head>
 
-      {/* Decorative Blur Orbs */}
+      {/* Decorative Warm Slate Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-emerald-500/20 blur-3xl" />
-        <div className="absolute -bottom-24 -right-24 h-96 w-96 rounded-full bg-cyan-500/20 blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[32rem] w-[32rem] rounded-full bg-emerald-600/10 blur-3xl" />
+        <div className="absolute -top-32 -left-32 h-96 w-96 rounded-full bg-emerald-100/50 blur-3xl" />
+        <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-sky-100/60 blur-3xl" />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
+        <div className="mb-4 text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-emerald-700 transition"
+          >
+            <span>&larr;</span>
+            <span>Kembali ke Beranda</span>
+          </Link>
+        </div>
         {children}
       </div>
     </div>

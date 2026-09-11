@@ -89,6 +89,40 @@ export default function AdminPetaWilayahIndex() {
           <li className="text-slate-800 font-semibold">Peta Sebaran KK & Wilayah</li>
         </ol>
       </nav>
+      {/* Breadcrumb & Navigation */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <nav className="flex" aria-label="Breadcrumb">
+          <ol className="flex items-center space-x-2 text-xs text-slate-500 font-medium">
+            <li>
+              <Link href="/admin/dashboard" className="hover:text-emerald-600 transition">
+                Dashboard
+              </Link>
+            </li>
+            <li>
+              <svg className="h-3.5 w-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
+              </svg>
+            </li>
+            <li className="text-slate-500">Peta Wilayah</li>
+            <li>
+              <svg className="h-3.5 w-3.5 text-slate-400" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" />
+              </svg>
+            </li>
+            <li className="text-slate-800 font-semibold">Peta Sebaran KK & Wilayah</li>
+          </ol>
+        </nav>
+
+        <Link
+          href="/admin/wilayah"
+          className="inline-flex items-center gap-1.5 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-emerald-700 transition shadow-xs w-fit"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+          <span>Kelola Data Wilayah &rarr;</span>
+        </Link>
+      </div>
 
       {/* Info Banner on Spatial Grouping */}
       <div className="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-xs text-emerald-900 shadow-sm">

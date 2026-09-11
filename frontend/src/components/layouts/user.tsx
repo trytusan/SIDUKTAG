@@ -38,17 +38,17 @@ export default function UserLayout({
 
   if (loading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-900 text-slate-100">
+      <div className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-800">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-400 border-t-transparent"></div>
-          <p className="text-sm font-medium text-slate-300">Memuat data pengguna...</p>
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent"></div>
+          <p className="text-sm font-medium text-slate-600">Memuat data pengguna...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex">
+    <div className="min-h-screen bg-slate-100/70 text-slate-800 flex selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
         <title>{title}</title>
       </Head>

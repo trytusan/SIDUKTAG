@@ -31,34 +31,34 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout title="Lupa Password — SIDUKTAG">
-      <div className="rounded-3xl border border-white/10 bg-white/10 p-8 shadow-2xl backdrop-blur-2xl md:p-10">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm">
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-400/20 bg-emerald-400/10 shadow-inner">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-xs">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V7.875a4.5 4.5 0 10-9 0V10.5m-.75 0h10.5A2.25 2.25 0 0119.5 12.75v5.25a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18v-5.25A2.25 2.25 0 016.75 10.5Z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Lupa Password?</h1>
-          <p className="mt-1 text-xs text-slate-300">
-            Masukkan email terdaftar Anda dan kami akan mengirimkan tautan untuk mengatur ulang password.
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Lupa Password?</h1>
+          <p className="mt-1 text-xs text-slate-500 font-medium">
+            Masukkan email terdaftar Anda untuk menerima tautan atur ulang password.
           </p>
         </div>
 
         {status && (
-          <div className="mb-4 rounded-2xl border border-emerald-400/30 bg-emerald-500/20 p-4 text-xs font-medium text-emerald-200">
+          <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800">
             {status}
           </div>
         )}
 
         {error && (
-          <div className="mb-4 rounded-2xl border border-red-400/30 bg-red-500/20 p-4 text-xs font-medium text-red-200">
+          <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-slate-300">
+            <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-700">
               Email Terdaftar
             </label>
             <input
@@ -67,21 +67,21 @@ export default function ForgotPasswordPage() {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="nama@email.com"
               required
-              className="w-full rounded-2xl border border-white/10 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-400 focus:bg-white/15 focus:ring-2 focus:ring-emerald-400/20"
+              className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 px-4 py-3 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-2xl bg-emerald-500 px-4 py-3.5 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-950/40 transition duration-200 hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50"
+            className="w-full rounded-2xl bg-emerald-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm shadow-emerald-600/20 transition duration-200 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50"
           >
             {loading ? 'Mengirim Tautan...' : 'Kirim Tautan Reset'}
           </button>
 
-          <p className="pt-2 text-center text-xs text-slate-300">
+          <p className="pt-2 text-center text-xs text-slate-500">
             Ingat password Anda?{' '}
-            <Link href="/login" className="font-semibold text-emerald-400 hover:text-emerald-300">
+            <Link href="/login" className="font-bold text-emerald-700 hover:text-emerald-800">
               Kembali ke Login
             </Link>
           </p>
