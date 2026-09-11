@@ -3,9 +3,13 @@ import { useRouter } from 'next/router'
 import Link from 'next/link'
 import AuthLayout from '../src/components/layouts/auth'
 import { sendOtp, verifyOtp, resetPasswordWithOtp } from '../src/lib/auth'
+import { useAuth } from '../src/context/AuthContext'
 
 export default function VerifyOtpPage() {
   const router = useRouter()
+  const { refreshUser } = useAuth()
+  const isRegisterMode = router.query.type === 'register' || router.query.type === 'verify'
+
   const [email, setEmail] = useState<string>('')
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', ''])
   const [countdown, setCountdown] = useState<number>(60)
@@ -122,7 +126,16 @@ export default function VerifyOtpPage() {
     try {
       await verifyOtp(email, code)
       setIsOtpVerified(true)
-      setStatusMessage('✓ Kode OTP Berhasil Diverifikasi! Silakan masukkan password baru Anda di bawah ini.')
+
+      if (isRegisterMode) {
+        setStatusMessage('✓ Email Anda Berhasil Diverifikasi! Akun warga telah aktif sepenuhnya. Mengalihkan ke Dashboard...')
+        await refreshUser()
+        setTimeout(() => {
+          router.replace('/user/dashboard')
+        }, 1500)
+      } else {
+        setStatusMessage('✓ Kode OTP Berhasil Diverifikasi! Silakan masukkan password baru Anda di bawah ini.')
+      }
     } catch (err: any) {
       setIsOtpVerified(false)
       setErrorMessage(
@@ -216,9 +229,13 @@ export default function VerifyOtpPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
             </svg>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Verifikasi OTP</h1>
+          <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
+            {isRegisterMode ? 'Verifikasi Email Akun' : 'Verifikasi OTP'}
+          </h1>
           <p className="mt-1.5 text-xs text-slate-500 font-medium">
-            Masukkan 6 digit kode OTP yang kami kirimkan ke alamat email Anda.
+            {isRegisterMode
+              ? 'Masukkan 6 digit kode OTP yang kami kirimkan ke email Anda untuk memverifikasi keaslian email sebelum mengakses dashboard.'
+              : 'Masukkan 6 digit kode OTP yang kami kirimkan ke alamat email Anda.'}
           </p>
         </div>
 
@@ -305,8 +322,29 @@ export default function VerifyOtpPage() {
           )}
         </div>
 
-        {/* Form Atur Ulang Password Baru (Muncul otomatis setelah OTP sukses terverifikasi) */}
-        {isOtpVerified && (
+        {/* Pesan Sukses Verifikasi Akun Baru (Mode Pendaftaran/Onboarding) */}
+        {isOtpVerified && isRegisterMode && (
+          <div className="mt-4 rounded-3xl border border-emerald-200 bg-emerald-50/90 p-6 text-center space-y-3">
+            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-md">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h4 className="text-base font-extrabold text-emerald-950">Email Berhasil Diverifikasi!</h4>
+            <p className="text-xs text-emerald-800 leading-relaxed">
+              Email Anda telah terbukti aktif dan sah. Akun warga telah siap digunakan. Sedang mengalihkan Anda ke Dashboard...
+            </p>
+            <div className="pt-2">
+              <Link href="/user/dashboard" className="inline-flex items-center gap-1.5 rounded-2xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition">
+                <span>Buka Dashboard Sekarang</span>
+                <span>&rarr;</span>
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Form Atur Ulang Password Baru (Muncul otomatis jika mode lupa password) */}
+        {isOtpVerified && !isRegisterMode && (
           <form onSubmit={handleResetPasswordSubmit} className="space-y-4 pt-4 border-t border-slate-200">
             <div>
               <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-700">

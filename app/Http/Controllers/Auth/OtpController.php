@@ -150,10 +150,18 @@ class OtpController extends Controller
 
         $otpRecord->markAsVerified();
 
+        // Tandai email pengguna terverifikasi secara resmi
+        if (!$user->email_verified_at) {
+            $user->forceFill([
+                'email_verified_at' => Carbon::now(),
+            ])->save();
+        }
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kode OTP berhasil diverifikasi!',
             'verified' => true,
+            'user' => $user->fresh(),
         ]);
     }
 

@@ -32,6 +32,8 @@ export default function UserLayout({
         router.replace('/admin/dashboard')
       } else if (!isProfileCompleted && !router.pathname.startsWith('/user/onboarding')) {
         router.replace('/user/onboarding/step-1')
+      } else if (!user.email_verified_at && !router.pathname.startsWith('/verify-otp') && !router.pathname.startsWith('/user/onboarding')) {
+        router.replace(`/verify-otp?email=${encodeURIComponent(user.email)}&type=register`)
       }
     }
   }, [user, role, isProfileCompleted, loading, router])

@@ -161,10 +161,30 @@ class PendudukController extends Controller
 
         session()->forget(['onboarding.step1', 'onboarding.step2', 'onboarding.step3']);
 
+        // Otomatis kirim kode OTP untuk verifikasi keaslian email pendaftar setelah onboarding
+        if ($user && $user->email && !$user->email_verified_at) {
+            try {
+                $otp = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
+                \App\Models\EmailOtp::where('user_id', $user->id)->orWhere('email', $user->email)->delete();
+                \App\Models\EmailOtp::create([
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'otp' => $otp,
+                    'expires_at' => \Carbon\Carbon::now()->addMinutes(10),
+                    'attempts' => 0,
+                ]);
+                \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp, $user->name ?? 'Warga'));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('Gagal kirim OTP verifikasi onboarding: ' . $e->getMessage());
+            }
+        }
+
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => 'Data diri berhasil dilengkapi.',
+                'message' => 'Data diri berhasil dilengkapi. Silakan verifikasi kode OTP yang dikirim ke email Anda.',
                 'user' => $user->fresh(['penduduk']),
+                'requires_otp' => !$user->email_verified_at,
+                'email' => $user->email,
             ]);
         }
 

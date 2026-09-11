@@ -23,7 +23,7 @@ const FormMapPicker = dynamic(
 
 export default function OnboardingStep3() {
   const router = useRouter()
-  const { refreshUser } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [fotoProfil, setFotoProfil] = useState<File | null>(null)
   const [dokumen, setDokumen] = useState<File | null>(null)
   const [coords, setCoords] = useState<{ latitude: string; longitude: string }>({
@@ -59,7 +59,7 @@ export default function OnboardingStep3() {
         if (s2) formData.append('step2', s2)
       }
 
-      await api.post('/user/onboarding/step-3', formData, {
+      const res = await api.post('/user/onboarding/step-3', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -71,7 +71,8 @@ export default function OnboardingStep3() {
       }
 
       await refreshUser()
-      router.replace('/user/dashboard')
+      const targetEmail = res.data?.email || user?.email || ''
+      router.replace(`/verify-otp?email=${encodeURIComponent(targetEmail)}&type=register`)
     } catch (err: any) {
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
