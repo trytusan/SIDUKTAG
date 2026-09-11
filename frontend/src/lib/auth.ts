@@ -99,6 +99,45 @@ export async function changePassword(payload: {
 }
 
 
+export async function sendOtp(email: string) {
+  const token = await csrf()
+  const res = await api.post('/api/otp/send', {
+    email,
+    ...(token ? { _token: token } : {}),
+  }, {
+    headers: token ? { 'X-CSRF-TOKEN': token } : {},
+  })
+  return res.data
+}
+
+export async function verifyOtp(email: string, otp: string) {
+  const token = await csrf()
+  const res = await api.post('/api/otp/verify', {
+    email,
+    otp,
+    ...(token ? { _token: token } : {}),
+  }, {
+    headers: token ? { 'X-CSRF-TOKEN': token } : {},
+  })
+  return res.data
+}
+
+export async function resetPasswordWithOtp(payload: {
+  email: string
+  otp: string
+  password: string
+  password_confirmation: string
+}) {
+  const token = await csrf()
+  const res = await api.post('/api/otp/reset-password', {
+    ...payload,
+    ...(token ? { _token: token } : {}),
+  }, {
+    headers: token ? { 'X-CSRF-TOKEN': token } : {},
+  })
+  return res.data
+}
+
 export async function getUser(): Promise<{
   user: User
   role: 'admin' | 'user'
@@ -120,5 +159,8 @@ export default {
   forgotPassword,
   resetPassword,
   changePassword,
+  sendOtp,
+  verifyOtp,
+  resetPasswordWithOtp,
   getUser,
 }

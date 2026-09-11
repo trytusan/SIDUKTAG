@@ -65,12 +65,35 @@ export default function AdminBantuanDetail() {
       />
 
       <div className="mx-auto max-w-3xl rounded-3xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div className="flex flex-wrap items-center justify-between border-b border-slate-100 pb-4 gap-3">
           <div>
             <h3 className="text-xl font-bold text-slate-800">{b?.nama_program}</h3>
-            <p className="text-xs text-slate-500">Jenis: {b?.jenis_bantuan || '-'}</p>
+            <p className="text-xs text-slate-500">Jenis Program: {b?.jenis_bantuan || '-'}</p>
           </div>
-          <StatusBadge>{bantuan.status_penerima}</StatusBadge>
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold border ${
+                bantuan.status_verifikasi === 'Terverifikasi'
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  : bantuan.status_verifikasi === 'Ditolak'
+                  ? 'bg-rose-50 text-rose-700 border-rose-200'
+                  : 'bg-amber-50 text-amber-700 border-amber-200'
+              }`}
+            >
+              {bantuan.status_verifikasi || 'Menunggu Verifikasi'}
+            </span>
+            <span
+              className={`inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold border ${
+                bantuan.status_penerima === 'Selesai'
+                  ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  : bantuan.status_penerima === 'Diterima'
+                  ? 'bg-sky-100 text-sky-800 border-sky-300'
+                  : 'bg-slate-100 text-slate-700 border-slate-200'
+              }`}
+            >
+              {bantuan.status_penerima === 'Diterima' ? 'Disetujui (Siap Salur)' : bantuan.status_penerima === 'Selesai' ? 'Selesai (Sudah Diambil)' : bantuan.status_penerima}
+            </span>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 text-sm">
@@ -90,8 +113,18 @@ export default function AdminBantuanDetail() {
           </div>
 
           <div className="rounded-2xl bg-slate-50 p-4">
-            <span className="text-xs text-slate-500">Tanggal Menerima Bantuan</span>
-            <p className="mt-1 font-semibold text-slate-800">{bantuan.tanggal_menerima || 'Belum Disalurkan'}</p>
+            <span className="text-xs text-slate-500">Sumber Dana Program</span>
+            <p className="mt-1 text-slate-800 font-semibold">{b?.sumber_bantuan || '-'}</p>
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <span className="text-xs text-slate-500">Tanggal Verifikasi Berkas</span>
+            <p className="mt-1 font-semibold text-slate-800">{bantuan.tanggal_verifikasi || 'Belum Diverifikasi'}</p>
+          </div>
+
+          <div className="rounded-2xl bg-slate-50 p-4">
+            <span className="text-xs text-slate-500">Tanggal Pengambilan / Penyerahan Fisik</span>
+            <p className="mt-1 font-semibold text-slate-800">{bantuan.tanggal_menerima || 'Belum Diambil / Belum Disalurkan'}</p>
           </div>
 
           <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
@@ -99,14 +132,16 @@ export default function AdminBantuanDetail() {
             <p className="mt-1 text-slate-800">{p?.alamat_lengkap || '-'}</p>
           </div>
 
-          <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
-            <span className="text-xs text-slate-500">Sumber Dana Program</span>
-            <p className="mt-1 text-slate-800">{b?.sumber_bantuan || '-'}</p>
-          </div>
+          {bantuan.catatan_operator && (
+            <div className="rounded-2xl bg-blue-50/60 border border-blue-100 p-4 sm:col-span-2">
+              <span className="text-xs font-semibold text-blue-700">Catatan Operator / Verifikator</span>
+              <p className="mt-1 text-slate-700 leading-relaxed text-sm">{bantuan.catatan_operator}</p>
+            </div>
+          )}
 
           {bantuan.catatan && (
             <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
-              <span className="text-xs text-slate-500">Catatan Petugas</span>
+              <span className="text-xs text-slate-500">Catatan Pengambilan / Penerima</span>
               <p className="mt-1 text-slate-700 leading-relaxed">{bantuan.catatan}</p>
             </div>
           )}

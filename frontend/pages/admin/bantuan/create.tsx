@@ -20,8 +20,11 @@ export default function AdminBantuanCreate() {
   const [pendudukId, setPendudukId] = useState('')
   const [bantuanId, setBantuanId] = useState('')
   const [statusPenerima, setStatusPenerima] = useState('Diterima')
+  const [statusVerifikasi, setStatusVerifikasi] = useState('Terverifikasi')
+  const [tanggalVerifikasi, setTanggalVerifikasi] = useState(new Date().toISOString().substring(0, 10))
   const [tanggalMenerima, setTanggalMenerima] = useState(new Date().toISOString().substring(0, 10))
   const [catatan, setCatatan] = useState('')
+  const [catatanOperator, setCatatanOperator] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
@@ -52,8 +55,11 @@ export default function AdminBantuanCreate() {
         penduduk_id: pendudukId,
         bantuan_id: bantuanId,
         status_penerima: statusPenerima,
-        tanggal_menerima: tanggalMenerima || null,
+        status_verifikasi: statusVerifikasi,
+        tanggal_verifikasi: tanggalVerifikasi || null,
+        tanggal_menerima: statusPenerima === 'Selesai' ? tanggalMenerima : (tanggalMenerima || null),
         catatan,
+        catatan_operator: catatanOperator,
       })
 
       router.push('/admin/bantuan')
@@ -121,36 +127,85 @@ export default function AdminBantuanCreate() {
             error={validationErrors.bantuan_id?.[0]}
           />
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormSelect
-              label="Status Penerima"
-              name="status_penerima"
-              value={statusPenerima}
-              onChange={(e: any) => setStatusPenerima(e.target.value)}
-              options={['Menunggu', 'Diterima', 'Ditolak', 'Selesai']}
-              required
-              error={validationErrors.status_penerima?.[0]}
-            />
+          {/* Bagian Status Verifikasi & Realisasi */}
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Tahap 1: Verifikasi Kelayakan
+            </h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormSelect
+                label="Status Verifikasi"
+                name="status_verifikasi"
+                value={statusVerifikasi}
+                onChange={(e) => setStatusVerifikasi(e.target.value)}
+                options={[
+                  'Menunggu Verifikasi',
+                  'Terverifikasi',
+                  'Ditolak',
+                ]}
+                required
+              />
 
-            <FormInput
-              label="Tanggal Penyaluran"
-              type="date"
-              name="tanggal_menerima"
-              value={tanggalMenerima}
-              onChange={(e) => setTanggalMenerima(e.target.value)}
-              error={validationErrors.tanggal_menerima?.[0]}
+              <FormInput
+                label="Tanggal Verifikasi"
+                type="date"
+                name="tanggal_verifikasi"
+                value={tanggalVerifikasi}
+                onChange={(e) => setTanggalVerifikasi(e.target.value)}
+              />
+            </div>
+
+            <FormTextarea
+              label="Catatan Operator / Verifikator"
+              name="catatan_operator"
+              value={catatanOperator}
+              onChange={(e) => setCatatanOperator(e.target.value)}
+              rows={2}
+              placeholder="Catatan hasil verifikasi berkas atau kondisi kelayakan warga..."
             />
           </div>
 
-          <FormTextarea
-            label="Catatan Verifikasi / Penyaluran"
-            name="catatan"
-            value={catatan}
-            onChange={(e) => setCatatan(e.target.value)}
-            rows={3}
-            placeholder="Catatan tambahan mengenai kondisi penerima..."
-            error={validationErrors.catatan?.[0]}
-          />
+          <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-4 space-y-4">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+              Tahap 2: Status Penerima & Penyaluran Fisik
+            </h4>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormSelect
+                label="Status Penerima (Realisasi)"
+                name="status_penerima"
+                value={statusPenerima}
+                onChange={(e: any) => setStatusPenerima(e.target.value)}
+                options={[
+                  { value: 'Menunggu', label: 'Menunggu Verifikasi / Antrean' },
+                  { value: 'Diterima', label: 'Disetujui (Siap Salur)' },
+                  { value: 'Selesai', label: 'Selesai (Sudah Diambil/Diterima Fisik)' },
+                  { value: 'Ditolak', label: 'Ditolak' },
+                ]}
+                required
+                error={validationErrors.status_penerima?.[0]}
+              />
+
+              <FormInput
+                label="Tanggal Pengambilan / Penyerahan Fisik"
+                type="date"
+                name="tanggal_menerima"
+                value={tanggalMenerima}
+                onChange={(e) => setTanggalMenerima(e.target.value)}
+                helperText="Wajib diisi bila bantuan telah diserahkan (Selesai)"
+                error={validationErrors.tanggal_menerima?.[0]}
+              />
+            </div>
+
+            <FormTextarea
+              label="Catatan Pengambilan / Penerima"
+              name="catatan"
+              value={catatan}
+              onChange={(e) => setCatatan(e.target.value)}
+              rows={2}
+              placeholder="Catatan penyerahan bantuan, pihak yang mengambil, atau nomor tanda terima..."
+              error={validationErrors.catatan?.[0]}
+            />
+          </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
             <Link

@@ -13,6 +13,7 @@ import LoadingSpinner from '../../../src/components/ui/loading'
 import api, { getStorageUrl } from '../../../src/lib/api'
 import { Penduduk } from '../../../src/types'
 import { useAuth } from '../../../src/context/AuthContext'
+import { DAFTAR_PEKERJAAN_DUKCAPIL } from '../../../src/constants/dukcapil'
 
 export default function UserPengaturanProfil() {
   const { refreshUser } = useAuth()
@@ -223,11 +224,13 @@ export default function UserPengaturanProfil() {
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <FormInput
-              label="Pekerjaan"
+            <FormSelect
+              label="Pekerjaan (Standar Dukcapil)"
               name="pekerjaan"
               value={formData.pekerjaan}
               onChange={handleChange}
+              options={DAFTAR_PEKERJAAN_DUKCAPIL}
+              placeholder="Pilih Klasifikasi Pekerjaan..."
             />
 
             <FormSelect

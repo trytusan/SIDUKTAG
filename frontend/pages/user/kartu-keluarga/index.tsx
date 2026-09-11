@@ -9,6 +9,7 @@ import StatusBadge from '../../../src/components/ui/status-badge'
 import LoadingSpinner from '../../../src/components/ui/loading'
 import api from '../../../src/lib/api'
 import { KartuKeluarga, Penduduk } from '../../../src/types'
+import { sortFamilyMembers, getFamilyRoleBadgeClass } from '../../../src/utils/familyOrder'
 
 const MapPreview = dynamic(
   () => import('../../../src/components/maps/map-preview'),
@@ -53,7 +54,7 @@ export default function UserKartuKeluargaPage() {
     )
   }
 
-  const anggota = kartuKeluarga?.anggota || []
+  const anggota = sortFamilyMembers(kartuKeluarga?.anggota || [])
 
   return (
     <UserLayout pageTitle="Kartu Keluarga" subtitle="Informasi susunan anggota keluarga Anda">
@@ -111,10 +112,52 @@ export default function UserKartuKeluargaPage() {
         <h3 className="text-lg font-bold text-slate-800">Daftar Anggota Keluarga Terdaftar</h3>
         <Table
           columns={[
-            { key: 'nama_lengkap', label: 'Nama Lengkap' },
+            {
+              key: 'no',
+              label: 'No',
+              className: 'w-16 text-center',
+              render: (_: any, idx: number) => {
+                const isKepala = idx === 0
+                const isIstri = idx === 1
+                return (
+                  <div className="flex items-center justify-center">
+                    <span
+                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+                        isKepala
+                          ? 'bg-emerald-600 text-white shadow-sm ring-2 ring-emerald-200'
+                          : isIstri
+                          ? 'bg-purple-600 text-white shadow-sm ring-2 ring-purple-200'
+                          : 'bg-slate-100 text-slate-700 font-semibold'
+                      }`}
+                    >
+                      {idx + 1}
+                    </span>
+                  </div>
+                )
+              },
+            },
+            {
+              key: 'nama_lengkap',
+              label: 'Nama Lengkap',
+              render: (item: Penduduk) => (
+                <span className="font-semibold text-slate-800">{item.nama_lengkap}</span>
+              ),
+            },
             { key: 'nik', label: 'NIK' },
             { key: 'jenis_kelamin', label: 'Jenis Kelamin' },
-            { key: 'status_dalam_keluarga', label: 'Hubungan' },
+            {
+              key: 'status_dalam_keluarga',
+              label: 'Hubungan',
+              render: (item: Penduduk) => (
+                <span
+                  className={`inline-flex items-center px-2.5 py-1 rounded-lg text-xs border ${getFamilyRoleBadgeClass(
+                    item.status_dalam_keluarga
+                  )}`}
+                >
+                  {item.status_dalam_keluarga || '-'}
+                </span>
+              ),
+            },
             {
               key: 'status_kependudukan',
               label: 'Status',

@@ -17,11 +17,16 @@ class BantuanPenerima extends Model
         'penduduk_id',    // Menghubungkan ke tabel 'penduduk' (Data User yang mengajukan)
         'tanggal_menerima',
         'status_penerima', // Contoh: Menunggu, Diterima, Ditolak
+        'status_penerima', // Contoh: Menunggu, Diterima, Ditolak, Selesai
+        'status_verifikasi', // Menunggu Verifikasi, Terverifikasi, Ditolak
+        'tanggal_verifikasi',
         'catatan',
+        'catatan_operator',
     ];
 
     protected $casts = [
         'tanggal_menerima' => 'date',
+        'tanggal_verifikasi' => 'date',
     ];
 
     /**

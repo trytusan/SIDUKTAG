@@ -138,6 +138,21 @@ export default function AdminPendudukDetail() {
 
               <div className="mt-4 flex flex-wrap justify-center gap-2">
                 <StatusBadge>{penduduk.status_kependudukan || 'Tetap'}</StatusBadge>
+                {penduduk.status_kependudukan === 'Pendatang Sementara' ? (
+                  <span
+                    className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
+                      penduduk.masa_berlaku && new Date(penduduk.masa_berlaku) < new Date(new Date().toDateString())
+                        ? 'bg-rose-50 text-rose-700 border-rose-200'
+                        : 'bg-amber-50 text-amber-700 border-amber-200'
+                    }`}
+                  >
+                    {penduduk.masa_berlaku && new Date(penduduk.masa_berlaku) < new Date(new Date().toDateString())
+                      ? 'Pendatang Sementara (Habis)'
+                      : 'Pendatang Sementara (Aktif)'}
+                  </span>
+                ) : (
+                  <StatusBadge>{penduduk.status_kependudukan || 'Tetap'}</StatusBadge>
+                )}
                 <span className="inline-flex items-center rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-sky-700 border border-sky-200">
                   {penduduk.kategori_umur || 'Umur'}
                 </span>
@@ -298,6 +313,65 @@ export default function AdminPendudukDetail() {
             </div>
           )}
 
+          {/* Card Status Kependudukan Khusus: Pendatang Sementara */}
+          {penduduk.status_kependudukan === 'Pendatang Sementara' && (() => {
+            const isExpired = penduduk.masa_berlaku ? new Date(penduduk.masa_berlaku) < new Date(new Date().toDateString()) : false
+            return (
+              <div className={`overflow-hidden rounded-3xl border shadow-sm ${isExpired ? 'border-rose-300 bg-rose-50/30' : 'border-amber-300 bg-amber-50/30'}`}>
+                <div className={`border-b px-7 py-4 flex items-center justify-between ${isExpired ? 'border-rose-200 bg-rose-100/60' : 'border-amber-200 bg-amber-100/60'}`}>
+                  <div className="flex items-center gap-2 font-bold text-sm">
+                    <svg className={`h-5 w-5 shrink-0 ${isExpired ? 'text-rose-600' : 'text-amber-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span className={isExpired ? 'text-rose-900' : 'text-amber-900'}>
+                      Catatan Status: Pendatang Sementara (Surat Tanda Lapor)
+                    </span>
+                  </div>
+                  {isExpired ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-rose-300 bg-rose-100 px-3 py-1 text-xs font-bold text-rose-800">
+                      <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
+                      Masa Berlaku Habis (Kedaluwarsa)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
+                      <span className="h-2 w-2 rounded-full bg-emerald-600" />
+                      Izin Tinggal Aktif
+                    </span>
+                  )}
+                </div>
+                <div className="p-7 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm">
+                  <div>
+                    <p className={`text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-rose-600' : 'text-amber-700'}`}>Tanggal Masuk / Tiba</p>
+                    <p className="mt-1 font-semibold text-slate-800">
+                      {penduduk.tanggal_masuk ? penduduk.tanggal_masuk.substring(0, 10) : '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={`text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-rose-600' : 'text-amber-700'}`}>Batas Masa Berlaku</p>
+                    <p className={`mt-1 font-bold ${isExpired ? 'text-rose-600' : 'text-slate-800'}`}>
+                      {penduduk.masa_berlaku ? penduduk.masa_berlaku.substring(0, 10) : '-'}
+                      {isExpired && ' (Kedaluwarsa)'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={`text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-rose-600' : 'text-amber-700'}`}>No. Surat Tanda Lapor</p>
+                    <p className="mt-1 font-semibold text-slate-800">
+                      {penduduk.nomor_surat_tanda_lapor || '-'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className={`text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-rose-600' : 'text-amber-700'}`}>Daerah Asal</p>
+                    <p className="mt-1 font-semibold text-slate-800">{penduduk.daerah_asal || '-'}</p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <p className={`text-xs font-bold uppercase tracking-widest ${isExpired ? 'text-rose-600' : 'text-amber-700'}`}>Tujuan Menetap Sementara</p>
+                    <p className="mt-1 font-semibold text-slate-800">{penduduk.tujuan_menetap || '-'}</p>
+                  </div>
+                </div>
+              </div>
+            )
+          })()}
+
           {/* Data Identitas */}
           <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
             <div className="border-b border-slate-100 px-7 py-5">
@@ -351,6 +425,79 @@ export default function AdminPendudukDetail() {
                   <p className="mt-1 font-semibold text-slate-800">{penduduk.status_dalam_keluarga || '-'}</p>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Riwayat Penerimaan Bantuan Sosial */}
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 px-7 py-5 flex items-center justify-between">
+              <div>
+                <h4 className="text-base font-bold text-slate-900">Riwayat Bantuan Sosial</h4>
+                <p className="text-xs text-slate-500 mt-0.5">Seluruh program bantuan dan status penyalurannya</p>
+              </div>
+              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                {(penduduk.bantuan_penerima || penduduk.bantuanPenerima || []).length} Program
+              </span>
+            </div>
+            <div className="p-7">
+              {(penduduk.bantuan_penerima || penduduk.bantuanPenerima || []).length > 0 ? (
+                <div className="space-y-3">
+                  {(penduduk.bantuan_penerima || penduduk.bantuanPenerima || []).map((bp: any, idx: number) => {
+                    const isSelesai = bp.status_penerima === 'Selesai'
+                    const isDisetujui = bp.status_penerima === 'Diterima'
+                    return (
+                      <div
+                        key={idx}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl border border-slate-100 bg-slate-50/60 hover:bg-slate-50 transition gap-3"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold text-slate-800 text-sm">{bp.bantuan?.nama_program || 'Program Bantuan'}</p>
+                            <span className="text-[11px] font-medium bg-white px-2 py-0.5 rounded-lg border border-slate-200 text-slate-600">
+                              {bp.bantuan?.jenis_bantuan || 'Bansos'}
+                            </span>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                            <span>Verifikasi: <strong className="text-slate-700">{bp.status_verifikasi || 'Terverifikasi'}</strong></span>
+                            <span>•</span>
+                            <span>Tgl Salur: <strong className="text-slate-700">{bp.tanggal_menerima || (isSelesai ? 'Sudah Diambil' : 'Belum Diambil')}</strong></span>
+                          </div>
+                          {bp.catatan && (
+                            <p className="text-xs text-slate-600 italic mt-1">&ldquo;{bp.catatan}&rdquo;</p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-xl text-xs font-bold border ${
+                              isSelesai
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : isDisetujui
+                                ? 'bg-sky-100 text-sky-800 border-sky-300'
+                                : bp.status_penerima === 'Ditolak'
+                                ? 'bg-rose-100 text-rose-800 border-rose-300'
+                                : 'bg-amber-100 text-amber-800 border-amber-300'
+                            }`}
+                          >
+                            {isSelesai ? 'Selesai (Sudah Diambil)' : isDisetujui ? 'Disetujui (Siap Salur)' : bp.status_penerima}
+                          </span>
+
+                          <Link
+                            href={`/admin/bantuan/${bp.id}`}
+                            className="inline-flex items-center rounded-xl bg-white border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition shadow-sm"
+                          >
+                            Detail
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-slate-400 text-xs">
+                  Warga ini belum memiliki riwayat pengajuan atau penerimaan bantuan sosial.
+                </div>
+              )}
             </div>
           </div>
 

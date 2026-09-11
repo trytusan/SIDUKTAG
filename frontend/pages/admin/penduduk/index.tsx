@@ -11,15 +11,27 @@ import CardStat from '../../../src/components/ui/card-stat'
 import { useAlert } from '../../../src/context/AlertContext'
 import api from '../../../src/lib/api'
 import { Penduduk, PaginatedResponse } from '../../../src/types'
+import { getFamilyRoleBadgeClass } from '../../../src/utils/familyOrder'
+import { STATUS_KEPENDUDUKAN_LIST } from '../../../src/constants/dukcapil'
 
 export default function AdminPendudukIndex() {
   const { showAlert } = useAlert()
   const [data, setData] = useState<PaginatedResponse<Penduduk> | null>(null)
-  const [stats, setStats] = useState<{ total?: number; laki?: number; perempuan?: number; tetap?: number } | null>(null)
+  const [stats, setStats] = useState<{
+    total?: number
+    laki?: number
+    perempuan?: number
+    tetap?: number
+    kepala_keluarga?: number
+    pendatang_sementara?: number
+    masa_berlaku_habis?: number
+  } | null>(null)
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
+  const [statusMasaBerlaku, setStatusMasaBerlaku] = useState('')
   const [gender, setGender] = useState('')
   const [kategoriUmur, setKategoriUmur] = useState('')
+  const [statusKeluarga, setStatusKeluarga] = useState('')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<number | null>(null)
@@ -27,7 +39,15 @@ export default function AdminPendudukIndex() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-  async function fetchPenduduk(p = 1, s = search, st = status, g = gender, ku = kategoriUmur) {
+  async function fetchPenduduk(
+    p = 1,
+    s = search,
+    st = status,
+    g = gender,
+    ku = kategoriUmur,
+    sk = statusKeluarga,
+    smb = statusMasaBerlaku
+  ) {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -36,6 +56,8 @@ export default function AdminPendudukIndex() {
       if (st) params.append('status_kependudukan', st)
       if (g) params.append('jenis_kelamin', g)
       if (ku) params.append('kategori_umur', ku)
+      if (sk) params.append('status_dalam_keluarga', sk)
+      if (smb) params.append('status_masa_berlaku', smb)
 
       const res = await api.get('/admin/penduduk?' + params.toString())
       setData(res.data.penduduk)
@@ -51,14 +73,16 @@ export default function AdminPendudukIndex() {
   }
 
   useEffect(() => {
-    fetchPenduduk(1, search, status, gender, kategoriUmur)
-  }, [search, status, gender, kategoriUmur])
+    fetchPenduduk(1, search, status, gender, kategoriUmur, statusKeluarga, statusMasaBerlaku)
+  }, [search, status, gender, kategoriUmur, statusKeluarga, statusMasaBerlaku])
 
   const handleReset = () => {
     setSearch('')
     setStatus('')
+    setStatusMasaBerlaku('')
     setGender('')
     setKategoriUmur('')
+    setStatusKeluarga('')
   }
 
   const handleDelete = async () => {
@@ -67,14 +91,13 @@ export default function AdminPendudukIndex() {
     try {
       await api.delete('/admin/penduduk/' + deleteId)
       setDeleteId(null)
-      fetchPenduduk(page, search, status, gender, kategoriUmur)
+      fetchPenduduk(page, search, status, gender, kategoriUmur, statusKeluarga, statusMasaBerlaku)
       showAlert({
         type: 'delete',
         title: 'Berhasil Dihapus!',
         message: 'Data penduduk telah berhasil dihapus dari sistem.',
       })
     } catch (err) {
-      alert('Gagal menghapus data penduduk.')
       showAlert({
         type: 'error',
         title: 'Gagal Menghapus',
@@ -91,6 +114,8 @@ export default function AdminPendudukIndex() {
     if (status) params.append('status_kependudukan', status)
     if (gender) params.append('jenis_kelamin', gender)
     if (kategoriUmur) params.append('kategori_umur', kategoriUmur)
+    if (statusKeluarga) params.append('status_dalam_keluarga', statusKeluarga)
+    if (statusMasaBerlaku) params.append('status_masa_berlaku', statusMasaBerlaku)
     return `${apiUrl}/admin/penduduk/export/${type}?${params.toString()}`
   }
 
@@ -98,6 +123,9 @@ export default function AdminPendudukIndex() {
   const totalLaki = stats?.laki ?? (data?.data ? data.data.filter((p) => p.jenis_kelamin === 'Laki-laki').length : 0)
   const totalPerempuan = stats?.perempuan ?? (data?.data ? data.data.filter((p) => p.jenis_kelamin === 'Perempuan').length : 0)
   const totalTetap = stats?.tetap ?? (data?.data ? data.data.filter((p) => p.status_kependudukan === 'Tetap').length : 0)
+  const totalKepala = stats?.kepala_keluarga ?? (data?.data ? data.data.filter((p) => p.status_dalam_keluarga === 'Kepala Keluarga').length : 0)
+  const totalPendatangSementara = stats?.pendatang_sementara ?? (data?.data ? data.data.filter((p) => p.status_kependudukan === 'Pendatang Sementara').length : 0)
+  const totalMasaBerlakuHabis = stats?.masa_berlaku_habis ?? 0
 
   return (
     <AdminLayout pageTitle="Data Penduduk" subtitle="Kelola seluruh data identitas warga desa/kelurahan">
@@ -119,11 +147,11 @@ export default function AdminPendudukIndex() {
       </nav>
 
       {/* Top Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
         <CardStat
           title="Total Penduduk"
           value={totalPenduduk.toLocaleString('id-ID')}
-          description="Total warga terdata dalam sistem"
+          description="Total warga terdata"
           variant="emerald"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -132,9 +160,20 @@ export default function AdminPendudukIndex() {
           }
         />
         <CardStat
+          title="Kepala Keluarga"
+          value={totalKepala.toLocaleString('id-ID')}
+          description="Kepala keluarga aktif"
+          variant="emerald"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+          }
+        />
+        <CardStat
           title="Laki-Laki"
           value={totalLaki.toLocaleString('id-ID')}
-          description="Warga berjenis kelamin laki-laki"
+          description="Warga jenis kelamin laki-laki"
           variant="blue"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-sky-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -145,7 +184,7 @@ export default function AdminPendudukIndex() {
         <CardStat
           title="Perempuan"
           value={totalPerempuan.toLocaleString('id-ID')}
-          description="Warga berjenis kelamin perempuan"
+          description="Warga jenis kelamin perempuan"
           variant="rose"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,7 +195,7 @@ export default function AdminPendudukIndex() {
         <CardStat
           title="Penduduk Tetap"
           value={totalTetap.toLocaleString('id-ID')}
-          description="Warga berstatus domisili tetap"
+          description="Status domisili tetap"
           variant="violet"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -166,15 +205,156 @@ export default function AdminPendudukIndex() {
         />
       </div>
 
+      {/* Quick Filter Tabs: Fast Access */}
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <button
+          type="button"
+          onClick={() => {
+            setStatusKeluarga('')
+            if (status === 'Pendatang Sementara') {
+              setStatus('')
+              setStatusMasaBerlaku('')
+            }
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition ${
+            statusKeluarga === '' && status !== 'Pendatang Sementara'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          <span>Semua Penduduk</span>
+          <span className="rounded-full bg-slate-200/50 px-2 py-0.5 text-[10px] text-slate-700 font-semibold">
+            {totalPenduduk}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatusKeluarga('Kepala Keluarga')
+            if (status === 'Pendatang Sementara') setStatus('')
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition ${
+            statusKeluarga === 'Kepala Keluarga'
+              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/20 ring-2 ring-emerald-300'
+              : 'bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100'
+          }`}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span>Filter: Kepala Keluarga</span>
+          <span className="rounded-full bg-emerald-200/70 px-2 py-0.5 text-[10px] text-emerald-900 font-bold">
+            {totalKepala}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatusKeluarga('Istri')
+            if (status === 'Pendatang Sementara') setStatus('')
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition ${
+            statusKeluarga === 'Istri'
+              ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20 ring-2 ring-purple-300'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          <span>Istri</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatusKeluarga('Anak')
+            if (status === 'Pendatang Sementara') setStatus('')
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition ${
+            statusKeluarga === 'Anak'
+              ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20 ring-2 ring-sky-300'
+              : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-50'
+          }`}
+        >
+          <span>Anak</span>
+        </button>
+
+        <div className="h-5 w-px bg-slate-200 mx-1 hidden sm:block" />
+
+        <button
+          type="button"
+          onClick={() => {
+            setStatus('Pendatang Sementara')
+            setStatusMasaBerlaku('')
+            setStatusKeluarga('')
+          }}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition ${
+            status === 'Pendatang Sementara' && statusMasaBerlaku === ''
+              ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20 ring-2 ring-amber-300'
+              : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+          }`}
+        >
+          <span>Pendatang Sementara</span>
+          <span className="rounded-full bg-amber-200/70 px-2 py-0.5 text-[10px] text-amber-900 font-bold">
+            {totalPendatangSementara}
+          </span>
+        </button>
+
+        {totalMasaBerlakuHabis > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              setStatus('Pendatang Sementara')
+              setStatusMasaBerlaku('habis')
+              setStatusKeluarga('')
+            }}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs font-bold transition ${
+              status === 'Pendatang Sementara' && statusMasaBerlaku === 'habis'
+                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20 ring-2 ring-rose-300'
+                : 'bg-rose-50 text-rose-800 border border-rose-200 hover:bg-rose-100'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>Masa Izin Habis</span>
+            <span className="rounded-full bg-rose-200/70 px-2 py-0.5 text-[10px] text-rose-900 font-bold">
+              {totalMasaBerlakuHabis}
+            </span>
+          </button>
+        )}
+      </div>
+
       {/* Filter Box */}
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className={`grid grid-cols-1 gap-4 sm:grid-cols-2 ${status === 'Pendatang Sementara' ? 'xl:grid-cols-6' : 'xl:grid-cols-5'}`}>
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari nama, NIK, atau KK..."
             className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200"
+          />
+
+          <FormSelect
+            value={statusKeluarga}
+            onChange={(e) => setStatusKeluarga(e.target.value)}
+            options={[
+              'Kepala Keluarga',
+              'Suami',
+              'Istri',
+              'Anak',
+              'Menantu',
+              'Cucu',
+              'Orang Tua',
+              'Ayah',
+              'Ibu',
+              'Mertua',
+              'Famili Lain',
+              'Pembantu',
+              'Lainnya',
+            ]}
+            placeholder="Semua Hubungan Keluarga"
           />
 
           <FormSelect
@@ -193,10 +373,28 @@ export default function AdminPendudukIndex() {
 
           <FormSelect
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            options={['Tetap', 'Pendatang', 'Pindah', 'Meninggal']}
+            onChange={(e) => {
+              setStatus(e.target.value)
+              if (e.target.value !== 'Pendatang Sementara') {
+                setStatusMasaBerlaku('')
+              }
+            }}
+            options={STATUS_KEPENDUDUKAN_LIST}
             placeholder="Semua Status Kependudukan"
           />
+
+          {status === 'Pendatang Sementara' && (
+            <FormSelect
+              value={statusMasaBerlaku}
+              onChange={(e) => setStatusMasaBerlaku(e.target.value)}
+              options={[
+                { value: '', label: 'Semua Masa Berlaku' },
+                { value: 'aktif', label: 'Izin Tinggal Aktif' },
+                { value: 'habis', label: 'Izin Tinggal Habis (Kedaluwarsa)' },
+              ]}
+              placeholder="Status Masa Berlaku"
+            />
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
@@ -275,6 +473,15 @@ export default function AdminPendudukIndex() {
                   <div>
                     <p className="font-semibold text-slate-800">{item.nama_lengkap}</p>
                     <p className="text-xs text-slate-400">Hub: {item.status_dalam_keluarga || '-'}</p>
+                    <div className="mt-1 flex items-center gap-1.5">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-[11px] border ${getFamilyRoleBadgeClass(
+                          item.status_dalam_keluarga
+                        )}`}
+                      >
+                        {item.status_dalam_keluarga || 'Anggota'}
+                      </span>
+                    </div>
                   </div>
                 ),
               },
@@ -289,7 +496,33 @@ export default function AdminPendudukIndex() {
               {
                 key: 'status_kependudukan',
                 label: 'Status',
-                render: (item: Penduduk) => <StatusBadge>{item.status_kependudukan || 'Tetap'}</StatusBadge>,
+                render: (item: Penduduk) => {
+                  if (item.status_kependudukan === 'Pendatang Sementara') {
+                    const isExpired = item.masa_berlaku ? new Date(item.masa_berlaku) < new Date(new Date().toDateString()) : false
+                    return (
+                      <div className="flex flex-col items-start gap-1">
+                        <span className="inline-flex items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold text-amber-800">
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                          Pendatang Sementara
+                        </span>
+                        {item.masa_berlaku ? (
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] font-semibold border ${
+                              isExpired
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {isExpired ? `Habis: ${item.masa_berlaku.substring(0, 10)}` : `s/d ${item.masa_berlaku.substring(0, 10)}`}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400">Tanpa Batas</span>
+                        )}
+                      </div>
+                    )
+                  }
+                  return <StatusBadge>{item.status_kependudukan || 'Tetap'}</StatusBadge>
+                },
               },
               {
                 key: 'actions',
@@ -331,7 +564,7 @@ export default function AdminPendudukIndex() {
               total={data.total}
               from={data.from}
               to={data.to}
-              onPageChange={(p) => fetchPenduduk(p, search, status, gender, kategoriUmur)}
+              onPageChange={(p) => fetchPenduduk(p, search, status, gender, kategoriUmur, statusKeluarga, statusMasaBerlaku)}
             />
           )}
         </div>

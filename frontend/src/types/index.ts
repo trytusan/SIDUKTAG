@@ -27,7 +27,7 @@ export interface Penduduk {
   pendidikan_terakhir?: string | null
   kategori_umur?: string | null
   status_dalam_keluarga?: string | null
-  status_kependudukan?: 'Tetap' | 'Pendatang' | 'Pindah' | 'Meninggal' | string | null
+  status_kependudukan?: 'Tetap' | 'Pendatang' | 'Pendatang Sementara' | 'Pindah' | 'Meninggal' | string | null
   // Kolom Kondisional Status Kependudukan
   tanggal_meninggal?: string | null
   tempat_meninggal?: string | null
@@ -36,6 +36,9 @@ export interface Penduduk {
   alamat_tujuan?: string | null
   daerah_asal?: string | null
   tujuan_menetap?: string | null
+  tanggal_masuk?: string | null
+  masa_berlaku?: string | null
+  nomor_surat_tanda_lapor?: string | null
   nomor_telepon?: string | null
   alamat_lengkap?: string | null
   foto_profil?: string | null
@@ -45,6 +48,8 @@ export interface Penduduk {
   is_profile_completed: boolean
   kartu_keluarga?: KartuKeluarga | null
   kartuKeluarga?: KartuKeluarga | null
+  bantuan_penerima?: BantuanPenerima[]
+  bantuanPenerima?: BantuanPenerima[]
   created_at?: string
   updated_at?: string
 }
@@ -123,7 +128,10 @@ export interface BantuanPenerima {
   penduduk_id: number
   tanggal_menerima?: string | null
   status_penerima: 'Menunggu' | 'Diterima' | 'Ditolak' | 'Selesai'
+  status_verifikasi?: 'Menunggu Verifikasi' | 'Terverifikasi' | 'Ditolak' | string | null
+  tanggal_verifikasi?: string | null
   catatan?: string | null
+  catatan_operator?: string | null
   bantuan?: Bantuan
   penduduk?: Penduduk
   created_at?: string

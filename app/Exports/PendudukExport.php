@@ -55,6 +55,28 @@ class PendudukExport implements FromQuery, WithMapping, WithHeadings, WithStyles
             $query->where('status_kependudukan', $this->request->status_kependudukan);
         }
 
+        // Filter Status Hubungan dalam Keluarga
+        if ($this->request->filled('status_dalam_keluarga')) {
+            $query->where('status_dalam_keluarga', $this->request->status_dalam_keluarga);
+        }
+
+        if ($this->request->boolean('hanya_kepala_keluarga')) {
+            $query->where('status_dalam_keluarga', 'Kepala Keluarga');
+        }
+
+        if ($this->request->filled('status_masa_berlaku')) {
+            if ($this->request->status_masa_berlaku === 'aktif') {
+                $query->where('status_kependudukan', 'Pendatang Sementara')
+                      ->where(function($inner) {
+                          $inner->whereNull('masa_berlaku')->orWhere('masa_berlaku', '>=', now()->toDateString());
+                      });
+            } elseif ($this->request->status_masa_berlaku === 'habis') {
+                $query->where('status_kependudukan', 'Pendatang Sementara')
+                      ->whereNotNull('masa_berlaku')
+                      ->where('masa_berlaku', '<', now()->toDateString());
+            }
+        }
+
         return $query->latest();
     }
 
@@ -67,14 +89,22 @@ class PendudukExport implements FromQuery, WithMapping, WithHeadings, WithStyles
             'Nama Lengkap',
             'NIK',
             'Nomor KK',
+            'Hubungan Keluarga (SHDK)',
             'Jenis Kelamin',
             'Tempat Lahir',
             'Tanggal Lahir',
             'Kategori Umur',
             'Agama',
+            'Pendidikan Terakhir',
             'Pekerjaan',
+            'Status Perkawinan',
             'Status Kependudukan',
-            'Alamat Lengkap'
+            'Tanggal Masuk',
+            'Masa Berlaku Izin',
+            'Status Keberadaan',
+            'No. Akta Kematian',
+            'Alamat Lengkap',
+            'Titik Koordinat'
         ];
     }
 
@@ -83,18 +113,40 @@ class PendudukExport implements FromQuery, WithMapping, WithHeadings, WithStyles
      */
     public function map($row): array
     {
+        $statusKeberadaan = ($row->tanggal_meninggal || $row->akta_kematian) ? 'Meninggal' : 'Hidup';
+
+        $masaBerlaku = '-';
+        if ($row->status_kependudukan === 'Pendatang Sementara') {
+            if ($row->masa_berlaku) {
+                $isExpired = \Carbon\Carbon::parse($row->masa_berlaku)->isPast();
+                $masaBerlaku = $row->masa_berlaku->format('d-m-Y') . ($isExpired ? ' (Kedaluwarsa)' : ' (Aktif)');
+            } else {
+                $masaBerlaku = 'Tidak Terbatas';
+            }
+        }
+
+        $koordinat = ($row->latitude && $row->longitude) ? "{$row->latitude}, {$row->longitude}" : '-';
+
         return [
             $row->nama_lengkap,
             "'" . $row->nik, // Tambahkan tanda petik agar NIK tidak berubah jadi format scientific
             "'" . $row->nomor_kk,
-            $row->jenis_kelamin,
-            $row->tempat_lahir,
+            $row->status_dalam_keluarga ?? '-',
+            $row->jenis_kelamin ?? '-',
+            $row->tempat_lahir ?? '-',
             isset($row->tanggal_lahir) ? $row->tanggal_lahir->format('d-m-Y') : '-',
-            $row->kategori_umur,
-            $row->agama,
-            $row->pekerjaan,
-            $row->status_kependudukan,
-            $row->alamat_lengkap,
+            $row->kategori_umur ?? '-',
+            $row->agama ?? '-',
+            $row->pendidikan_terakhir ?? '-',
+            $row->pekerjaan ?? '-',
+            $row->status_perkawinan ?? '-',
+            $row->status_kependudukan ?? 'Penduduk Tetap',
+            isset($row->tanggal_masuk) ? $row->tanggal_masuk->format('d-m-Y') : '-',
+            $masaBerlaku,
+            $statusKeberadaan,
+            $row->akta_kematian ?? '-',
+            $row->alamat_lengkap ?? '-',
+            $koordinat,
         ];
     }
 

@@ -74,7 +74,12 @@ class PendudukController extends Controller
             'alamat' => ['required', 'string'],
             'nomor_telepon' => ['nullable', 'string', 'max:20'],
             'status_dalam_keluarga' => ['required', 'string', 'max:50'],
-            'status_kependudukan' => ['nullable', 'in:Tetap,Pendatang,Pindah,Meninggal'],
+            'status_kependudukan' => ['nullable', 'in:Tetap,Pendatang,Pendatang Sementara,Pindah,Meninggal'],
+            'tanggal_masuk' => ['nullable', 'date', 'required_if:status_kependudukan,Pendatang Sementara'],
+            'masa_berlaku' => ['nullable', 'date', 'required_if:status_kependudukan,Pendatang Sementara'],
+            'nomor_surat_tanda_lapor' => ['nullable', 'string', 'max:100'],
+            'daerah_asal' => ['nullable', 'string', 'max:255', 'required_if:status_kependudukan,Pendatang Sementara,Pendatang'],
+            'tujuan_menetap' => ['nullable', 'string', 'max:255', 'required_if:status_kependudukan,Pendatang Sementara,Pendatang'],
         ]);
 
         session(['onboarding.step2' => $validated]);

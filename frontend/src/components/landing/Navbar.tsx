@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useAuth } from '../../context/AuthContext'
@@ -7,6 +7,7 @@ export default function Navbar() {
   const router = useRouter()
   const { user, role, isProfileCompleted } = useAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [activeNav, setActiveNav] = useState<'beranda' | 'panduan' | 'profil' | 'peta' | 'berita'>('beranda')
 
   const dashboardHref =
     role === 'admin'
@@ -15,14 +16,82 @@ export default function Navbar() {
       ? '/user/dashboard'
       : '/user/onboarding/step-1'
 
-  const isBerita = router.pathname.startsWith('/berita')
-  const isPeta = router.pathname.startsWith('/peta')
-  const isBeranda = router.pathname === '/' || (!isBerita && !isPeta)
+  useEffect(() => {
+    if (router.pathname.startsWith('/berita')) {
+      setActiveNav('berita')
+      return
+    }
+    if (router.pathname.startsWith('/peta')) {
+      setActiveNav('peta')
+      return
+    }
+
+    const updateActiveNav = () => {
+      const hash = window.location.hash
+      if (hash === '#panduan-layanan') {
+        setActiveNav('panduan')
+        return
+      }
+      if (hash === '#profil-desa') {
+        setActiveNav('profil')
+        return
+      }
+
+      // Scroll spy on homepage
+      if (router.pathname === '/' || router.pathname === '/landing') {
+        const panduanEl = document.getElementById('panduan-layanan')
+        const profilEl = document.getElementById('profil-desa')
+
+        if (panduanEl && profilEl) {
+          const scrollY = window.scrollY + 180
+          const profilTop = profilEl.offsetTop
+          const panduanTop = panduanEl.offsetTop
+
+          if (scrollY >= profilTop) {
+            setActiveNav('profil')
+          } else if (scrollY >= panduanTop) {
+            setActiveNav('panduan')
+          } else {
+            setActiveNav('beranda')
+          }
+        } else {
+          setActiveNav('beranda')
+        }
+      }
+    }
+
+    updateActiveNav()
+    window.addEventListener('scroll', updateActiveNav, { passive: true })
+    window.addEventListener('hashchange', updateActiveNav)
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveNav)
+      window.removeEventListener('hashchange', updateActiveNav)
+    }
+  }, [router.pathname, router.asPath])
+
+  const getDesktopClass = (navKey: 'beranda' | 'panduan' | 'profil' | 'peta' | 'berita') => {
+    const isActive = activeNav === navKey
+    return `text-sm font-semibold transition-all duration-200 px-3.5 py-2 rounded-2xl ${
+      isActive
+        ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200/90 shadow-xs'
+        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70 border border-transparent'
+    }`
+  }
+
+  const getMobileClass = (navKey: 'beranda' | 'panduan' | 'profil' | 'peta' | 'berita') => {
+    const isActive = activeNav === navKey
+    return `rounded-2xl px-3.5 py-2.5 text-sm font-semibold transition ${
+      isActive
+        ? 'bg-emerald-50 text-emerald-800 font-bold border border-emerald-200 shadow-xs'
+        : 'text-slate-700 hover:bg-slate-100 border border-transparent'
+    }`
+  }
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200/90 px-4 sm:px-6 py-4 bg-white/90 backdrop-blur-md shadow-xs">
+    <header className="sticky top-0 z-40 border-b border-slate-200/90 px-4 sm:px-6 py-3.5 bg-white/95 backdrop-blur-md shadow-xs">
       <div className="mx-auto flex max-w-7xl items-center justify-between">
-        <Link href="/" className="flex items-center gap-3 group">
+        <Link href="/" onClick={() => setActiveNav('beranda')} className="flex items-center gap-3 group">
           <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-600 text-white font-extrabold shadow-sm group-hover:bg-emerald-700 transition">
             S
           </div>
@@ -33,28 +102,39 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden md:flex items-center gap-2">
           <Link
             href="/"
-            className={`text-sm font-semibold transition ${
-              isBeranda ? 'text-emerald-700 font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            onClick={() => setActiveNav('beranda')}
+            className={getDesktopClass('beranda')}
           >
             Beranda
           </Link>
           <Link
+            href="/#panduan-layanan"
+            onClick={() => setActiveNav('panduan')}
+            className={getDesktopClass('panduan')}
+          >
+            Panduan Alur
+          </Link>
+          <Link
+            href="/#profil-desa"
+            onClick={() => setActiveNav('profil')}
+            className={getDesktopClass('profil')}
+          >
+            Profil Wilayah
+          </Link>
+          <Link
             href="/peta"
-            className={`text-sm font-semibold transition flex items-center gap-1.5 ${
-              isPeta ? 'text-emerald-700 font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            onClick={() => setActiveNav('peta')}
+            className={`flex items-center gap-1.5 ${getDesktopClass('peta')}`}
           >
             <span>Peta Wilayah</span>
           </Link>
           <Link
             href="/berita"
-            className={`text-sm font-semibold transition ${
-              isBerita ? 'text-emerald-700 font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
+            onClick={() => setActiveNav('berita')}
+            className={getDesktopClass('berita')}
           >
             Berita &amp; Informasi
           </Link>
@@ -118,19 +198,41 @@ export default function Navbar() {
           <div className="flex flex-col space-y-1">
             <Link
               href="/"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                isBeranda ? 'bg-emerald-50 text-emerald-800 font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
+              onClick={() => {
+                setActiveNav('beranda')
+                setMobileMenuOpen(false)
+              }}
+              className={getMobileClass('beranda')}
             >
               Beranda
             </Link>
             <Link
+              href="/#panduan-layanan"
+              onClick={() => {
+                setActiveNav('panduan')
+                setMobileMenuOpen(false)
+              }}
+              className={getMobileClass('panduan')}
+            >
+              Panduan Alur
+            </Link>
+            <Link
+              href="/#profil-desa"
+              onClick={() => {
+                setActiveNav('profil')
+                setMobileMenuOpen(false)
+              }}
+              className={getMobileClass('profil')}
+            >
+              Profil Wilayah
+            </Link>
+            <Link
               href="/peta"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-xl px-3 py-2 text-sm font-semibold transition flex items-center gap-2 ${
-                isPeta ? 'bg-emerald-50 text-emerald-800 font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
+              onClick={() => {
+                setActiveNav('peta')
+                setMobileMenuOpen(false)
+              }}
+              className={`flex items-center gap-2 ${getMobileClass('peta')}`}
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -140,10 +242,11 @@ export default function Navbar() {
             </Link>
             <Link
               href="/berita"
-              onClick={() => setMobileMenuOpen(false)}
-              className={`rounded-xl px-3 py-2 text-sm font-semibold transition ${
-                isBerita ? 'bg-emerald-50 text-emerald-800 font-bold' : 'text-slate-700 hover:bg-slate-100'
-              }`}
+              onClick={() => {
+                setActiveNav('berita')
+                setMobileMenuOpen(false)
+              }}
+              className={getMobileClass('berita')}
             >
               Berita &amp; Informasi
             </Link>

@@ -85,18 +85,36 @@ class PendudukController extends Controller
             $validated['alamat_tujuan'] = null;
             $validated['daerah_asal'] = null;
             $validated['tujuan_menetap'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
         } elseif ($status === 'Meninggal') {
             $validated['tanggal_pindah'] = null;
             $validated['alamat_tujuan'] = null;
             $validated['daerah_asal'] = null;
             $validated['tujuan_menetap'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
         } elseif ($status === 'Pindah') {
             $validated['tanggal_meninggal'] = null;
             $validated['tempat_meninggal'] = null;
             $validated['akta_kematian'] = null;
             $validated['daerah_asal'] = null;
             $validated['tujuan_menetap'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
         } elseif ($status === 'Pendatang') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
+        } elseif ($status === 'Pendatang Sementara') {
             $validated['tanggal_meninggal'] = null;
             $validated['tempat_meninggal'] = null;
             $validated['akta_kematian'] = null;
@@ -181,18 +199,36 @@ class PendudukController extends Controller
             $validated['alamat_tujuan'] = null;
             $validated['daerah_asal'] = null;
             $validated['tujuan_menetap'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
         } elseif ($status === 'Meninggal') {
             $validated['tanggal_pindah'] = null;
             $validated['alamat_tujuan'] = null;
             $validated['daerah_asal'] = null;
             $validated['tujuan_menetap'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
         } elseif ($status === 'Pindah') {
             $validated['tanggal_meninggal'] = null;
             $validated['tempat_meninggal'] = null;
             $validated['akta_kematian'] = null;
             $validated['daerah_asal'] = null;
             $validated['tujuan_menetap'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
         } elseif ($status === 'Pendatang') {
+            $validated['tanggal_meninggal'] = null;
+            $validated['tempat_meninggal'] = null;
+            $validated['akta_kematian'] = null;
+            $validated['tanggal_pindah'] = null;
+            $validated['alamat_tujuan'] = null;
+            $validated['tanggal_masuk'] = null;
+            $validated['masa_berlaku'] = null;
+            $validated['nomor_surat_tanda_lapor'] = null;
+        } elseif ($status === 'Pendatang Sementara') {
             $validated['tanggal_meninggal'] = null;
             $validated['tempat_meninggal'] = null;
             $validated['akta_kematian'] = null;
@@ -241,6 +277,7 @@ class PendudukController extends Controller
             'alamat_lengkap' => ['nullable', 'string'],
             'status_dalam_keluarga' => ['nullable', 'string', 'max:50'],
             'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pindah,Meninggal'],
+            'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pendatang Sementara,Pindah,Meninggal'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'dokumen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
 
@@ -254,6 +291,12 @@ class PendudukController extends Controller
 
             'daerah_asal' => ['required_if:status_kependudukan,Pendatang', 'nullable', 'string', 'max:255'],
             'tujuan_menetap' => ['required_if:status_kependudukan,Pendatang', 'nullable', 'string', 'max:255'],
+            'daerah_asal' => ['required_if:status_kependudukan,Pendatang,Pendatang Sementara', 'nullable', 'string', 'max:255'],
+            'tujuan_menetap' => ['required_if:status_kependudukan,Pendatang,Pendatang Sementara', 'nullable', 'string', 'max:255'],
+
+            'tanggal_masuk' => ['required_if:status_kependudukan,Pendatang Sementara', 'nullable', 'date'],
+            'masa_berlaku' => ['required_if:status_kependudukan,Pendatang Sementara', 'nullable', 'date'],
+            'nomor_surat_tanda_lapor' => ['nullable', 'string', 'max:255'],
 
             // GEOTAGGING FIELDS
             'latitude' => ['nullable', 'string', 'max:50'],
@@ -338,6 +381,27 @@ class PendudukController extends Controller
             return $q->where('status_perkawinan', $request->status_perkawinan);
         });
 
+        $query->when($request->filled('status_dalam_keluarga'), function ($q) use ($request) {
+            return $q->where('status_dalam_keluarga', $request->status_dalam_keluarga);
+        });
+
+        $query->when($request->boolean('hanya_kepala_keluarga'), function ($q) {
+            return $q->where('status_dalam_keluarga', 'Kepala Keluarga');
+        });
+
+        $query->when($request->filled('status_masa_berlaku'), function ($q) use ($request) {
+            if ($request->status_masa_berlaku === 'aktif') {
+                return $q->where('status_kependudukan', 'Pendatang Sementara')
+                         ->where(function($inner) {
+                             $inner->whereNull('masa_berlaku')->orWhere('masa_berlaku', '>=', now()->toDateString());
+                         });
+            } elseif ($request->status_masa_berlaku === 'habis') {
+                return $q->where('status_kependudukan', 'Pendatang Sementara')
+                         ->whereNotNull('masa_berlaku')
+                         ->where('masa_berlaku', '<', now()->toDateString());
+            }
+        });
+
         // 4. Eksekusi dengan Pagination
         $penduduk = $query->latest()->paginate(10)->withQueryString();
 
@@ -350,6 +414,12 @@ class PendudukController extends Controller
                     'laki' => Penduduk::where('jenis_kelamin', 'Laki-laki')->count(),
                     'perempuan' => Penduduk::where('jenis_kelamin', 'Perempuan')->count(),
                     'tetap' => Penduduk::where('status_kependudukan', 'Tetap')->count(),
+                    'kepala_keluarga' => Penduduk::where('status_dalam_keluarga', 'Kepala Keluarga')->count(),
+                    'pendatang_sementara' => Penduduk::where('status_kependudukan', 'Pendatang Sementara')->count(),
+                    'masa_berlaku_habis' => Penduduk::where('status_kependudukan', 'Pendatang Sementara')
+                        ->whereNotNull('masa_berlaku')
+                        ->where('masa_berlaku', '<', now()->toDateString())
+                        ->count(),
                 ],
             ]);
         }
@@ -365,6 +435,7 @@ class PendudukController extends Controller
     public function show(Request $request, int $id)
     {
         $penduduk = Penduduk::with('kartuKeluarga')->findOrFail($id);
+        $penduduk = Penduduk::with(['kartuKeluarga', 'bantuanPenerima.bantuan'])->findOrFail($id);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([

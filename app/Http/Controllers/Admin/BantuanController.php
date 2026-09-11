@@ -43,6 +43,11 @@ class BantuanController extends Controller
             $query->where('status_penerima', $request->status);
         }
 
+        // Filter Status Verifikasi
+        if ($request->filled('status_verifikasi')) {
+            $query->where('status_verifikasi', $request->status_verifikasi);
+        }
+
         // 5. Filter Tanggal Menerima
         if ($request->filled('tanggal')) {
             $query->whereDate('tanggal_menerima', $request->tanggal);
@@ -78,6 +83,9 @@ class BantuanController extends Controller
                     'total_penerima' => BantuanPenerima::count(),
                     'diterima' => BantuanPenerima::whereIn('status_penerima', ['Diterima', 'Selesai', 'Disalurkan'])->count(),
                     'menunggu' => BantuanPenerima::whereIn('status_penerima', ['Menunggu', 'Pending', 'Diproses'])->count(),
+                    'disetujui' => BantuanPenerima::where('status_penerima', 'Diterima')->count(),
+                    'selesai' => BantuanPenerima::where('status_penerima', 'Selesai')->count(),
+                    'menunggu' => BantuanPenerima::where('status_penerima', 'Menunggu')->count(),
                     'total_program' => Bantuan::where('status_bantuan', 'Aktif')->count(),
                 ],
             ]);
@@ -135,9 +143,23 @@ class BantuanController extends Controller
             'penduduk_id' => ['required', 'exists:penduduk,id'],
             'bantuan_id' => ['required', 'exists:bantuan,id'],
             'status_penerima' => ['required', 'in:Menunggu,Diterima,Ditolak,Selesai'],
+            'status_verifikasi' => ['nullable', 'string'],
+            'tanggal_verifikasi' => ['nullable', 'date'],
             'tanggal_menerima' => ['nullable', 'date'],
             'catatan' => ['nullable', 'string'],
+            'catatan_operator' => ['nullable', 'string'],
         ]);
+
+        // Otomasi tanggal jika disetujui / selesai
+        if ($validated['status_penerima'] === 'Diterima' && empty($validated['status_verifikasi'])) {
+            $validated['status_verifikasi'] = 'Terverifikasi';
+        }
+        if (($validated['status_verifikasi'] ?? '') === 'Terverifikasi' && empty($validated['tanggal_verifikasi'])) {
+            $validated['tanggal_verifikasi'] = now()->toDateString();
+        }
+        if ($validated['status_penerima'] === 'Selesai' && empty($validated['tanggal_menerima'])) {
+            $validated['tanggal_menerima'] = now()->toDateString();
+        }
 
         $penerima = BantuanPenerima::create($validated);
 
@@ -211,9 +233,23 @@ class BantuanController extends Controller
             'penduduk_id' => ['required', 'exists:penduduk,id'],
             'bantuan_id' => ['required', 'exists:bantuan,id'],
             'status_penerima' => ['required', 'in:Menunggu,Diterima,Ditolak,Selesai'],
+            'status_verifikasi' => ['nullable', 'string'],
+            'tanggal_verifikasi' => ['nullable', 'date'],
             'tanggal_menerima' => ['nullable', 'date'],
             'catatan' => ['nullable', 'string'],
+            'catatan_operator' => ['nullable', 'string'],
         ]);
+
+        // Otomasi tanggal jika disetujui / selesai
+        if ($validated['status_penerima'] === 'Diterima' && empty($validated['status_verifikasi'])) {
+            $validated['status_verifikasi'] = 'Terverifikasi';
+        }
+        if (($validated['status_verifikasi'] ?? '') === 'Terverifikasi' && empty($validated['tanggal_verifikasi'])) {
+            $validated['tanggal_verifikasi'] = now()->toDateString();
+        }
+        if ($validated['status_penerima'] === 'Selesai' && empty($validated['tanggal_menerima'])) {
+            $validated['tanggal_menerima'] = now()->toDateString();
+        }
 
         $bantuan->update($validated);
 

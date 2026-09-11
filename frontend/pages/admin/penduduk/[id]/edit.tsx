@@ -15,6 +15,7 @@ import ConfirmModal from '../../../../src/components/modal/Confirm'
 import { useAlert } from '../../../../src/context/AlertContext'
 import api, { getStorageUrl } from '../../../../src/lib/api'
 import { Penduduk } from '../../../../src/types'
+import { DAFTAR_PEKERJAAN_DUKCAPIL, STATUS_HUBUNGAN_KELUARGA, STATUS_KEPENDUDUKAN_LIST } from '../../../../src/constants/dukcapil'
 
 const FormMapPicker = dynamic(
   () => import('../../../../src/components/maps/form-map-picker'),
@@ -54,12 +55,15 @@ export default function AdminPendudukEdit() {
     alamat_tujuan: '',
     daerah_asal: '',
     tujuan_menetap: '',
+    tanggal_masuk: '',
+    masa_berlaku: '',
+    nomor_surat_tanda_lapor: '',
     nomor_telepon: '',
     alamat_lengkap: '',
   })
   const [coords, setCoords] = useState({
-    latitude: '-6.2088',
-    longitude: '106.8456',
+    latitude: '-8.0781358',
+    longitude: '115.1536173',
   })
   const [fotoProfil, setFotoProfil] = useState<File | null>(null)
   const [dokumen, setDokumen] = useState<File | null>(null)
@@ -96,6 +100,9 @@ export default function AdminPendudukEdit() {
             alamat_tujuan: p.alamat_tujuan || '',
             daerah_asal: p.daerah_asal || '',
             tujuan_menetap: p.tujuan_menetap || '',
+            tanggal_masuk: p.tanggal_masuk ? p.tanggal_masuk.substring(0, 10) : '',
+            masa_berlaku: p.masa_berlaku ? p.masa_berlaku.substring(0, 10) : '',
+            nomor_surat_tanda_lapor: p.nomor_surat_tanda_lapor || '',
             nomor_telepon: p.nomor_telepon || '',
             alamat_lengkap: p.alamat_lengkap || '',
           })
@@ -286,7 +293,7 @@ export default function AdminPendudukEdit() {
                 name="status_kependudukan"
                 value={formData.status_kependudukan}
                 onChange={handleChange}
-                options={['Tetap', 'Pendatang', 'Pindah', 'Meninggal']}
+                options={STATUS_KEPENDUDUKAN_LIST}
               />
             </div>
 
@@ -411,12 +418,77 @@ export default function AdminPendudukEdit() {
               </div>
             )}
 
+            {/* Form Dinamis: Pendatang Sementara */}
+            {formData.status_kependudukan === 'Pendatang Sementara' && (
+              <div className="rounded-2xl border border-amber-300 bg-amber-50/50 p-5 space-y-4 transition-all">
+                <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                  <svg className="h-5 w-5 text-amber-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <span>Informasi Pendatang Sementara (Surat Tanda Lapor / Izin Tinggal Sementara)</span>
+                </div>
+                <p className="text-xs text-amber-800/90 font-medium">
+                  Wajib mengisi tanggal kedatangan (masuk), masa berlaku izin tinggal/lapor, daerah asal, dan alasan/tujuan berada di wilayah.
+                </p>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                  <FormInput
+                    label="Tanggal Masuk / Kedatangan *"
+                    type="date"
+                    name="tanggal_masuk"
+                    value={formData.tanggal_masuk}
+                    onChange={handleChange}
+                    required
+                    error={validationErrors.tanggal_masuk?.[0]}
+                  />
+                  <FormInput
+                    label="Masa Berlaku Izin Tinggal *"
+                    type="date"
+                    name="masa_berlaku"
+                    value={formData.masa_berlaku}
+                    onChange={handleChange}
+                    required
+                    error={validationErrors.masa_berlaku?.[0]}
+                  />
+                  <FormInput
+                    label="Nomor Surat Tanda Lapor / SKTT"
+                    name="nomor_surat_tanda_lapor"
+                    value={formData.nomor_surat_tanda_lapor}
+                    onChange={handleChange}
+                    placeholder="Contoh: 470/123/Desa/2026"
+                    error={validationErrors.nomor_surat_tanda_lapor?.[0]}
+                  />
+                </div>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <FormInput
+                    label="Daerah Asal *"
+                    name="daerah_asal"
+                    value={formData.daerah_asal}
+                    onChange={handleChange}
+                    placeholder="Contoh: Kab. Singkawang, Kalimantan Barat"
+                    required
+                    error={validationErrors.daerah_asal?.[0]}
+                  />
+                  <FormInput
+                    label="Tujuan Menetap Sementara *"
+                    name="tujuan_menetap"
+                    value={formData.tujuan_menetap}
+                    onChange={handleChange}
+                    placeholder="Contoh: Proyek Kontrak 6 Bulan / Studi / Magang"
+                    required
+                    error={validationErrors.tujuan_menetap?.[0]}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormInput
-                label="Pekerjaan"
+              <FormSelect
+                label="Pekerjaan (Standar Dukcapil)"
                 name="pekerjaan"
                 value={formData.pekerjaan}
                 onChange={handleChange}
+                options={DAFTAR_PEKERJAAN_DUKCAPIL}
+                placeholder="Pilih Klasifikasi Pekerjaan..."
               />
 
               <FormSelect
@@ -443,17 +515,8 @@ export default function AdminPendudukEdit() {
                 name="status_dalam_keluarga"
                 value={formData.status_dalam_keluarga}
                 onChange={handleChange}
-                options={[
-                  'Kepala Keluarga',
-                  'Suami',
-                  'Istri',
-                  'Anak',
-                  'Menantu',
-                  'Cucu',
-                  'Orang Tua',
-                  'Mertua',
-                  'Famili Lain',
-                ]}
+                options={STATUS_HUBUNGAN_KELUARGA}
+                placeholder="Pilih Hubungan dalam Keluarga..."
                 required
               />
 

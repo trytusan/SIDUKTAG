@@ -22,8 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'profile.completed' => \App\Http\Middleware\EnsureProfileCompleted::class,
         ]);
 
-        // 2. Izinkan same-site request (Next.js di port 3000 ke Laravel di port 8000)
-        $middleware->preventRequestForgery(allowSameSite: true);
+        // 2. Izinkan same-site request dan kecualikan rute API dari CSRF
+        $middleware->preventRequestForgery(except: ['api/*'], allowSameSite: true);
 
         // 3. Logika redirect yang kita buat sebelumnya
         $middleware->redirectUsersTo(function () {

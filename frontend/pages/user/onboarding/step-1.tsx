@@ -7,6 +7,7 @@ import FormInput from '../../../src/components/form/input'
 import FormSelect from '../../../src/components/form/select'
 import FormRadio from '../../../src/components/form/radio'
 import AlertError from '../../../src/components/ui/alert-error'
+import { DAFTAR_PEKERJAAN_DUKCAPIL } from '../../../src/constants/dukcapil'
 
 export default function OnboardingStep1() {
   const router = useRouter()
@@ -196,12 +197,13 @@ export default function OnboardingStep1() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormInput
-                label="Pekerjaan"
+              <FormSelect
+                label="Pekerjaan (Standar Dukcapil)"
                 name="pekerjaan"
                 value={formData.pekerjaan}
                 onChange={handleChange}
-                placeholder="Contoh: Karyawan Swasta, Wiraswasta"
+                options={DAFTAR_PEKERJAAN_DUKCAPIL}
+                placeholder="Pilih Klasifikasi Pekerjaan..."
               />
 
               <FormSelect

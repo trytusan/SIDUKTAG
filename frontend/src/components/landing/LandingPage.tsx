@@ -4,6 +4,8 @@ import { useAuth } from '../../context/AuthContext'
 import Navbar from './Navbar'
 import HeroSection from './HeroSection'
 import FeaturesSection from './FeaturesSection'
+import GuideSection from './GuideSection'
+import ProfileSection from './ProfileSection'
 import NewsSection from './NewsSection'
 import Footer from './Footer'
 
@@ -22,9 +24,11 @@ export default function LandingPage() {
 
       <Navbar />
 
-      <main className="mx-auto flex max-w-5xl flex-1 flex-col items-center justify-center px-6 py-16 text-center">
+      <main className="mx-auto flex max-w-6xl flex-1 flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-16 text-center">
         <HeroSection />
         <FeaturesSection />
+        <GuideSection />
+        <ProfileSection />
         <NewsSection isAdmin={Boolean(user && role === 'admin')} />
       </main>
 

@@ -27,8 +27,8 @@ export default function OnboardingStep3() {
   const [fotoProfil, setFotoProfil] = useState<File | null>(null)
   const [dokumen, setDokumen] = useState<File | null>(null)
   const [coords, setCoords] = useState<{ latitude: string; longitude: string }>({
-    latitude: '-6.2088',
-    longitude: '106.8456',
+    latitude: '-8.0781358',
+    longitude: '115.1536173',
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)

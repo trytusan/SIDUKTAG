@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
+import { useRouter } from 'next/router'
 import Link from 'next/link'
 import AuthLayout from '../src/components/layouts/auth'
-import { forgotPassword } from '../src/lib/auth'
+import { sendOtp } from '../src/lib/auth'
 
 export default function ForgotPasswordPage() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<string | null>(null)
@@ -16,13 +18,16 @@ export default function ForgotPasswordPage() {
     setStatus(null)
 
     try {
-      const res = await forgotPassword(email)
-      setStatus(res?.status || res?.message || 'Tautan reset password telah dikirim ke email Anda.')
+      const res = await sendOtp(email)
+      setStatus(res?.message || 'Kode OTP 6-digit telah dikirim ke email Anda. Mengalihkan ke halaman verifikasi...')
+      setTimeout(() => {
+        router.push(`/verify-otp?email=${encodeURIComponent(email)}`)
+      }, 1500)
     } catch (err: any) {
       setError(
         err?.response?.data?.message ||
         err?.response?.data?.errors?.email?.[0] ||
-        'Gagal mengirim tautan reset password.'
+        'Gagal mengirim kode OTP. Pastikan email terdaftar dan pengaturan SMTP Gmail sudah aktif.'
       )
     } finally {
       setLoading(false)
@@ -31,7 +36,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <AuthLayout title="Lupa Password — SIDUKTAG">
-      <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm">
+      <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm max-w-md mx-auto">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-xs">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -40,19 +45,21 @@ export default function ForgotPasswordPage() {
           </div>
           <h1 className="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">Lupa Password?</h1>
           <p className="mt-1 text-xs text-slate-500 font-medium">
-            Masukkan email terdaftar Anda untuk menerima tautan atur ulang password.
+            Masukkan email terdaftar Anda untuk menerima kode verifikasi OTP 6-digit via Gmail.
           </p>
         </div>
 
         {status && (
-          <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800">
-            {status}
+          <div className="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-xs font-medium text-emerald-800 flex items-start gap-2">
+            <span className="font-bold text-sm">✓</span>
+            <span>{status}</span>
           </div>
         )}
 
         {error && (
-          <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
-            {error}
+          <div className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700 flex items-start gap-2">
+            <span className="font-bold text-sm">⚠️</span>
+            <span>{error}</span>
           </div>
         )}
 
@@ -76,15 +83,24 @@ export default function ForgotPasswordPage() {
             disabled={loading}
             className="w-full rounded-2xl bg-emerald-600 px-4 py-3.5 text-sm font-bold text-white shadow-sm shadow-emerald-600/20 transition duration-200 hover:bg-emerald-700 active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? 'Mengirim Tautan...' : 'Kirim Tautan Reset'}
+            {loading ? 'Mengirim Kode OTP...' : 'Kirim Kode OTP ke Email'}
           </button>
 
-          <p className="pt-2 text-center text-xs text-slate-500">
-            Ingat password Anda?{' '}
-            <Link href="/login" className="font-bold text-emerald-700 hover:text-emerald-800">
-              Kembali ke Login
+          <div className="pt-3 border-t border-slate-100 flex flex-col items-center gap-2 text-center text-xs text-slate-500">
+            <Link
+              href="/verify-otp"
+              className="font-bold text-emerald-700 hover:text-emerald-800 hover:underline"
+            >
+              Sudah memiliki kode OTP? Verifikasi di sini &rarr;
             </Link>
-          </p>
+
+            <p className="pt-1">
+              Ingat password Anda?{' '}
+              <Link href="/login" className="font-bold text-slate-700 hover:text-slate-900">
+                Kembali ke Login
+              </Link>
+            </p>
+          </div>
         </form>
       </div>
     </AuthLayout>
