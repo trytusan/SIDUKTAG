@@ -125,7 +125,10 @@ class PengajuanSuratController extends Controller
             ->findOrFail($id);
 
         if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($surat);
+            return response()->json([
+                'surat' => $surat,
+                'data' => $surat,
+            ]);
         }
 
         return view('user.pengajuan-surat.show', compact('surat'));

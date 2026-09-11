@@ -19,7 +19,7 @@ export default function UserPengajuanSuratDetail() {
     async function fetchDetail() {
       try {
         const res = await api.get('/user/pengajuan-surat/' + id)
-        setSurat(res.data.surat)
+        setSurat(res.data?.surat || res.data?.data || res.data)
       } catch (err) {
         console.error('Failed to load detail surat:', err)
       } finally {

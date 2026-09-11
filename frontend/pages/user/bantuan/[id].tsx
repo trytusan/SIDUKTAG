@@ -19,7 +19,7 @@ export default function UserBantuanDetail() {
     async function fetchDetail() {
       try {
         const res = await api.get('/user/bantuan/' + id)
-        setBantuan(res.data.bantuan)
+        setBantuan(res.data?.bantuan || res.data?.data || res.data)
       } catch (err) {
         console.error('Failed to load detail bantuan:', err)
       } finally {

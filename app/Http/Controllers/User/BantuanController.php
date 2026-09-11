@@ -102,7 +102,10 @@ class BantuanController extends Controller
             ->findOrFail($id);
 
         if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json($bantuan);
+            return response()->json([
+                'bantuan' => $bantuan,
+                'data' => $bantuan,
+            ]);
         }
 
         return view('user.bantuan.show', compact('bantuan'));
