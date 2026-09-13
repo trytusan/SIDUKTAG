@@ -7,7 +7,6 @@ import FormInput from '../../../src/components/form/input'
 import FormTextarea from '../../../src/components/form/textarea'
 import FormSelect from '../../../src/components/form/select'
 import AlertError from '../../../src/components/ui/alert-error'
-import { STATUS_HUBUNGAN_KELUARGA } from '../../../src/constants/dukcapil'
 
 export default function OnboardingStep2() {
   const router = useRouter()
@@ -80,43 +79,46 @@ export default function OnboardingStep2() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-100/90 py-10 px-4 sm:px-6 lg:px-8 text-slate-800">
       <Head>
         <title>Langkah 2: Alamat & Kontak — SIDUKTAG</title>
       </Head>
 
       <div className="mx-auto max-w-2xl">
-        {/* Progress Stepper */}
+        {/* Progress Stepper (Warm Slate Theme) */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <Link href="/user/onboarding/step-1" className="flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500 font-bold text-slate-950 shadow-lg">
+            <Link href="/user/onboarding/step-1" className="flex flex-col items-center group">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-600/30 transition group-hover:scale-105">
                 ✓
               </div>
-              <span className="mt-2 text-xs font-semibold text-emerald-400">Data Pokok</span>
+              <span className="mt-2 text-xs font-bold text-emerald-700">Data Pokok</span>
             </Link>
-            <div className="h-0.5 flex-1 bg-emerald-500 mx-3"></div>
+            <div className="h-1 flex-1 bg-emerald-500 mx-3 rounded-full"></div>
             <div className="flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500 font-bold text-slate-950 shadow-lg shadow-emerald-500/30">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-600/30">
                 2
               </div>
-              <span className="mt-2 text-xs font-semibold text-emerald-400">Alamat & Kontak</span>
+              <span className="mt-2 text-xs font-bold text-emerald-700">Alamat & Kontak</span>
             </div>
-            <div className="h-0.5 flex-1 bg-slate-700 mx-3"></div>
-            <div className="flex flex-col items-center opacity-40">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-400 font-bold">
+            <div className="h-1 flex-1 bg-slate-200 mx-3 rounded-full"></div>
+            <div className="flex flex-col items-center opacity-60">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-500 font-bold shadow-sm">
                 3
               </div>
-              <span className="mt-2 text-xs font-semibold text-slate-400">Dokumen & Lokasi</span>
+              <span className="mt-2 text-xs font-medium text-slate-500">Dokumen & Lokasi</span>
             </div>
           </div>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-3xl border border-white/10 bg-slate-950 p-6 sm:p-10 shadow-2xl">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white">Alamat & Informasi Domisili</h2>
-            <p className="mt-1 text-sm text-slate-400">
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-10 shadow-xl shadow-slate-200/60">
+          <div className="mb-6 border-b border-slate-100 pb-4">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 mb-2">
+              Langkah 2 dari 3
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Alamat & Informasi Domisili</h2>
+            <p className="mt-1 text-sm text-slate-500">
               Lengkapi informasi tempat tinggal dan nomor kontak yang dapat dihubungi.
             </p>
           </div>
@@ -147,14 +149,14 @@ export default function OnboardingStep2() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
-                <label className="mb-2 block text-sm font-medium text-slate-200">
+                <label className="mb-2 block text-sm font-medium text-slate-700">
                   Status Hubungan dalam Keluarga
                 </label>
-                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm">
-                  <span className="font-semibold text-emerald-400">
+                <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                  <span className="font-bold text-emerald-800">
                     {formData.status_dalam_keluarga || 'Kepala Keluarga'}
                   </span>
-                  <span className="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-lg">
+                  <span className="text-xs text-slate-600 bg-white border border-slate-200 px-2.5 py-1 rounded-lg font-medium shadow-xs">
                     Diatur di Langkah 1
                   </span>
                 </div>
@@ -173,14 +175,14 @@ export default function OnboardingStep2() {
 
             {/* Form Dinamis: Pendatang */}
             {formData.status_kependudukan === 'Pendatang' && (
-              <div className="rounded-2xl border border-emerald-500/30 bg-emerald-950/30 p-5 space-y-4">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-sm">
-                  <svg className="h-5 w-5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-5 space-y-4">
+                <div className="flex items-center gap-2 text-emerald-900 font-bold text-sm">
+                  <svg className="h-5 w-5 text-emerald-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                   </svg>
                   <span>Informasi Warga Pendatang (Domisili Baru)</span>
                 </div>
-                <p className="text-xs text-emerald-300/80">
+                <p className="text-xs text-emerald-800">
                   Wajib mengisi daerah asal dan tujuan/alasan menetap di wilayah ini.
                 </p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -208,14 +210,14 @@ export default function OnboardingStep2() {
 
             {/* Form Dinamis: Pendatang Sementara */}
             {formData.status_kependudukan === 'Pendatang Sementara' && (
-              <div className="rounded-2xl border border-amber-500/30 bg-amber-950/30 p-5 space-y-4">
-                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                  <svg className="h-5 w-5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-5 space-y-4">
+                <div className="flex items-center gap-2 text-amber-900 font-bold text-sm">
+                  <svg className="h-5 w-5 text-amber-700 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                   </svg>
                   <span>Informasi Pendatang Sementara (Izin Tinggal Sementara)</span>
                 </div>
-                <p className="text-xs text-amber-300/80">
+                <p className="text-xs text-amber-800">
                   Wajib mengisi tanggal masuk/kedatangan, masa berlaku izin tinggal, daerah asal, dan tujuan menetap.
                 </p>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -272,14 +274,14 @@ export default function OnboardingStep2() {
             <div className="pt-4 flex items-center justify-between">
               <Link
                 href="/user/onboarding/step-1"
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-700 bg-slate-800 px-5 py-3 text-sm font-semibold text-slate-300 transition hover:bg-slate-700"
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200"
               >
                 &larr; Kembali
               </Link>
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/30 transition duration-200 hover:bg-emerald-400 active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition duration-200 hover:bg-emerald-500 active:scale-95 disabled:opacity-50"
               >
                 {loading ? 'Menyimpan...' : 'Lanjut ke Langkah 3'}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

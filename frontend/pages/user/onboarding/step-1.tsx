@@ -96,7 +96,7 @@ export default function OnboardingStep1() {
     setFormData((prev) => ({
       ...prev,
       status_dalam_keluarga: val,
-      // Jika beralih ke bukan Kepala Keluarga dan sebelumnya belum memilih KK, kosongkan nomor_kk
+      // Jika beralih ke bukan Kepala Keluarga dan sebelumnya belum memilih KK, reset no kk
       nomor_kk: val === 'Kepala Keluarga' ? prev.nomor_kk : (inputModeKk === 'select' ? '' : prev.nomor_kk),
     }))
   }
@@ -109,7 +109,7 @@ export default function OnboardingStep1() {
 
     try {
       await api.post('/user/onboarding/step-1', formData)
-      // Cache di sessionStorage untuk fallback langkah berikutnya
+      // Cache di sessionStorage untuk langkah berikutnya
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('onboarding_step1', JSON.stringify(formData))
       }
@@ -127,43 +127,46 @@ export default function OnboardingStep1() {
   const isKepalaKeluarga = formData.status_dalam_keluarga === 'Kepala Keluarga'
 
   return (
-    <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-100/90 py-10 px-4 sm:px-6 lg:px-8 text-slate-800">
       <Head>
         <title>Langkah 1: Data Pokok — SIDUKTAG</title>
       </Head>
 
       <div className="mx-auto max-w-2xl">
-        {/* Progress Stepper */}
+        {/* Progress Stepper (Warm Slate Theme) */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
             <div className="flex flex-col items-center">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-500 font-bold text-slate-950 shadow-lg shadow-emerald-500/30">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-600 font-bold text-white shadow-lg shadow-emerald-600/30">
                 1
               </div>
-              <span className="mt-2 text-xs font-semibold text-emerald-400">Data Pokok</span>
+              <span className="mt-2 text-xs font-bold text-emerald-700">Data Pokok</span>
             </div>
-            <div className="h-0.5 flex-1 bg-slate-700 mx-3"></div>
-            <div className="flex flex-col items-center opacity-40">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-400 font-bold">
+            <div className="h-1 flex-1 bg-slate-200 mx-3 rounded-full"></div>
+            <div className="flex flex-col items-center opacity-60">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-500 font-bold shadow-sm">
                 2
               </div>
-              <span className="mt-2 text-xs font-semibold text-slate-400">Alamat & Kontak</span>
+              <span className="mt-2 text-xs font-medium text-slate-500">Alamat & Kontak</span>
             </div>
-            <div className="h-0.5 flex-1 bg-slate-700 mx-3"></div>
-            <div className="flex flex-col items-center opacity-40">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-600 bg-slate-800 text-slate-400 font-bold">
+            <div className="h-1 flex-1 bg-slate-200 mx-3 rounded-full"></div>
+            <div className="flex flex-col items-center opacity-60">
+              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border-2 border-slate-300 bg-white text-slate-500 font-bold shadow-sm">
                 3
               </div>
-              <span className="mt-2 text-xs font-semibold text-slate-400">Dokumen & Lokasi</span>
+              <span className="mt-2 text-xs font-medium text-slate-500">Dokumen & Lokasi</span>
             </div>
           </div>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-3xl border border-white/10 bg-slate-950 p-6 sm:p-10 shadow-2xl">
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white">Lengkapi Data Kependudukan</h2>
-            <p className="mt-1 text-sm text-slate-400">
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-10 shadow-xl shadow-slate-200/60">
+          <div className="mb-6 border-b border-slate-100 pb-4">
+            <div className="inline-flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700 mb-2">
+              Langkah 1 dari 3
+            </div>
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Lengkapi Data Kependudukan</h2>
+            <p className="mt-1 text-sm text-slate-500">
               Silakan isi formulir identitas kependudukan Anda sesuai KTP/KK yang sah.
             </p>
           </div>
@@ -171,6 +174,7 @@ export default function OnboardingStep1() {
           <AlertError message={error} errors={validationErrors} />
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-5">
+            {/* 1. Nama Lengkap */}
             <FormInput
               label="Nama Lengkap (Sesuai KTP)"
               name="nama_lengkap"
@@ -181,6 +185,7 @@ export default function OnboardingStep1() {
               error={validationErrors.nama_lengkap?.[0]}
             />
 
+            {/* 2. NIK */}
             <FormInput
               label="Nomor Induk Kependudukan (NIK)"
               name="nik"
@@ -192,8 +197,8 @@ export default function OnboardingStep1() {
               error={validationErrors.nik?.[0]}
             />
 
-            {/* Bagian Status Hubungan Keluarga & Nomor KK */}
-            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 sm:p-5 space-y-4">
+            {/* 3. Status Hubungan dalam Keluarga & No. KK (Validasi Hierarki) */}
+            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-4">
               <FormSelect
                 label="Status Hubungan dalam Keluarga (SHDK)"
                 name="status_dalam_keluarga"
@@ -203,10 +208,10 @@ export default function OnboardingStep1() {
                 placeholder="Pilih Hubungan dalam Keluarga..."
                 required
                 error={validationErrors.status_dalam_keluarga?.[0]}
-                helperText="Pilih status Anda dalam susunan keluarga sesuai dokumen resmi."
+                helperText="Pilih peran Anda dalam keluarga terlebih dahulu agar sistem dapat menyesuaikan pemeriksaan Nomor KK."
               />
 
-              {/* Input Nomor KK Berdasarkan Peran Keluarga */}
+              {/* Logika No KK Dinamis */}
               {isKepalaKeluarga ? (
                 <div className="space-y-1">
                   <FormInput
@@ -214,37 +219,37 @@ export default function OnboardingStep1() {
                     name="nomor_kk"
                     value={formData.nomor_kk}
                     onChange={handleChange}
-                    placeholder="Masukkan 16 digit No. KK"
+                    placeholder="Masukkan 16 digit Nomor KK"
                     maxLength={16}
                     required
                     error={validationErrors.nomor_kk?.[0]}
-                    helperText="Sebagai Kepala Keluarga, Anda dapat mendaftarkan nomor KK baru atau nomor KK keluarga Anda."
+                    helperText="Sebagai Kepala Keluarga, Anda berhak mendaftarkan nomor KK baru atau memasukkan nomor KK keluarga Anda."
                   />
                 </div>
               ) : (
-                <div className="rounded-xl border border-sky-500/20 bg-sky-950/20 p-4 space-y-3">
-                  <div className="flex items-start gap-2.5 text-sky-300 text-xs sm:text-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 sm:p-5 space-y-3">
+                  <div className="flex items-start gap-2.5 text-sky-900 text-xs sm:text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <div>
-                      <span className="font-semibold text-sky-200">Induk Kartu Keluarga Wajib Terdaftar:</span>
-                      <p className="mt-0.5 text-sky-300/90 text-xs">
-                        Sebagai anggota keluarga ({formData.status_dalam_keluarga}), Anda harus menginduk ke Nomor KK yang sudah terdaftar di Desa Bungkulan (telah didaftarkan oleh Kepala Keluarga).
+                      <span className="font-bold text-sky-950">Wajib Menginduk ke KK Terdaftar:</span>
+                      <p className="mt-0.5 text-sky-800 text-xs">
+                        Sebagai anggota keluarga (<span className="font-semibold">{formData.status_dalam_keluarga}</span>), Nomor KK Anda harus sudah didaftarkan terlebih dahulu di Desa Bungkulan oleh Kepala Keluarga.
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <label className="text-xs font-semibold text-slate-300">
-                      Pilih / Masukkan No. KK Terdaftar <span className="text-red-400">*</span>
+                    <label className="text-xs font-bold text-slate-700">
+                      Pilih / Masukkan No. KK Terdaftar <span className="text-red-500">*</span>
                     </label>
                     <button
                       type="button"
                       onClick={() => setInputModeKk(inputModeKk === 'select' ? 'manual' : 'select')}
-                      className="text-xs text-emerald-400 hover:text-emerald-300 underline font-medium transition"
+                      className="text-xs text-emerald-700 hover:text-emerald-800 underline font-semibold transition"
                     >
-                      {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Daftar KK Desa'}
+                      {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Dropdown KK Desa'}
                     </button>
                   </div>
 
@@ -263,8 +268,8 @@ export default function OnboardingStep1() {
                         error={validationErrors.nomor_kk?.[0]}
                       />
                       {kkOptions.length === 0 && !loadingKk && (
-                        <p className="mt-1.5 text-xs text-amber-400">
-                          Belum ada data KK terdaftar di sistem desa. Silakan beralih ke mode &quot;Ketik Manual No. KK&quot;.
+                        <p className="mt-1.5 text-xs text-amber-700">
+                          Belum ada KK yang terdaftar di database desa. Silakan beralih ke mode &quot;Ketik Manual No. KK&quot;.
                         </p>
                       )}
                     </div>
@@ -274,7 +279,7 @@ export default function OnboardingStep1() {
                         name="nomor_kk"
                         value={formData.nomor_kk}
                         onChange={handleChange}
-                        placeholder="Ketik 16 digit Nomor KK yang sudah ada di desa"
+                        placeholder="Ketik 16 digit Nomor KK yang sudah terdaftar di desa"
                         maxLength={16}
                         required
                         error={validationErrors.nomor_kk?.[0]}
@@ -286,6 +291,7 @@ export default function OnboardingStep1() {
               )}
             </div>
 
+            {/* 4. Tempat & Tanggal Lahir */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormInput
                 label="Tempat Lahir"
@@ -304,6 +310,7 @@ export default function OnboardingStep1() {
               />
             </div>
 
+            {/* 5. Jenis Kelamin */}
             <FormRadio
               label="Jenis Kelamin"
               name="jenis_kelamin"
@@ -316,6 +323,7 @@ export default function OnboardingStep1() {
               required
             />
 
+            {/* 6. Agama & Status Perkawinan */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormSelect
                 label="Agama"
@@ -334,6 +342,7 @@ export default function OnboardingStep1() {
               />
             </div>
 
+            {/* 7. Pekerjaan & Pendidikan */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormSelect
                 label="Pekerjaan (Standar Dukcapil)"
@@ -362,11 +371,12 @@ export default function OnboardingStep1() {
               />
             </div>
 
+            {/* Tombol Lanjut */}
             <div className="pt-4 flex justify-end">
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-6 py-3 text-sm font-bold text-slate-950 shadow-lg shadow-emerald-500/30 transition duration-200 hover:bg-emerald-400 active:scale-95 disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-7 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/25 transition duration-200 hover:bg-emerald-500 active:scale-95 disabled:opacity-50"
               >
                 {loading ? 'Menyimpan...' : 'Lanjut ke Langkah 2'}
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
