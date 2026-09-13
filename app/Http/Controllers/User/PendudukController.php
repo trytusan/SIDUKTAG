@@ -37,9 +37,10 @@ class PendudukController extends Controller
 
     public function storeStep1(Request $request)
     {
-        $validated = $request->validate([
+        $rules = [
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'digits:16'],
+            'status_dalam_keluarga' => ['required', 'string', 'max:50'],
             'nomor_kk' => ['required', 'digits:16'],
             'tempat_lahir' => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['nullable', 'date'],
@@ -48,7 +49,19 @@ class PendudukController extends Controller
             'status_perkawinan' => ['nullable', 'string', 'max:50'],
             'pekerjaan' => ['nullable', 'string', 'max:100'],
             'pendidikan_terakhir' => ['nullable', 'string', 'max:50'],
-        ]);
+        ];
+
+        // Jika bukan Kepala Keluarga, No KK harus sudah ada di tabel kartu_keluarga
+        if ($request->status_dalam_keluarga !== 'Kepala Keluarga') {
+            $rules['nomor_kk'][] = 'exists:kartu_keluarga,nomor_kk';
+        }
+
+        $messages = [
+            'nomor_kk.exists' => 'Nomor Kartu Keluarga (KK) belum terdaftar di sistem desa. Untuk status anggota keluarga, Nomor KK harus sudah didaftarkan terlebih dahulu oleh Kepala Keluarga.',
+            'status_dalam_keluarga.required' => 'Status hubungan dalam keluarga wajib dipilih.',
+        ];
+
+        $validated = $request->validate($rules, $messages);
 
         session(['onboarding.step1' => $validated]);
 
@@ -73,7 +86,7 @@ class PendudukController extends Controller
         $validated = $request->validate([
             'alamat' => ['required', 'string'],
             'nomor_telepon' => ['nullable', 'string', 'max:20'],
-            'status_dalam_keluarga' => ['required', 'string', 'max:50'],
+            'status_dalam_keluarga' => ['nullable', 'string', 'max:50'],
             'status_kependudukan' => ['nullable', 'in:Tetap,Pendatang,Pendatang Sementara,Pindah,Meninggal'],
             'tanggal_masuk' => ['nullable', 'date', 'required_if:status_kependudukan,Pendatang Sementara'],
             'masa_berlaku' => ['nullable', 'date', 'required_if:status_kependudukan,Pendatang Sementara'],
@@ -81,6 +94,10 @@ class PendudukController extends Controller
             'daerah_asal' => ['nullable', 'string', 'max:255', 'required_if:status_kependudukan,Pendatang Sementara,Pendatang'],
             'tujuan_menetap' => ['nullable', 'string', 'max:255', 'required_if:status_kependudukan,Pendatang Sementara,Pendatang'],
         ]);
+
+        if (empty($validated['status_dalam_keluarga'])) {
+            $validated['status_dalam_keluarga'] = session('onboarding.step1.status_dalam_keluarga', 'Kepala Keluarga');
+        }
 
         session(['onboarding.step2' => $validated]);
 
@@ -116,6 +133,8 @@ class PendudukController extends Controller
         DB::transaction(function () use ($request, $validated, $step1, $step2, $user) {
             $data = array_merge($step1, $step2);
 
+            $statusDalamKeluarga = $step1['status_dalam_keluarga'] ?? $step2['status_dalam_keluarga'] ?? 'Kepala Keluarga';
+            $data['status_dalam_keluarga'] = $statusDalamKeluarga;
             $data['user_id'] = $user->id;
             $data['alamat_lengkap'] = $step2['alamat'] ?? null;
             $data['kategori_umur'] = $this->hitungKategoriUmur($step1['tanggal_lahir'] ?? null);
@@ -133,7 +152,7 @@ class PendudukController extends Controller
             }
 
             // 1. Logika OTOMATISASI KARTU KELUARGA (Agar pendaftaran tidak error jika KK belum ada)
-            $isKepalaKeluarga = ($step2['status_dalam_keluarga'] === 'Kepala Keluarga');
+            $isKepalaKeluarga = ($statusDalamKeluarga === 'Kepala Keluarga');
             
             $kartuKeluarga = KartuKeluarga::firstOrCreate(
                 ['nomor_kk' => $step1['nomor_kk']],

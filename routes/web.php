@@ -88,6 +88,28 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('api.user');
 
+    Route::get('/api/kartu-keluarga/options', function (\Illuminate\Http\Request $request) {
+        $search = $request->query('q');
+        $query = \App\Models\KartuKeluarga::query()
+            ->select('nomor_kk', 'nama_kepala_keluarga', 'alamat_keluarga', 'rt', 'rw', 'jumlah_anggota')
+            ->orderBy('nama_kepala_keluarga', 'asc');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_kk', 'like', "%{$search}%")
+                  ->orWhere('nama_kepala_keluarga', 'like', "%{$search}%")
+                  ->orWhere('alamat_keluarga', 'like', "%{$search}%");
+            });
+        }
+
+        $options = $query->limit(200)->get();
+
+        return response()->json([
+            'kartu_keluarga' => $options,
+            'options' => $options,
+        ]);
+    })->name('api.kartu-keluarga.options');
+
     Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [PasswordController::class, 'changePassword'])->name('password.change.update');
 

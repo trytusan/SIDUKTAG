@@ -7,7 +7,16 @@ import FormInput from '../../../src/components/form/input'
 import FormSelect from '../../../src/components/form/select'
 import FormRadio from '../../../src/components/form/radio'
 import AlertError from '../../../src/components/ui/alert-error'
-import { DAFTAR_PEKERJAAN_DUKCAPIL } from '../../../src/constants/dukcapil'
+import { DAFTAR_PEKERJAAN_DUKCAPIL, STATUS_HUBUNGAN_KELUARGA } from '../../../src/constants/dukcapil'
+
+interface KartuKeluargaOption {
+  nomor_kk: string
+  nama_kepala_keluarga: string
+  alamat_keluarga?: string
+  rt?: string
+  rw?: string
+  jumlah_anggota?: number
+}
 
 export default function OnboardingStep1() {
   const router = useRouter()
@@ -15,6 +24,7 @@ export default function OnboardingStep1() {
   const [formData, setFormData] = useState({
     nama_lengkap: '',
     nik: '',
+    status_dalam_keluarga: 'Kepala Keluarga',
     nomor_kk: '',
     tempat_lahir: '',
     tanggal_lahir: '',
@@ -27,6 +37,28 @@ export default function OnboardingStep1() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
+
+  // State opsi KK terdaftar untuk anggota selain Kepala Keluarga
+  const [kkOptions, setKkOptions] = useState<KartuKeluargaOption[]>([])
+  const [loadingKk, setLoadingKk] = useState(false)
+  const [inputModeKk, setInputModeKk] = useState<'select' | 'manual'>('select')
+
+  // Muat opsi KK dari API saat komponen di-mount
+  useEffect(() => {
+    const fetchKkOptions = async () => {
+      setLoadingKk(true)
+      try {
+        const res = await api.get('/api/kartu-keluarga/options')
+        const list = res.data?.options || res.data?.kartu_keluarga || []
+        setKkOptions(list)
+      } catch (err) {
+        console.error('Gagal mengambil daftar Kartu Keluarga:', err)
+      } finally {
+        setLoadingKk(false)
+      }
+    }
+    fetchKkOptions()
+  }, [])
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -41,9 +73,32 @@ export default function OnboardingStep1() {
     }
   }, [user, isProfileCompleted, authLoading, router])
 
+  // Restore dari cache sessionStorage jika sebelumnya warga sudah mengisi
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('onboarding_step1')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          setFormData((prev) => ({ ...prev, ...parsed }))
+        } catch (e) {}
+      }
+    }
+  }, [])
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handleStatusKeluargaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value
+    setFormData((prev) => ({
+      ...prev,
+      status_dalam_keluarga: val,
+      // Jika beralih ke bukan Kepala Keluarga dan sebelumnya belum memilih KK, kosongkan nomor_kk
+      nomor_kk: val === 'Kepala Keluarga' ? prev.nomor_kk : (inputModeKk === 'select' ? '' : prev.nomor_kk),
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +109,7 @@ export default function OnboardingStep1() {
 
     try {
       await api.post('/user/onboarding/step-1', formData)
-      // Also cache in sessionStorage for Step 3 multi-part fallback
+      // Cache di sessionStorage untuk fallback langkah berikutnya
       if (typeof window !== 'undefined') {
         sessionStorage.setItem('onboarding_step1', JSON.stringify(formData))
       }
@@ -68,6 +123,8 @@ export default function OnboardingStep1() {
       setLoading(false)
     }
   }
+
+  const isKepalaKeluarga = formData.status_dalam_keluarga === 'Kepala Keluarga'
 
   return (
     <div className="min-h-screen bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
@@ -124,28 +181,109 @@ export default function OnboardingStep1() {
               error={validationErrors.nama_lengkap?.[0]}
             />
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormInput
-                label="Nomor Induk Kependudukan (NIK)"
-                name="nik"
-                value={formData.nik}
-                onChange={handleChange}
-                placeholder="16 digit NIK"
-                maxLength={16}
+            <FormInput
+              label="Nomor Induk Kependudukan (NIK)"
+              name="nik"
+              value={formData.nik}
+              onChange={handleChange}
+              placeholder="16 digit NIK"
+              maxLength={16}
+              required
+              error={validationErrors.nik?.[0]}
+            />
+
+            {/* Bagian Status Hubungan Keluarga & Nomor KK */}
+            <div className="rounded-2xl border border-white/10 bg-slate-900/60 p-4 sm:p-5 space-y-4">
+              <FormSelect
+                label="Status Hubungan dalam Keluarga (SHDK)"
+                name="status_dalam_keluarga"
+                value={formData.status_dalam_keluarga}
+                onChange={handleStatusKeluargaChange}
+                options={STATUS_HUBUNGAN_KELUARGA}
+                placeholder="Pilih Hubungan dalam Keluarga..."
                 required
-                error={validationErrors.nik?.[0]}
+                error={validationErrors.status_dalam_keluarga?.[0]}
+                helperText="Pilih status Anda dalam susunan keluarga sesuai dokumen resmi."
               />
 
-              <FormInput
-                label="Nomor Kartu Keluarga (No. KK)"
-                name="nomor_kk"
-                value={formData.nomor_kk}
-                onChange={handleChange}
-                placeholder="16 digit Nomor KK"
-                maxLength={16}
-                required
-                error={validationErrors.nomor_kk?.[0]}
-              />
+              {/* Input Nomor KK Berdasarkan Peran Keluarga */}
+              {isKepalaKeluarga ? (
+                <div className="space-y-1">
+                  <FormInput
+                    label="Nomor Kartu Keluarga (No. KK)"
+                    name="nomor_kk"
+                    value={formData.nomor_kk}
+                    onChange={handleChange}
+                    placeholder="Masukkan 16 digit No. KK"
+                    maxLength={16}
+                    required
+                    error={validationErrors.nomor_kk?.[0]}
+                    helperText="Sebagai Kepala Keluarga, Anda dapat mendaftarkan nomor KK baru atau nomor KK keluarga Anda."
+                  />
+                </div>
+              ) : (
+                <div className="rounded-xl border border-sky-500/20 bg-sky-950/20 p-4 space-y-3">
+                  <div className="flex items-start gap-2.5 text-sky-300 text-xs sm:text-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                      <span className="font-semibold text-sky-200">Induk Kartu Keluarga Wajib Terdaftar:</span>
+                      <p className="mt-0.5 text-sky-300/90 text-xs">
+                        Sebagai anggota keluarga ({formData.status_dalam_keluarga}), Anda harus menginduk ke Nomor KK yang sudah terdaftar di Desa Bungkulan (telah didaftarkan oleh Kepala Keluarga).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <label className="text-xs font-semibold text-slate-300">
+                      Pilih / Masukkan No. KK Terdaftar <span className="text-red-400">*</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setInputModeKk(inputModeKk === 'select' ? 'manual' : 'select')}
+                      className="text-xs text-emerald-400 hover:text-emerald-300 underline font-medium transition"
+                    >
+                      {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Daftar KK Desa'}
+                    </button>
+                  </div>
+
+                  {inputModeKk === 'select' ? (
+                    <div>
+                      <FormSelect
+                        name="nomor_kk"
+                        value={formData.nomor_kk}
+                        onChange={handleChange}
+                        placeholder={loadingKk ? 'Memuat daftar KK desa...' : '-- Pilih Nomor KK & Kepala Keluarga --'}
+                        options={kkOptions.map((kk) => ({
+                          value: kk.nomor_kk,
+                          label: `${kk.nomor_kk} — Kel. ${kk.nama_kepala_keluarga || 'Belum Diatur'} (${kk.alamat_keluarga || 'Desa Bungkulan'})`,
+                        }))}
+                        required
+                        error={validationErrors.nomor_kk?.[0]}
+                      />
+                      {kkOptions.length === 0 && !loadingKk && (
+                        <p className="mt-1.5 text-xs text-amber-400">
+                          Belum ada data KK terdaftar di sistem desa. Silakan beralih ke mode &quot;Ketik Manual No. KK&quot;.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <div>
+                      <FormInput
+                        name="nomor_kk"
+                        value={formData.nomor_kk}
+                        onChange={handleChange}
+                        placeholder="Ketik 16 digit Nomor KK yang sudah ada di desa"
+                        maxLength={16}
+                        required
+                        error={validationErrors.nomor_kk?.[0]}
+                        helperText="Nomor KK harus sudah terdaftar di sistem. Jika belum ada, minta Kepala Keluarga untuk mendaftar terlebih dahulu."
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

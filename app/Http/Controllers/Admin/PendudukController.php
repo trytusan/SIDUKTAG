@@ -42,11 +42,12 @@ class PendudukController extends Controller
         // 1. Validasi Terpusat
         $validated = $this->validatePenduduk($request);
 
-        // 2. Logika Auto-Create Kartu Keluarga
+        // 2. Logika Auto-Create / Relasi Kartu Keluarga
+        $isKepalaKeluarga = ($request->status_dalam_keluarga == 'Kepala Keluarga');
         $kk = KartuKeluarga::firstOrCreate(
             ['nomor_kk' => $request->nomor_kk],
             [
-                'nama_kepala_keluarga' => ($request->status_dalam_keluarga == 'Kepala Keluarga')
+                'nama_kepala_keluarga' => $isKepalaKeluarga
                     ? $request->nama_lengkap
                     : 'Belum Diatur',
                 'alamat_keluarga' => $request->alamat_lengkap ?? '-',
@@ -55,6 +56,13 @@ class PendudukController extends Controller
                 'jumlah_anggota' => 0,
             ]
         );
+
+        if ($isKepalaKeluarga && ($kk->nama_kepala_keluarga === 'Belum Diatur' || empty($kk->nama_kepala_keluarga))) {
+            $kk->update([
+                'nama_kepala_keluarga' => $request->nama_lengkap,
+                'alamat_keluarga' => $request->alamat_lengkap ?? $kk->alamat_keluarga,
+            ]);
+        }
 
         // 3. Handle Files (Foto, Dokumen, & Akta Kematian)
         if ($request->hasFile('foto_profil')) {
@@ -243,6 +251,12 @@ class PendudukController extends Controller
 
         $penduduk->update($validated);
 
+        if ($request->status_dalam_keluarga === 'Kepala Keluarga') {
+            KartuKeluarga::where('nomor_kk', $request->nomor_kk)->update([
+                'nama_kepala_keluarga' => $penduduk->nama_lengkap,
+            ]);
+        }
+
         // Sinkronisasi KK
         $this->sinkronkanJumlahAnggota($old_kk);
         $this->sinkronkanJumlahAnggota($request->nomor_kk);
@@ -262,10 +276,11 @@ class PendudukController extends Controller
      */
     private function validatePenduduk(Request $request, $id = null)
     {
-        return $request->validate([
+        $rules = [
             'nama_lengkap' => ['required', 'string', 'max:255'],
             'nik' => ['required', 'digits:16', 'unique:penduduk,nik,' . $id],
             'nomor_kk' => ['required', 'digits:16'],
+            'status_dalam_keluarga' => ['required', 'string', 'max:50'],
             'tempat_lahir' => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['nullable', 'date'],
             'jenis_kelamin' => ['nullable', 'in:Laki-laki,Perempuan'],
@@ -275,8 +290,6 @@ class PendudukController extends Controller
             'pendidikan_terakhir' => ['nullable', 'string', 'max:50'],
             'nomor_telepon' => ['nullable', 'string', 'max:20'],
             'alamat_lengkap' => ['nullable', 'string'],
-            'status_dalam_keluarga' => ['nullable', 'string', 'max:50'],
-            'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pindah,Meninggal'],
             'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pendatang Sementara,Pindah,Meninggal'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'dokumen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
@@ -289,8 +302,6 @@ class PendudukController extends Controller
             'tanggal_pindah' => ['required_if:status_kependudukan,Pindah', 'nullable', 'date'],
             'alamat_tujuan' => ['required_if:status_kependudukan,Pindah', 'nullable', 'string'],
 
-            'daerah_asal' => ['required_if:status_kependudukan,Pendatang', 'nullable', 'string', 'max:255'],
-            'tujuan_menetap' => ['required_if:status_kependudukan,Pendatang', 'nullable', 'string', 'max:255'],
             'daerah_asal' => ['required_if:status_kependudukan,Pendatang,Pendatang Sementara', 'nullable', 'string', 'max:255'],
             'tujuan_menetap' => ['required_if:status_kependudukan,Pendatang,Pendatang Sementara', 'nullable', 'string', 'max:255'],
 
@@ -301,13 +312,22 @@ class PendudukController extends Controller
             // GEOTAGGING FIELDS
             'latitude' => ['nullable', 'string', 'max:50'],
             'longitude' => ['nullable', 'string', 'max:50'],
-        ], [
+        ];
+
+        // Jika bukan Kepala Keluarga, No KK harus sudah ada di tabel kartu_keluarga
+        if ($request->status_dalam_keluarga !== 'Kepala Keluarga') {
+            $rules['nomor_kk'][] = 'exists:kartu_keluarga,nomor_kk';
+        }
+
+        $messages = [
             'nama_lengkap.required' => 'Nama lengkap wajib diisi.',
             'nik.required' => 'NIK wajib diisi.',
             'nik.digits' => 'NIK harus berjumlah 16 digit.',
             'nik.unique' => 'NIK sudah terdaftar di sistem.',
             'nomor_kk.required' => 'Nomor KK wajib diisi.',
             'nomor_kk.digits' => 'Nomor KK harus berjumlah 16 digit.',
+            'nomor_kk.exists' => 'Nomor KK belum terdaftar di sistem. Untuk anggota keluarga selain Kepala Keluarga, Nomor KK harus sudah terdaftar di data Kartu Keluarga.',
+            'status_dalam_keluarga.required' => 'Status hubungan dalam keluarga wajib dipilih.',
             'status_kependudukan.required' => 'Status kependudukan wajib dipilih.',
             'status_kependudukan.in' => 'Status kependudukan tidak valid.',
             'tanggal_meninggal.required_if' => 'Tanggal meninggal wajib diisi untuk status Meninggal.',
@@ -318,7 +338,9 @@ class PendudukController extends Controller
             'alamat_tujuan.required_if' => 'Alamat tujuan wajib diisi untuk status Pindah.',
             'daerah_asal.required_if' => 'Daerah asal wajib diisi untuk status Pendatang.',
             'tujuan_menetap.required_if' => 'Tujuan menetap wajib diisi untuk status Pendatang.',
-        ]);
+        ];
+
+        return $request->validate($rules, $messages);
     }
 
     // Helper: Hitung Kategori Umur

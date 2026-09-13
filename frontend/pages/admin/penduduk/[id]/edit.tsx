@@ -29,12 +29,22 @@ const FormMapPicker = dynamic(
   }
 )
 
+interface KartuKeluargaOption {
+  nomor_kk: string
+  nama_kepala_keluarga: string
+  alamat_keluarga?: string
+}
+
 export default function AdminPendudukEdit() {
   const router = useRouter()
   const { id } = router.query
   const { showAlert } = useAlert()
   const [penduduk, setPenduduk] = useState<Penduduk | null>(null)
   const [loadingInitial, setLoadingInitial] = useState(true)
+
+  const [kkOptions, setKkOptions] = useState<KartuKeluargaOption[]>([])
+  const [loadingKk, setLoadingKk] = useState(false)
+  const [inputModeKk, setInputModeKk] = useState<'select' | 'manual'>('select')
 
   const [formData, setFormData] = useState({
     nama_lengkap: '',
@@ -72,6 +82,22 @@ export default function AdminPendudukEdit() {
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
   const [showConfirm, setShowConfirm] = useState(false)
+
+  useEffect(() => {
+    const fetchKk = async () => {
+      setLoadingKk(true)
+      try {
+        const res = await api.get('/api/kartu-keluarga/options')
+        const list = res.data?.options || res.data?.kartu_keluarga || []
+        setKkOptions(list)
+      } catch (err) {
+        console.error('Gagal mengambil opsi KK:', err)
+      } finally {
+        setLoadingKk(false)
+      }
+    }
+    fetchKk()
+  }, [])
 
   useEffect(() => {
     if (!id) return
@@ -127,6 +153,15 @@ export default function AdminPendudukEdit() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleStatusKeluargaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value
+    setFormData((prev) => ({
+      ...prev,
+      status_dalam_keluarga: val,
+      nomor_kk: val === 'Kepala Keluarga' ? prev.nomor_kk : (inputModeKk === 'select' ? '' : prev.nomor_kk),
+    }))
+  }
+
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     setShowConfirm(true)
@@ -174,6 +209,8 @@ export default function AdminPendudukEdit() {
     }
   }
 
+  const isKepalaKeluarga = formData.status_dalam_keluarga === 'Kepala Keluarga'
+
   if (loadingInitial || !penduduk) {
     return (
       <AdminLayout pageTitle="Edit Penduduk">
@@ -183,10 +220,10 @@ export default function AdminPendudukEdit() {
   }
 
   return (
-    <AdminLayout pageTitle="Edit Penduduk" subtitle={'Ubah data ' + penduduk.nama_lengkap}>
+    <AdminLayout pageTitle="Edit Penduduk" subtitle="Pembaruan data warga dan sinkronisasi berkas">
       <PageHeader
-        title="Formulir Edit Penduduk"
-        description="Perbarui informasi data diri, keluarga, atau koordinat lokasi"
+        title={`Edit Data: ${penduduk.nama_lengkap}`}
+        description={`NIK: ${penduduk.nik} • Status: ${penduduk.status_kependudukan}`}
         actions={[
           {
             label: 'Batal & Kembali',
@@ -202,7 +239,7 @@ export default function AdminPendudukEdit() {
         <form onSubmit={handleFormSubmit} className="mt-6 space-y-6">
           <div className="space-y-4">
             <h3 className="text-base font-bold text-slate-800 border-b border-slate-100 pb-2">
-              1. Identitas Pokok
+              1. Identitas Pokok & Hubungan Keluarga
             </h3>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -216,16 +253,93 @@ export default function AdminPendudukEdit() {
                 error={validationErrors.nik?.[0]}
               />
 
+              <FormSelect
+                label="Status Hubungan dalam Keluarga (SHDK)"
+                name="status_dalam_keluarga"
+                value={formData.status_dalam_keluarga}
+                onChange={handleStatusKeluargaChange}
+                options={STATUS_HUBUNGAN_KELUARGA}
+                placeholder="Pilih Hubungan dalam Keluarga..."
+                required
+                error={validationErrors.status_dalam_keluarga?.[0]}
+                helperText="Pilih peran warga dalam susunan Kartu Keluarga."
+              />
+            </div>
+
+            {/* Input Adaptif Nomor Kartu Keluarga */}
+            {isKepalaKeluarga ? (
               <FormInput
                 label="Nomor Kartu Keluarga (No. KK)"
                 name="nomor_kk"
                 value={formData.nomor_kk}
                 onChange={handleChange}
+                placeholder="16 Digit Nomor KK baru / saat ini"
                 maxLength={16}
                 required
                 error={validationErrors.nomor_kk?.[0]}
+                helperText="Sebagai Kepala Keluarga, nomor KK dapat berupa KK baru atau KK yang sudah ada."
               />
-            </div>
+            ) : (
+              <div className="rounded-2xl border border-sky-200 bg-sky-50/50 p-4 space-y-3">
+                <div className="flex items-start gap-2.5 text-sky-800 text-xs sm:text-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div>
+                    <span className="font-semibold text-sky-950">Ketentuan Kartu Keluarga Induk: </span>
+                    Untuk status <span className="font-bold text-sky-900">&quot;{formData.status_dalam_keluarga}&quot;</span>, nomor KK wajib menginduk ke Kartu Keluarga yang sudah terdaftar di Desa Bungkulan.
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Pilih / Masukkan Nomor KK Terdaftar <span className="text-red-500">*</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setInputModeKk(inputModeKk === 'select' ? 'manual' : 'select')}
+                    className="text-xs text-emerald-600 hover:text-emerald-700 underline font-medium transition"
+                  >
+                    {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Dropdown KK Desa'}
+                  </button>
+                </div>
+
+                {inputModeKk === 'select' ? (
+                  <div>
+                    <FormSelect
+                      name="nomor_kk"
+                      value={formData.nomor_kk}
+                      onChange={handleChange}
+                      placeholder={loadingKk ? 'Memuat daftar KK desa...' : '-- Pilih Nomor KK & Kepala Keluarga --'}
+                      options={kkOptions.map((kk) => ({
+                        value: kk.nomor_kk,
+                        label: `${kk.nomor_kk} — Kel. ${kk.nama_kepala_keluarga || 'Belum Diatur'} (${kk.alamat_keluarga || 'Desa Bungkulan'})`,
+                      }))}
+                      required
+                      error={validationErrors.nomor_kk?.[0]}
+                    />
+                    {kkOptions.length === 0 && !loadingKk && (
+                      <p className="mt-1.5 text-xs text-amber-600">
+                        Belum ada KK terdaftar di sistem. Daftarkan Kepala Keluarga terlebih dahulu atau beralih ke mode manual.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <FormInput
+                      name="nomor_kk"
+                      value={formData.nomor_kk}
+                      onChange={handleChange}
+                      placeholder="Masukkan 16 digit Nomor KK yang sudah terdaftar"
+                      maxLength={16}
+                      required
+                      error={validationErrors.nomor_kk?.[0]}
+                      helperText="Nomor KK harus sudah terdaftar di data Kartu Keluarga. Sistem akan memvalidasi keberadaan KK ini."
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <FormInput
               label="Nama Lengkap"
@@ -510,16 +624,6 @@ export default function AdminPendudukEdit() {
             </div>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormSelect
-                label="Status Hubungan dalam Keluarga"
-                name="status_dalam_keluarga"
-                value={formData.status_dalam_keluarga}
-                onChange={handleChange}
-                options={STATUS_HUBUNGAN_KELUARGA}
-                placeholder="Pilih Hubungan dalam Keluarga..."
-                required
-              />
-
               <FormInput
                 label="Nomor Telepon / HP"
                 name="nomor_telepon"

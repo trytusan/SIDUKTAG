@@ -28,13 +28,27 @@ export default function OnboardingStep2() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
+      let statusFromStep1 = 'Kepala Keluarga'
+      const step1Saved = sessionStorage.getItem('onboarding_step1')
+      if (step1Saved) {
+        try {
+          const p1 = JSON.parse(step1Saved)
+          if (p1.status_dalam_keluarga) {
+            statusFromStep1 = p1.status_dalam_keluarga
+          }
+        } catch (e) {}
+      }
+
       const saved = sessionStorage.getItem('onboarding_step2')
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          setFormData((prev) => ({ ...prev, ...parsed }))
+          setFormData((prev) => ({ ...prev, ...parsed, status_dalam_keluarga: statusFromStep1 }))
+          return
         } catch (e) {}
       }
+
+      setFormData((prev) => ({ ...prev, status_dalam_keluarga: statusFromStep1 }))
     }
   }, [])
 
@@ -132,16 +146,19 @@ export default function OnboardingStep2() {
             />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormSelect
-                label="Status Hubungan dalam Keluarga"
-                name="status_dalam_keluarga"
-                value={formData.status_dalam_keluarga}
-                onChange={handleChange}
-                options={STATUS_HUBUNGAN_KELUARGA}
-                placeholder="Pilih Hubungan dalam Keluarga..."
-                required
-                error={validationErrors.status_dalam_keluarga?.[0]}
-              />
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-200">
+                  Status Hubungan dalam Keluarga
+                </label>
+                <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm">
+                  <span className="font-semibold text-emerald-400">
+                    {formData.status_dalam_keluarga || 'Kepala Keluarga'}
+                  </span>
+                  <span className="text-xs text-slate-400 bg-slate-800 px-2.5 py-1 rounded-lg">
+                    Diatur di Langkah 1
+                  </span>
+                </div>
+              </div>
 
               <FormSelect
                 label="Status Kependudukan"
