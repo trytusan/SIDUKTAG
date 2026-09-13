@@ -180,7 +180,7 @@ class PendudukController extends Controller
 
         session()->forget(['onboarding.step1', 'onboarding.step2', 'onboarding.step3']);
 
-        // Otomatis kirim kode OTP untuk verifikasi keaslian email pendaftar setelah onboarding
+        $mailError = null;
         if ($user && $user->email && !$user->email_verified_at) {
             try {
                 $otp = str_pad((string) random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
@@ -194,16 +194,18 @@ class PendudukController extends Controller
                 ]);
                 \Illuminate\Support\Facades\Mail::to($user->email)->send(new \App\Mail\SendOtpMail($otp, $user->name ?? 'Warga'));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::warning('Gagal kirim OTP verifikasi onboarding: ' . $e->getMessage());
+                $mailError = $e->getMessage();
+                \Illuminate\Support\Facades\Log::error('Gagal kirim OTP verifikasi onboarding: ' . $e->getMessage());
             }
         }
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => 'Data diri berhasil dilengkapi. Silakan verifikasi kode OTP yang dikirim ke email Anda.',
+                'message' => $mailError ? "Data diri disimpan, namun pengiriman email OTP mengalami kendala: {$mailError}" : 'Data diri berhasil dilengkapi. Silakan verifikasi kode OTP yang dikirim ke email Anda.',
                 'user' => $user->fresh(['penduduk']),
                 'requires_otp' => !$user->email_verified_at,
                 'email' => $user->email,
+                'mail_error' => $mailError,
             ]);
         }
 

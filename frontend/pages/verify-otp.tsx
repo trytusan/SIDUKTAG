@@ -30,10 +30,15 @@ export default function VerifyOtpPage() {
 
   // Ambil email dari query parameter saat halaman dimuat
   useEffect(() => {
-    if (router.isReady && router.query.email) {
-      setEmail(router.query.email as string)
+    if (router.isReady) {
+      if (router.query.email) {
+        setEmail(router.query.email as string)
+      }
+      if (router.query.mail_error) {
+        setErrorMessage(`Server pengiriman email: ${router.query.mail_error}. Silakan periksa folder Spam atau klik "Kirim Ulang Kode OTP".`)
+      }
     }
-  }, [router.isReady, router.query.email])
+  }, [router.isReady, router.query.email, router.query.mail_error])
 
   // Timer hitung mundur kirim ulang OTP
   useEffect(() => {

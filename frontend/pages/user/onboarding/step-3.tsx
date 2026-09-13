@@ -72,7 +72,8 @@ export default function OnboardingStep3() {
 
       await refreshUser()
       const targetEmail = res.data?.email || user?.email || ''
-      router.replace(`/verify-otp?email=${encodeURIComponent(targetEmail)}&type=register`)
+      const mailErrorParam = res.data?.mail_error ? `&mail_error=${encodeURIComponent(res.data.mail_error)}` : ''
+      router.replace(`/verify-otp?email=${encodeURIComponent(targetEmail)}&type=register${mailErrorParam}`)
     } catch (err: any) {
       if (err?.response?.data?.errors) {
         setValidationErrors(err.response.data.errors)
