@@ -7,8 +7,8 @@ import { useAuth } from '../src/context/AuthContext'
 
 export default function VerifyOtpPage() {
   const router = useRouter()
-  const { refreshUser } = useAuth()
-  const isRegisterMode = router.query.type === 'register' || router.query.type === 'verify'
+  const { refreshUser, setAuthUser } = useAuth()
+  const isRegisterMode = router.query.type === 'register' || router.query.type === 'verify' || (!router.query.type && !router.query.token)
 
   const [email, setEmail] = useState<string>('')
   const [otp, setOtp] = useState<string[]>(['', '', '', '', '', ''])
@@ -129,15 +129,21 @@ export default function VerifyOtpPage() {
     setStatusMessage(null)
 
     try {
-      await verifyOtp(email, code)
+      const res = await verifyOtp(email, code)
       setIsOtpVerified(true)
 
       if (isRegisterMode) {
         setStatusMessage('✓ Email Anda Berhasil Diverifikasi! Akun warga telah aktif sepenuhnya. Mengalihkan ke Dashboard...')
+        if (res?.user) {
+          const u = res.user
+          const r = res.role || u.role || 'user'
+          const comp = res.is_profile_completed !== undefined ? res.is_profile_completed : Boolean(u.penduduk?.is_profile_completed)
+          setAuthUser(u, r, comp)
+        }
         await refreshUser()
         setTimeout(() => {
           router.replace('/user/dashboard')
-        }, 1500)
+        }, 1200)
       } else {
         setStatusMessage('✓ Kode OTP Berhasil Diverifikasi! Silakan masukkan password baru Anda di bawah ini.')
       }

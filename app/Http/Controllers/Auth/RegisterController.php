@@ -18,7 +18,7 @@ class RegisterController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request): RedirectResponse
+    public function register(Request $request)
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -34,17 +34,32 @@ class RegisterController extends Controller
             'password.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 
-        $user = DB::transaction(function () use ($validated) {
+        $normalizedEmail = trim(strtolower($validated['email']));
+
+        $user = DB::transaction(function () use ($validated, $normalizedEmail) {
             return User::create([
-                'name' => $validated['name'],
-                'email' => $validated['email'],
+                'name' => trim($validated['name']),
+                'email' => $normalizedEmail,
                 'password' => Hash::make($validated['password']),
                 'role' => 'user',
                 'is_active' => true,
             ]);
         });
 
-        Auth::login($user);
+        Auth::login($user, true);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'message' => 'Registrasi berhasil.',
+                'user' => $user,
+                'role' => $user->role,
+                'is_profile_completed' => false,
+                'redirect' => route('user.onboarding.step-1'),
+            ]);
+        }
 
         return redirect()->route('user.onboarding.step-1');
     }

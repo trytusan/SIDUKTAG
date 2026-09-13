@@ -9,6 +9,7 @@ export interface AuthContextType {
   isProfileCompleted: boolean
   loading: boolean
   refreshUser: () => Promise<void>
+  setAuthUser: (user: User | null, role?: 'admin' | 'user' | null, isProfileCompleted?: boolean) => void
   login: (credentials: LoginCredentials) => Promise<any>
   logout: () => Promise<void>
   register: (payload: RegisterPayload) => Promise<any>
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
   isProfileCompleted: false,
   loading: true,
   refreshUser: async () => {},
+  setAuthUser: () => {},
   login: async () => {},
   logout: async () => {},
   register: async () => {},
@@ -141,6 +143,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return res
   }
 
+  const setAuthUser = (u: User | null, r?: 'admin' | 'user' | null, comp?: boolean) => {
+    setUser(u)
+    const effectiveRole = r !== undefined ? r : (u?.role || role || 'user')
+    const effectiveComp = comp !== undefined ? comp : Boolean(u?.penduduk?.is_profile_completed)
+    setRole(effectiveRole)
+    setIsProfileCompleted(effectiveComp)
+    setLoading(false)
+    saveCache(u, effectiveRole, effectiveComp)
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -149,6 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isProfileCompleted,
         loading,
         refreshUser,
+        setAuthUser,
         login,
         logout,
         register,

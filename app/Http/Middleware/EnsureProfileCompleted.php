@@ -12,6 +12,9 @@ class EnsureProfileCompleted
     {
         // kalau belum login, biarkan middleware auth yang handle
         if (!auth()->check()) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
             return redirect()->route('login');
         }
 
@@ -19,14 +22,15 @@ class EnsureProfileCompleted
 
         // hanya berlaku untuk user (bukan admin)
         if ($user->role === 'user') {
-
-            // cek apakah sudah punya data penduduk
-            if (!$user->penduduk) {
-                return redirect()->route('user.onboarding.step-1');
-            }
-
-            // cek apakah profil sudah lengkap
-            if (!$user->penduduk->is_profile_completed) {
+            // cek apakah sudah punya data penduduk dan profil sudah lengkap
+            if (!$user->penduduk || !$user->penduduk->is_profile_completed) {
+                if ($request->wantsJson() || $request->is('api/*')) {
+                    return response()->json([
+                        'message' => 'Profil kependudukan belum lengkap. Silakan lengkapi data onboarding.',
+                        'is_profile_completed' => false,
+                        'redirect' => route('user.onboarding.step-1'),
+                    ], 403);
+                }
 
                 // biar tidak loop redirect saat di halaman onboarding
                 if (!$request->routeIs('user.onboarding.*')) {

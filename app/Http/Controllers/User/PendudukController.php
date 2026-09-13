@@ -64,6 +64,9 @@ class PendudukController extends Controller
         $validated = $request->validate($rules, $messages);
 
         session(['onboarding.step1' => $validated]);
+        if ($request->hasSession()) {
+            $request->session()->save();
+        }
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json(['message' => 'Langkah 1 berhasil disimpan.']);
@@ -100,6 +103,9 @@ class PendudukController extends Controller
         }
 
         session(['onboarding.step2' => $validated]);
+        if ($request->hasSession()) {
+            $request->session()->save();
+        }
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json(['message' => 'Langkah 2 berhasil disimpan.']);
@@ -128,6 +134,27 @@ class PendudukController extends Controller
 
         $step1 = session('onboarding.step1', []);
         $step2 = session('onboarding.step2', []);
+
+        // Fallback: Jika session di hosting kosong, ambil dari data JSON step1 & step2 yang dikirim via FormData oleh frontend
+        if (empty($step1) && $request->filled('step1')) {
+            $raw1 = $request->input('step1');
+            $step1 = is_array($raw1) ? $raw1 : (json_decode($raw1, true) ?: []);
+        }
+        if (empty($step2) && $request->filled('step2')) {
+            $raw2 = $request->input('step2');
+            $step2 = is_array($raw2) ? $raw2 : (json_decode($raw2, true) ?: []);
+        }
+
+        if (empty($step1) || empty($step1['nomor_kk']) || empty($step1['nama_lengkap'])) {
+            if ($request->wantsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'message' => 'Data Langkah 1 belum ditemukan atau sesi pendaftaran berakhir. Silakan kembali ke Langkah 1 dan isi data pokok Anda.',
+                    'errors' => ['step1' => ['Data Langkah 1 wajib dilengkapi.']]
+                ], 422);
+            }
+            return redirect()->route('user.onboarding.step-1')->with('error', 'Silakan lengkapi Langkah 1 terlebih dahulu.');
+        }
+
         $user = $request->user();
 
         DB::transaction(function () use ($request, $validated, $step1, $step2, $user) {

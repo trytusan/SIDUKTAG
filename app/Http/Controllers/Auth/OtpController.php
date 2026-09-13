@@ -28,7 +28,18 @@ class OtpController extends Controller
         ]);
 
         $email = trim(strtolower($request->email));
-        $user = User::where('email', $email)->first();
+        $user = User::where('email', $email)
+            ->orWhereRaw('LOWER(email) = ?', [$email])
+            ->first();
+
+        // Fallback jika user sedang login dan cocok
+        if (!$user && auth()->check()) {
+            $loggedIn = auth()->user();
+            if (strtolower($loggedIn->email) === $email || empty($email)) {
+                $user = $loggedIn;
+                $email = strtolower($user->email);
+            }
+        }
 
         if (!$user) {
             return response()->json([
@@ -39,7 +50,9 @@ class OtpController extends Controller
 
         // Cek jeda kirim ulang (rate limiting 60 detik)
         $recentOtp = EmailOtp::where(function ($q) use ($user, $email) {
-                $q->where('user_id', $user->id)->orWhere('email', $email);
+                $q->where('user_id', $user->id)
+                  ->orWhere('email', $email)
+                  ->orWhereRaw('LOWER(email) = ?', [$email]);
             })
             ->where('created_at', '>=', Carbon::now()->subSeconds(60))
             ->first();
@@ -55,7 +68,9 @@ class OtpController extends Controller
 
         // Hapus kode OTP lama yang belum terpakai untuk email ini
         EmailOtp::where(function ($q) use ($user, $email) {
-            $q->where('user_id', $user->id)->orWhere('email', $email);
+            $q->where('user_id', $user->id)
+              ->orWhere('email', $email)
+              ->orWhereRaw('LOWER(email) = ?', [$email]);
         })->delete();
 
         // Generate 6 digit angka acak
@@ -103,17 +118,30 @@ class OtpController extends Controller
         ]);
 
         $email = trim(strtolower($request->email));
-        $user = User::where('email', $email)->first();
+        $user = User::where('email', $email)
+            ->orWhereRaw('LOWER(email) = ?', [$email])
+            ->first();
+
+        // Fallback jika user sedang login
+        if (!$user && auth()->check()) {
+            $loggedIn = auth()->user();
+            if (strtolower($loggedIn->email) === $email || empty($email)) {
+                $user = $loggedIn;
+                $email = strtolower($user->email);
+            }
+        }
 
         if (!$user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email tidak terdaftar.',
+                'message' => 'Email tidak terdaftar dalam sistem SIDUKTAG.',
             ], 404);
         }
 
         $otpRecord = EmailOtp::where(function ($q) use ($user, $email) {
-                $q->where('user_id', $user->id)->orWhere('email', $email);
+                $q->where('user_id', $user->id)
+                  ->orWhere('email', $email)
+                  ->orWhereRaw('LOWER(email) = ?', [$email]);
             })
             ->latest()
             ->first();
@@ -157,11 +185,21 @@ class OtpController extends Controller
             ])->save();
         }
 
+        // Login pengguna ke sesi aktif agar langsung terautentikasi
+        \Illuminate\Support\Facades\Auth::login($user, true);
+        if ($request->hasSession()) {
+            $request->session()->regenerate();
+        }
+
+        $user->load(['penduduk.kartuKeluarga']);
+
         return response()->json([
             'status' => 'success',
             'message' => 'Kode OTP berhasil diverifikasi!',
             'verified' => true,
-            'user' => $user->fresh(),
+            'user' => $user,
+            'role' => $user->role,
+            'is_profile_completed' => $user->role === 'admin' ? true : (bool) ($user->penduduk?->is_profile_completed ?? false),
         ]);
     }
 

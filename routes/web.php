@@ -20,12 +20,12 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/reset-password/{token}', [PasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordController::class, 'reset'])->name('password.update');
-
-    // Autentikasi Kode OTP via Gmail SMTP
-    Route::post('/api/otp/send', [OtpController::class, 'sendOtp'])->name('otp.send');
-    Route::post('/api/otp/verify', [OtpController::class, 'verifyOtp'])->name('otp.verify');
-    Route::post('/api/otp/reset-password', [OtpController::class, 'resetPassword'])->name('otp.reset');
 });
+
+// Autentikasi Kode OTP via Gmail SMTP (Dapat diakses Tamu maupun Pengguna yang sedang login)
+Route::post('/api/otp/send', [OtpController::class, 'sendOtp'])->name('otp.send');
+Route::post('/api/otp/verify', [OtpController::class, 'verifyOtp'])->name('otp.verify');
+Route::post('/api/otp/reset-password', [OtpController::class, 'resetPassword'])->name('otp.reset');
 
 Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set', 'csrf_token' => csrf_token()]);
