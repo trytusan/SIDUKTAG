@@ -78,19 +78,22 @@ export default function AdminKartuKeluargaIndex() {
   const rataRata = stats?.rata_rata ?? (data?.data && data.data.length > 0 ? (totalJiwa / data.data.length).toFixed(1) : '0')
   const kkTerisi = stats?.kk_terisi ?? (data?.data ? data.data.filter((k) => (Number(k.jumlah_anggota) || 0) > 0).length : 0)
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-  const getExportUrl = (type: 'excel' | 'pdf') => {
-    const params = new URLSearchParams()
-    if (search) params.append('search', search)
-    params.append('export', type)
-    return `${apiUrl}/admin/kartu-keluarga?${params.toString()}`
-  }
-
   return (
     <AdminLayout pageTitle="Data Kartu Keluarga" subtitle="Kelola data Kartu Keluarga dan susunan anggota warga">
       <PageHeader
         title="Daftar Kartu Keluarga"
         description="Kelola data kepala keluarga, alamat, dan jumlah tanggungan"
+        actions={[
+          {
+            label: 'Tambah Kartu Keluarga',
+            href: '/admin/kartu-keluarga/create',
+            icon: (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+            ),
+          },
+        ]}
       />
 
       {/* Overview Stat Cards */}
@@ -141,78 +144,13 @@ export default function AdminKartuKeluargaIndex() {
         />
       </div>
 
-      {/* Filter Box Seragam */}
-      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
-        <div className="grid grid-cols-1">
-          <div className="relative">
-            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari Nomor KK atau Nama Kepala Keluarga..."
-              className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 hover:border-slate-300"
-            />
-          </div>
-        </div>
-
-        {/* Row Tombol Aksi Seragam */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
-          <button
-            type="button"
-            onClick={() => setSearch('')}
-            className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-red-600"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            <span>Bersihkan Filter</span>
-          </button>
-
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Export Excel */}
-            <a
-              href={getExportUrl('excel')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <span>Export Excel</span>
-            </a>
-
-            {/* Export PDF */}
-            <a
-              href={getExportUrl('pdf')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
-              <span>Cetak PDF</span>
-            </a>
-
-            {/* Tambah Kartu Keluarga (Warna Tema Hijau Emerald Seragam) */}
-            <Link
-              href="/admin/kartu-keluarga/create"
-              className="inline-flex items-center gap-2 rounded-2xl bg-emerald-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-95"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              <span>Tambah Kartu Keluarga</span>
-            </Link>
-          </div>
-        </div>
-      </div>
+      <FilterBar onReset={() => setSearch('')}>
+        <SearchBox
+          value={search}
+          onChange={(val) => setSearch(val)}
+          placeholder="Cari Nomor KK atau Nama Kepala Keluarga..."
+        />
+      </FilterBar>
 
       {loading ? (
         <LoadingSpinner message="Memuat data kartu keluarga..." />
