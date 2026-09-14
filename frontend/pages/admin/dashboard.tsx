@@ -6,7 +6,7 @@ import Table from '../../src/components/ui/table'
 import StatusBadge from '../../src/components/ui/status-badge'
 import LoadingSpinner from '../../src/components/ui/loading'
 import api from '../../src/lib/api'
-import { PengajuanSurat, Penduduk } from '../../src/types'
+import { PengajuanSurat, Penduduk, BantuanPenerima, Bantuan } from '../../src/types'
 
 export default function AdminDashboard() {
   const [data, setData] = useState<{
@@ -50,6 +50,8 @@ export default function AdminDashboard() {
     }
     pengajuanTerbaru: PengajuanSurat[]
     pendudukTerbaru: Penduduk[]
+    bantuanTerbaru?: BantuanPenerima[]
+    programBantuan?: Bantuan[]
   } | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -75,7 +77,7 @@ export default function AdminDashboard() {
     )
   }
 
-  const { stats, pengajuanTerbaru, pendudukTerbaru } = data
+  const { stats, pengajuanTerbaru, pendudukTerbaru, bantuanTerbaru = [], programBantuan = [] } = data
 
   // Hitung persentase & fallback untuk visualisasi
   const umurStats = stats.demografiUmur || {
@@ -459,6 +461,128 @@ export default function AdminDashboard() {
             ]}
             data={pendudukTerbaru}
             emptyMessage="Belum ada data penduduk."
+          />
+        </div>
+      </div>
+
+      {/* Realisasi Bantuan Sosial & Program Bantuan Grid */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Warga Penerima Bantuan Terbaru */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <svg className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                Warga Penerima Bantuan
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Daftar warga yang telah menerima program bansos</p>
+            </div>
+            <Link
+              href="/admin/bantuan"
+              className="text-xs font-semibold text-emerald-600 hover:underline"
+            >
+              Kelola Semua Penerima &rarr;
+            </Link>
+          </div>
+
+          <Table
+            columns={[
+              {
+                key: 'warga',
+                label: 'Nama Warga (NIK)',
+                render: (item: BantuanPenerima) => (
+                  <div>
+                    <p className="font-semibold text-slate-800">{item.penduduk?.nama_lengkap || '-'}</p>
+                    <p className="text-xs text-slate-400">NIK: {item.penduduk?.nik || '-'}</p>
+                  </div>
+                ),
+              },
+              {
+                key: 'program',
+                label: 'Program & Jenis',
+                render: (item: BantuanPenerima) => (
+                  <div>
+                    <p className="font-medium text-slate-800">{item.bantuan?.nama_program || '-'}</p>
+                    <span className="inline-block rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700 border border-blue-200">
+                      {item.bantuan?.jenis_bantuan || 'Bansos'}
+                    </span>
+                  </div>
+                ),
+              },
+              {
+                key: 'status_penerima',
+                label: 'Status Penyaluran',
+                render: (item: BantuanPenerima) => {
+                  const sp = item.status_penerima
+                  return <StatusBadge>{sp}</StatusBadge>
+                },
+              },
+            ]}
+            data={bantuanTerbaru}
+            emptyMessage="Belum ada data penerima bantuan sosial."
+          />
+        </div>
+
+        {/* Jenis & Program Bantuan yang Tersedia */}
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <svg className="h-5 w-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+                Jenis & Program Bantuan
+              </h3>
+              <p className="text-xs text-slate-400 mt-0.5">Ragam jenis program bantuan yang aktif di desa</p>
+            </div>
+            <Link
+              href="/admin/jenis-bantuan"
+              className="text-xs font-semibold text-violet-600 hover:underline"
+            >
+              Kelola Jenis Bantuan &rarr;
+            </Link>
+          </div>
+
+          <Table
+            columns={[
+              {
+                key: 'nama_program',
+                label: 'Nama Program',
+                render: (item: Bantuan) => (
+                  <div>
+                    <p className="font-semibold text-slate-800">{item.nama_program}</p>
+                    <p className="text-[11px] text-slate-400">{item.sumber_bantuan || 'Pemerintah'}</p>
+                  </div>
+                ),
+              },
+              {
+                key: 'jenis_bantuan',
+                label: 'Jenis Bantuan',
+                render: (item: Bantuan) => (
+                  <span className="inline-flex items-center rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
+                    {item.jenis_bantuan}
+                  </span>
+                ),
+              },
+              {
+                key: 'kuota_penerima',
+                label: 'Kuota',
+                render: (item: Bantuan) => (
+                  <span className="text-xs font-medium text-slate-700">
+                    {item.kuota_penerima ? `${item.kuota_penerima} Jiwa` : 'Tidak dibatasi'}
+                  </span>
+                ),
+              },
+              {
+                key: 'status_bantuan',
+                label: 'Status',
+                render: (item: Bantuan) => <StatusBadge>{item.status_bantuan}</StatusBadge>,
+              },
+            ]}
+            data={programBantuan}
+            emptyMessage="Belum ada program bantuan aktif."
           />
         </div>
       </div>

@@ -42,8 +42,8 @@ export default function AdminBantuanEdit() {
         const res = await api.get('/admin/bantuan/' + id + '/edit')
         const bp: BantuanPenerima = res.data.bantuan
         setBantuanData(bp)
-        setPendudukList(res.data.listPenduduk || [])
-        setAllPrograms(res.data.allPrograms || [])
+        setPendudukList(res.data.listPenduduk || res.data.penduduk || [])
+        setAllPrograms(res.data.allPrograms || res.data.program || [])
         if (bp) {
           setPendudukId(String(bp.penduduk_id))
           setBantuanId(String(bp.bantuan_id))

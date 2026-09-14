@@ -123,8 +123,11 @@ class BantuanController extends Controller
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'penduduk' => $listPenduduk,
+                'listPenduduk' => $listPenduduk,
                 'jenis_bantuan' => $listJenis,
+                'listJenis' => $listJenis,
                 'program' => $listProgram,
+                'allPrograms' => $listProgram,
             ]);
         }
 
@@ -197,15 +200,19 @@ class BantuanController extends Controller
         $listJenis = Bantuan::distinct()->whereNotNull('jenis_bantuan')
             ->pluck('jenis_bantuan');
 
-        $listProgramTerpilih = Bantuan::where('jenis_bantuan', optional($bantuan->bantuan)->jenis_bantuan)
-            ->get(['id', 'nama_program']);
+        $allPrograms = Bantuan::where('status_bantuan', 'Aktif')
+            ->get(['id', 'nama_program', 'jenis_bantuan']);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'bantuan' => $bantuan,
                 'penduduk' => $listPenduduk,
+                'listPenduduk' => $listPenduduk,
                 'jenis_bantuan' => $listJenis,
-                'program' => $listProgramTerpilih,
+                'listJenis' => $listJenis,
+                'program' => $allPrograms,
+                'allPrograms' => $allPrograms,
+                'programTerpilih' => $listProgramTerpilih,
             ]);
         }
 

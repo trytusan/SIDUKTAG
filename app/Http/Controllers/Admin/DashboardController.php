@@ -73,6 +73,16 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
+        $bantuanTerbaru = BantuanPenerima::with(['penduduk', 'bantuan'])
+            ->latest()
+            ->take(5)
+            ->get();
+
+        $programBantuan = Bantuan::where('status_bantuan', 'Aktif')
+            ->latest()
+            ->take(6)
+            ->get();
+
         if ($request->expectsJson() || $request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'stats' => [
@@ -88,6 +98,8 @@ class DashboardController extends Controller
                 ],
                 'pengajuanTerbaru' => $pengajuanTerbaru,
                 'pendudukTerbaru' => $pendudukTerbaru,
+                'bantuanTerbaru' => $bantuanTerbaru,
+                'programBantuan' => $programBantuan,
             ]);
         }
 
@@ -97,7 +109,9 @@ class DashboardController extends Controller
             'totalPengajuanSurat',
             'totalBantuanAktif',
             'pengajuanTerbaru',
-            'pendudukTerbaru'
+            'pendudukTerbaru',
+            'bantuanTerbaru',
+            'programBantuan'
         ));
     }
 }
