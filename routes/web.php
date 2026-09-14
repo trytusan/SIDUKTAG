@@ -27,6 +27,15 @@ Route::post('/api/otp/send', [OtpController::class, 'sendOtp'])->name('otp.send'
 Route::post('/api/otp/verify', [OtpController::class, 'verifyOtp'])->name('otp.verify');
 Route::post('/api/otp/reset-password', [OtpController::class, 'resetPassword'])->name('otp.reset');
 
+// Storage Fallback Route untuk Shared Hosting (Menangani akses file foto/dokumen jika symlink storage belum terpasang)
+Route::get('/storage/{path}', function ($path) {
+    $filePath = storage_path('app/public/' . $path);
+    if (!file_exists($filePath)) {
+        abort(404);
+    }
+    return response()->file($filePath);
+})->where('path', '.*');
+
 Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set', 'csrf_token' => csrf_token()]);
 });
@@ -80,7 +89,23 @@ Route::get('/api/peta', [\App\Http\Controllers\User\PetaController::class, 'inde
 
 Route::middleware('auth')->group(function () {
     Route::get('/api/user', function (\Illuminate\Http\Request $request) {
-        $user = $request->user()->load(['penduduk.kartuKeluarga']);
+        $user = $request->user();
+
+        // Hubungkan data penduduk secara otomatis jika relasi belum terhubung
+        if (!$user->penduduk) {
+            $matchingPenduduk = \App\Models\Penduduk::where('user_id', $user->id)
+                ->orWhere(function ($q) use ($user) {
+                    $q->whereNull('user_id')->where('nama_lengkap', $user->name);
+                })
+                ->first();
+
+            if ($matchingPenduduk && !$matchingPenduduk->user_id) {
+                $matchingPenduduk->update(['user_id' => $user->id]);
+            }
+        }
+
+        $user->load(['penduduk.kartuKeluarga']);
+
         return response()->json([
             'user' => $user,
             'role' => $user->role,

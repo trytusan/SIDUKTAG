@@ -190,8 +190,16 @@ class PendudukController extends Controller
                 ]
             );
 
-            // 2. Simpan atau Update Penduduk (Relasi hasMany otomatis tersambung lewat kolom nomor_kk)
-            $penduduk = Penduduk::updateOrCreate(['user_id' => $user->id], $data);
+            // 2. Simpan atau Update Penduduk (Cek user_id atau NIK agar tidak melanggar unique constraint)
+            $penduduk = Penduduk::where('user_id', $user->id)
+                ->orWhere('nik', $data['nik'])
+                ->first();
+
+            if ($penduduk) {
+                $penduduk->update($data);
+            } else {
+                $penduduk = Penduduk::create($data);
+            }
 
             // 3. Update info KK jika dia adalah Kepala Keluarga
             if ($isKepalaKeluarga) {
@@ -243,8 +251,25 @@ class PendudukController extends Controller
     {
         $user = $request->user() ?: auth()->user();
         $penduduk = $user?->penduduk;
+
+        // Auto-link penduduk jika relasi belum tersambung
+        if (!$penduduk && $user) {
+            $penduduk = Penduduk::where('user_id', $user->id)
+                ->orWhere(function ($q) use ($user) {
+                    $q->whereNull('user_id')->where('nama_lengkap', $user->name);
+                })
+                ->first();
+
+            if ($penduduk && !$penduduk->user_id) {
+                $penduduk->update(['user_id' => $user->id]);
+            }
+        }
+
         if ($request->wantsJson() || $request->is('api/*')) {
-            return response()->json(['penduduk' => $penduduk]);
+            return response()->json([
+                'penduduk' => $penduduk ? $penduduk->load('kartuKeluarga') : null,
+                'user' => $user,
+            ]);
         }
         return view('user.pengaturan.profil', compact('penduduk'));
     }
@@ -252,10 +277,19 @@ class PendudukController extends Controller
     public function update(Request $request)
     {
         $user = $request->user() ?: auth()->user();
-        $penduduk = $user?->penduduk;
+        $penduduk = $user?->penduduk ?? Penduduk::where('user_id', $user?->id)->first();
+        if (!$penduduk && $user) {
+            $penduduk = Penduduk::whereNull('user_id')
+                ->where('nama_lengkap', $user->name)
+                ->first();
+            if ($penduduk) {
+                $penduduk->update(['user_id' => $user->id]);
+            }
+        }
+
         if (!$penduduk) {
             if ($request->wantsJson() || $request->is('api/*')) {
-                return response()->json(['message' => 'Data profil tidak ditemukan.'], 404);
+                return response()->json(['message' => 'Data profil kependudukan belum terhubung. Silakan lengkapi data pokok terlebih dahulu.'], 404);
             }
             return back()->with('error', 'Data profil tidak ditemukan.');
         }

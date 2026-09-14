@@ -22,6 +22,11 @@ class EnsureProfileCompleted
 
         // hanya berlaku untuk user (bukan admin)
         if ($user->role === 'user') {
+            // Izinkan rute pengaturan profil & akun agar pengguna selalu bisa melihat dan memperbarui profilnya
+            if ($request->routeIs('user.pengaturan.*') || $request->is('user/pengaturan*')) {
+                return $next($request);
+            }
+
             // cek apakah sudah punya data penduduk dan profil sudah lengkap
             if (!$user->penduduk || !$user->penduduk->is_profile_completed) {
                 if ($request->wantsJson() || $request->is('api/*')) {

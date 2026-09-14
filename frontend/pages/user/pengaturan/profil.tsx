@@ -16,7 +16,7 @@ import { useAuth } from '../../../src/context/AuthContext'
 import { DAFTAR_PEKERJAAN_DUKCAPIL } from '../../../src/constants/dukcapil'
 
 export default function UserPengaturanProfil() {
-  const { refreshUser } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [penduduk, setPenduduk] = useState<Penduduk | null>(null)
   const [loadingInitial, setLoadingInitial] = useState(true)
 
@@ -42,7 +42,7 @@ export default function UserPengaturanProfil() {
     async function fetchProfil() {
       try {
         const res = await api.get('/user/pengaturan/profil')
-        const p: Penduduk = res.data.penduduk
+        const p: Penduduk = res.data?.penduduk || user?.penduduk || null
         setPenduduk(p)
         if (p) {
           setFormData({
@@ -57,15 +57,23 @@ export default function UserPengaturanProfil() {
             nomor_telepon: p.nomor_telepon || '',
             alamat_lengkap: p.alamat_lengkap || '',
           })
+        } else if (user) {
+          setFormData((prev) => ({
+            ...prev,
+            nama_lengkap: user.name || '',
+          }))
         }
       } catch (err) {
         console.error('Failed to load profil:', err)
+        if (user?.penduduk) {
+          setPenduduk(user.penduduk)
+        }
       } finally {
         setLoadingInitial(false)
       }
     }
     fetchProfil()
-  }, [])
+  }, [user])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -144,6 +152,22 @@ export default function UserPengaturanProfil() {
 
         <AlertSuccess message={success} onClose={() => setSuccess(null)} />
         <AlertError message={error} errors={validationErrors} onClose={() => setError(null)} />
+
+        {!penduduk && (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-xs text-amber-900 flex items-start gap-3 shadow-xs">
+            <span className="text-base">⚠️</span>
+            <div className="space-y-1">
+              <p className="font-bold">Data Kependudukan Belum Terdaftar Lengkap</p>
+              <p className="text-amber-800 leading-relaxed">
+                Akun Anda belum tersambung ke data kependudukan resmi. Silakan selesaikan{' '}
+                <Link href="/user/onboarding/step-1" className="font-bold underline text-emerald-700">
+                  Langkah Onboarding Data Pokok
+                </Link>{' '}
+                agar NIK dan Nomor KK terhubung secara permanen ke akun Anda.
+              </p>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
           <div className="rounded-2xl bg-slate-50 p-4 grid grid-cols-2 gap-4 text-xs">
