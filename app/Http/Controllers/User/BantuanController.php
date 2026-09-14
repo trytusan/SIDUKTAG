@@ -36,56 +36,24 @@ class BantuanController extends Controller
 
     public function create(Request $request)
     {
-        $programBantuan = Bantuan::where('status_bantuan', 'Aktif')->get();
-
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'programBantuan' => $programBantuan
-            ]);
+                'message' => 'Warga hanya dapat melihat daftar bantuan sosial dan tidak dapat membuat atau mengajukan bantuan.'
+            ], 403);
         }
 
-        return view('user.bantuan.create', compact('programBantuan'));
+        return redirect()->route('user.bantuan.index')->with('error', 'Warga hanya dapat melihat daftar bantuan sosial.');
     }
 
     public function store(Request $request)
     {
-        $user = $request->user();
-        $penduduk = $user->penduduk ?? Penduduk::where('user_id', $user->id)
-            ->orWhere('nik', $user->nik ?? null)
-            ->first();
-
-        if (!$penduduk) {
-            if ($request->wantsJson() || $request->is('api/*')) {
-                return response()->json([
-                    'message' => 'Data penduduk belum tersedia. Lengkapi profil terlebih dahulu.'
-                ], 422);
-            }
-            return back()->with('error', 'Data penduduk belum tersedia.');
-        }
-
-        $validated = $request->validate([
-            'bantuan_id' => ['required', 'exists:bantuan,id'],
-            'catatan'    => ['nullable', 'string'],
-        ]);
-
-        $penerima = BantuanPenerima::create([
-            'bantuan_id'       => $validated['bantuan_id'],
-            'penduduk_id'      => $penduduk->id,
-            'tanggal_menerima' => null,
-            'status_penerima'  => 'Menunggu',
-            'catatan'          => $validated['catatan'] ?? null,
-        ]);
-
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => 'Pengajuan bantuan berhasil dikirim.',
-                'data'    => $penerima
-            ], 201);
+                'message' => 'Warga tidak dapat mengajukan atau menambahkan bantuan sosial secara mandiri. Penetapan penerima dilakukan oleh Pemerintah Desa.'
+            ], 403);
         }
 
-        return redirect()
-            ->route('user.bantuan.index')
-            ->with('status', 'Pengajuan bantuan berhasil dikirim.');
+        return redirect()->route('user.bantuan.index')->with('error', 'Warga tidak dapat mengajukan bantuan sosial secara mandiri.');
     }
 
     public function show(Request $request, int $id)

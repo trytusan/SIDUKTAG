@@ -42,7 +42,7 @@ export default function UserBantuanDetail() {
   return (
     <UserLayout pageTitle="Detail Bantuan Sosial" subtitle={program?.nama_program || 'Program Bantuan'}>
       <PageHeader
-        title="Detail Pendaftaran Bantuan"
+        title="Detail Penerima Bantuan"
         description={'Status: ' + bantuan.status_penerima}
         actions={[
           {
@@ -80,7 +80,7 @@ export default function UserBantuanDetail() {
 
           {bantuan.catatan && (
             <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
-              <span className="text-xs text-slate-500">Catatan Pengajuan</span>
+              <span className="text-xs text-slate-500">Catatan / Keterangan</span>
               <p className="mt-1 text-slate-700 leading-relaxed">{bantuan.catatan}</p>
             </div>
           )}

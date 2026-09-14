@@ -33,22 +33,23 @@ export default function UserBantuanIndex() {
   }, [])
 
   return (
-    <UserLayout pageTitle="Bantuan Sosial" subtitle="Status keikutsertaan program bantuan sosial">
+    <UserLayout pageTitle="Bantuan Sosial" subtitle="Status penerimaan program bantuan sosial">
       <PageHeader
         title="Daftar Bantuan Sosial"
-        description="Pantau program bantuan yang Anda ajukan atau terima"
-        actions={[
-          {
-            label: 'Daftar Program Baru',
-            href: '/user/bantuan/create',
-            icon: (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-            ),
-          },
-        ]}
+        description="Daftar program bantuan sosial yang Anda terima atau terdaftar melalui Pemerintah Desa"
       />
+
+      <div className="mb-5 rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-4 text-xs text-emerald-900 flex items-start gap-3 shadow-xs">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div className="space-y-0.5">
+          <p className="font-bold text-emerald-950">Informasi Penerima Bantuan</p>
+          <p className="text-emerald-800/90 leading-relaxed">
+            Penetapan dan penyaluran bantuan sosial ditentukan langsung oleh Pemerintah Desa berdasarkan hasil musyawarah dan verifikasi data terpadu. Warga dapat memantau status keikutsertaan bantuan yang terdaftar pada tabel di bawah.
+          </p>
+        </div>
+      </div>
 
       {loading ? (
         <LoadingSpinner message="Memuat daftar bantuan sosial..." />
@@ -97,7 +98,7 @@ export default function UserBantuanIndex() {
               },
             ]}
             data={data?.data || []}
-            emptyMessage="Belum ada riwayat pendaftaran program bantuan sosial."
+            emptyMessage="Anda belum terdaftar dalam program bantuan sosial desa."
           />
 
           {data && (
