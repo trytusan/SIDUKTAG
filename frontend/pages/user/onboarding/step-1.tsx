@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import api from '../../../src/lib/api'
@@ -10,11 +10,10 @@ import AlertError from '../../../src/components/ui/alert-error'
 import { DAFTAR_PEKERJAAN_DUKCAPIL, STATUS_HUBUNGAN_KELUARGA } from '../../../src/constants/dukcapil'
 
 interface KartuKeluargaOption {
+  id?: number
   nomor_kk: string
   nama_kepala_keluarga: string
   alamat_keluarga?: string
-  rt?: string
-  rw?: string
   jumlah_anggota?: number
 }
 
@@ -43,22 +42,24 @@ export default function OnboardingStep1() {
   const [loadingKk, setLoadingKk] = useState(false)
   const [inputModeKk, setInputModeKk] = useState<'select' | 'manual'>('select')
 
-  // Muat opsi KK dari API saat komponen di-mount
-  useEffect(() => {
-    const fetchKkOptions = async () => {
-      setLoadingKk(true)
-      try {
-        const res = await api.get('/api/kartu-keluarga/options')
-        const list = res.data?.options || res.data?.kartu_keluarga || []
-        setKkOptions(list)
-      } catch (err) {
-        console.error('Gagal mengambil daftar Kartu Keluarga:', err)
-      } finally {
-        setLoadingKk(false)
-      }
+  // Muat opsi KK dari API
+  const fetchKkOptions = useCallback(async () => {
+    setLoadingKk(true)
+    try {
+      const res = await api.get('/api/kartu-keluarga/options')
+      const data = res.data
+      const list = Array.isArray(data) ? data : (data?.options || data?.kartu_keluarga || [])
+      setKkOptions(list)
+    } catch (err) {
+      console.error('Gagal mengambil daftar Kartu Keluarga:', err)
+    } finally {
+      setLoadingKk(false)
     }
-    fetchKkOptions()
   }, [])
+
+  useEffect(() => {
+    fetchKkOptions()
+  }, [fetchKkOptions])
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -99,6 +100,9 @@ export default function OnboardingStep1() {
       // Jika beralih ke bukan Kepala Keluarga dan sebelumnya belum memilih KK, reset no kk
       nomor_kk: val === 'Kepala Keluarga' ? prev.nomor_kk : (inputModeKk === 'select' ? '' : prev.nomor_kk),
     }))
+    if (val !== 'Kepala Keluarga' && kkOptions.length === 0) {
+      fetchKkOptions()
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -268,9 +272,16 @@ export default function OnboardingStep1() {
                         error={validationErrors.nomor_kk?.[0]}
                       />
                       {kkOptions.length === 0 && !loadingKk && (
-                        <p className="mt-1.5 text-xs text-amber-700">
-                          Belum ada KK yang terdaftar di database desa. Silakan beralih ke mode &quot;Ketik Manual No. KK&quot;.
-                        </p>
+                        <div className="mt-2 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 p-2.5 text-xs text-amber-800">
+                          <span>Belum ada KK yang terdaftar di database desa atau belum termuat.</span>
+                          <button
+                            type="button"
+                            onClick={() => fetchKkOptions()}
+                            className="ml-2 inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:text-amber-950"
+                          >
+                            Muat Ulang
+                          </button>
+                        </div>
                       )}
                     </div>
                   ) : (

@@ -16,8 +16,6 @@ class KartuKeluarga extends Model
         'nomor_kk',
         'nama_kepala_keluarga',
         'alamat_keluarga',
-        'rt',
-        'rw',
         'jumlah_anggota',
     ];
 
@@ -27,7 +25,6 @@ class KartuKeluarga extends Model
     public function anggota(): HasMany
     {
         // Parameter: NamaModel, ForeignKey di tabel penduduk, LocalKey di tabel KK
-        return $this->hasMany(Penduduk::class, 'nomor_kk', 'nomor_kk');
         return $this->hasMany(Penduduk::class, 'nomor_kk', 'nomor_kk')
             ->orderByRaw("
                 CASE 

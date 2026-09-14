@@ -87,6 +87,28 @@ Route::get('/api/berita/{idOrSlug}', function ($idOrSlug) {
 
 Route::get('/api/peta', [\App\Http\Controllers\User\PetaController::class, 'index']);
 
+Route::get('/api/kartu-keluarga/options', function (\Illuminate\Http\Request $request) {
+    $search = $request->query('q');
+    $query = \App\Models\KartuKeluarga::query()
+        ->select('id', 'nomor_kk', 'nama_kepala_keluarga', 'alamat_keluarga', 'jumlah_anggota')
+        ->orderBy('nama_kepala_keluarga', 'asc');
+
+    if ($search) {
+        $query->where(function ($q) use ($search) {
+            $q->where('nomor_kk', 'like', "%{$search}%")
+              ->orWhere('nama_kepala_keluarga', 'like', "%{$search}%")
+              ->orWhere('alamat_keluarga', 'like', "%{$search}%");
+        });
+    }
+
+    $options = $query->limit(200)->get();
+
+    return response()->json([
+        'kartu_keluarga' => $options,
+        'options' => $options,
+    ]);
+})->name('api.kartu-keluarga.options');
+
 Route::middleware('auth')->group(function () {
     Route::get('/api/user', function (\Illuminate\Http\Request $request) {
         $user = $request->user();
@@ -112,28 +134,6 @@ Route::middleware('auth')->group(function () {
             'is_profile_completed' => $user->role === 'admin' ? true : (bool) ($user->penduduk?->is_profile_completed ?? false),
         ]);
     })->name('api.user');
-
-    Route::get('/api/kartu-keluarga/options', function (\Illuminate\Http\Request $request) {
-        $search = $request->query('q');
-        $query = \App\Models\KartuKeluarga::query()
-            ->select('nomor_kk', 'nama_kepala_keluarga', 'alamat_keluarga', 'rt', 'rw', 'jumlah_anggota')
-            ->orderBy('nama_kepala_keluarga', 'asc');
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('nomor_kk', 'like', "%{$search}%")
-                  ->orWhere('nama_kepala_keluarga', 'like', "%{$search}%")
-                  ->orWhere('alamat_keluarga', 'like', "%{$search}%");
-            });
-        }
-
-        $options = $query->limit(200)->get();
-
-        return response()->json([
-            'kartu_keluarga' => $options,
-            'options' => $options,
-        ]);
-    })->name('api.kartu-keluarga.options');
 
     Route::get('/change-password', [PasswordController::class, 'showChangePasswordForm'])->name('password.change');
     Route::post('/change-password', [PasswordController::class, 'changePassword'])->name('password.change.update');
