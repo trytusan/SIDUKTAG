@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\PengaturanController;
 use App\Http\Controllers\Admin\WilayahController;
 use App\Http\Controllers\Admin\BeritaController;
 use App\Http\Controllers\Admin\PetaController;
+use App\Http\Controllers\Admin\LaporDiriController;
+use App\Http\Controllers\Admin\FormulirController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -110,5 +112,24 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('peta')->name('peta.')->group(function () {
         Route::get('/', [PetaController::class, 'index'])->name('index');
         Route::get('/data', [PetaController::class, 'data'])->name('data');
+    });
+
+    Route::prefix('lapor-diri')->name('lapor-diri.')->group(function () {
+        Route::get('/', [LaporDiriController::class, 'index'])->name('index');
+        Route::get('/create', [LaporDiriController::class, 'create'])->name('create');
+        Route::post('/', [LaporDiriController::class, 'store'])->name('store');
+        Route::get('/{id}', [LaporDiriController::class, 'show'])->name('show');
+        Route::get('/{id}/edit', [LaporDiriController::class, 'edit'])->name('edit');
+        Route::match(['put', 'post'], '/{id}', [LaporDiriController::class, 'update'])->name('update');
+        Route::delete('/{id}', [LaporDiriController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/cetak', [LaporDiriController::class, 'cetak'])->name('cetak');
+    });
+    Route::prefix('formulir')->name('formulir.')->group(function () {
+        Route::get('/', [FormulirController::class, 'index'])->name('index');
+        Route::post('/', [FormulirController::class, 'store'])->name('store');
+        Route::get('/{id}', [FormulirController::class, 'show'])->name('show');
+        Route::match(['put', 'post'], '/{id}', [FormulirController::class, 'update'])->name('update');
+        Route::delete('/{id}', [FormulirController::class, 'destroy'])->name('destroy');
+        Route::get('/{id}/download', [FormulirController::class, 'download'])->name('download');
     });
 });

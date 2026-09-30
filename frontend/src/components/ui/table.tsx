@@ -16,12 +16,20 @@ interface TableProps<T = any> {
 }
 
 export default function Table<T = any>({
-  columns,
+  columns = [],
   data = [],
   renderRow,
   emptyMessage = 'Belum ada data yang tersedia.',
   loading = false,
 }: TableProps<T>) {
+  const rows: T[] = Array.isArray(data)
+    ? data
+    : Array.isArray((data as any)?.data)
+    ? (data as any).data
+    : Array.isArray((data as any)?.data?.data)
+    ? (data as any).data.data
+    : []
+
   if (loading) {
     return (
       <div className="flex h-48 items-center justify-center rounded-2xl bg-white border border-slate-200">
@@ -47,9 +55,9 @@ export default function Table<T = any>({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm">
-            {data.length === 0 ? (
+            {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="py-12 text-center text-slate-400">
+                <td colSpan={columns.length || 1} className="py-12 text-center text-slate-400">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -59,7 +67,7 @@ export default function Table<T = any>({
                 </td>
               </tr>
             ) : (
-              data.map((item, idx) => {
+              rows.map((item, idx) => {
                 if (renderRow) {
                   return (
                     <tr key={idx} className="transition-colors hover:bg-slate-50/80">

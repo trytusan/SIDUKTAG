@@ -7,6 +7,7 @@ use App\Http\Controllers\User\PendudukController;
 use App\Http\Controllers\User\PengajuanSuratController;
 use App\Http\Controllers\User\PengaturanController;
 use App\Http\Controllers\User\PetaController;
+use App\Http\Controllers\User\FormulirController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('user')->name('user.')->middleware(['auth', 'user'])->group(function () {
@@ -68,6 +69,13 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'user'])->group(functi
             Route::get('/create', [BantuanController::class, 'create'])->name('create');
             Route::post('/', [BantuanController::class, 'store'])->name('store');
             Route::get('/{id}', [BantuanController::class, 'show'])->name('show');
+        });
+
+        
+        Route::prefix('formulir')->name('formulir.')->group(function () {
+            Route::get('/', [FormulirController::class, 'index'])->name('index');
+            Route::get('/{id}', [FormulirController::class, 'show'])->name('show');
+            Route::get('/{id}/download', [FormulirController::class, 'download'])->name('download');
         });
 
         Route::get('/peta', [PetaController::class, 'index'])->name('peta.index');

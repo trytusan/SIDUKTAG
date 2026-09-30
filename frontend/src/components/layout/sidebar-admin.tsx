@@ -68,6 +68,15 @@ export default function SidebarAdmin({ isOpen = false, onClose }: SidebarAdminPr
       ],
     },
     {
+      label: 'Lapor Diri',
+      href: '/admin/lapor-diri',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M18 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM3 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 9.374 21c-2.331 0-4.512-.645-6.374-1.765Z" />
+        </svg>
+      ),
+    },
+    {
       label: 'Peta Wilayah',
       icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
@@ -102,6 +111,16 @@ export default function SidebarAdmin({ isOpen = false, onClose }: SidebarAdminPr
         { label: 'Data Bantuan', href: '/admin/bantuan' },
         { label: 'Jenis Bantuan', href: '/admin/jenis-bantuan' },
       ],
+    },
+    {
+      label: 'Formulir',
+      href: '/admin/formulir',
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5A3.375 3.375 0 0010.125 2.25H5.625A2.625 2.625 0 003 4.875v14.25a2.625 2.625 0 002.625 2.625h12.75A2.625 2.625 0 0021 19.125v-1.5a3.375 3.375 0 00-1.5-2.812Z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 3h4m-4-6h2" />
+        </svg>
+      ),
     },
     {
       label: 'Berita & Informasi',

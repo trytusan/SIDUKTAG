@@ -273,3 +273,89 @@ export interface SebaranKkWilayah {
   titik_hunian: TitikHunianKk[]
 }
 
+export interface LaporDiriAnggota {
+  id?: number
+  lapor_diri_id?: number
+  nama: string
+  nik?: string | null
+  tempat_lahir?: string | null
+  tanggal_lahir?: string | null
+  hubungan_keluarga?: string | null
+  created_at?: string
+  updated_at?: string
+}
+
+export interface LaporDiri {
+  id: number
+  // A. Data Pribadi
+  nama_lengkap: string
+  jenis_kelamin: 'Laki-Laki' | 'Perempuan'
+  tempat_lahir: string
+  tanggal_lahir: string
+  agama: string
+  status_perkawinan: 'Belum Kawin' | 'Kawin' | 'Cerai Hidup' | 'Cerai Mati'
+  pekerjaan: string
+  nik: string
+  nomor_kk?: string | null
+  nomor_telepon?: string | null
+
+  // B. Data Tempat Tinggal Baru
+  alamat_baru: string
+  tanggal_mulai_tinggal?: string | null
+  status_tempat_tinggal: 'Milik Sendiri' | 'Kontrak/Sewa' | 'Numpang' | 'Kost'
+  nama_pemilik_rumah?: string | null
+  nomor_kontak_pemilik?: string | null
+  latitude?: number | null
+  longitude?: number | null
+
+  // C. Data Asal
+  alamat_asal: string
+  rt_rw_asal?: string | null
+  kelurahan_asal?: string | null
+  kecamatan_asal?: string | null
+  kota_kabupaten_asal?: string | null
+
+  // E. Dokumen Checklist & Upload
+  lampiran_ktp?: boolean
+  lampiran_kk?: boolean
+  lampiran_surat_pindah?: boolean
+  file_ktp?: string | null
+  file_kk?: string | null
+  file_surat_pindah?: string | null
+  lampiran_ttd?: boolean
+  tanda_tangan?: string | null
+
+  // Status & Meta
+  tanggal_lapor?: string | null
+  status_lapor?: string
+  catatan?: string | null
+  created_by?: number | null
+  created_at?: string
+  updated_at?: string
+
+  // Relations
+  anggota?: LaporDiriAnggota[]
+  anggota_count?: number
+}
+
+export interface Formulir {
+  id: number
+  nama_formulir: string
+  kode_formulir?: string | null
+  kategori: string
+  deskripsi?: string | null
+  persyaratan?: string | null
+  file_template: string
+  file_format: string
+  file_size?: number | null
+  download_count: number
+  is_active: boolean
+  created_by?: number | null
+  creator?: {
+    id: number
+    name: string
+    email?: string
+  } | null
+  created_at?: string
+  updated_at?: string
+}
