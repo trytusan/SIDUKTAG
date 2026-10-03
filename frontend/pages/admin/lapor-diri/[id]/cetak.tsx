@@ -118,105 +118,241 @@ export default function LaporDiriCetakPage() {
           </div>
 
           <div className="text-center text-sm font-bold uppercase tracking-wider my-3">
-            FORMULIR LAPOR DIRI WARGA BARU
+            FORMULIR LAPOR DIRI WARGA BARU / PENDATANG
+            {data.kewarganegaraan === 'WNA' ? ' (WARGA NEGARA ASING / WNA)' : ''}
           </div>
 
           {/* Bagian A: DATA PRIBADI */}
-          <div className="font-bold text-xs uppercase mb-1">A. DATA PRIBADI</div>
-          <table className="w-full mb-2">
-            <tbody>
-              <tr>
-                <td className="w-5 align-top py-0.5">1.</td>
-                <td className="w-48 align-top py-0.5">Nama Lengkap</td>
-                <td className="w-3 align-top py-0.5">:</td>
-                <td className="align-top py-0.5 font-bold uppercase">{data.nama_lengkap}</td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">2.</td>
-                <td className="align-top py-0.5">Jenis Kelamin</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5">
-                  <span className="mr-4 inline-flex items-center gap-1.5">
-                    <span
-                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
-                        data.jenis_kelamin === 'Laki-Laki' ? 'bg-black text-white' : ''
-                      }`}
-                    >
-                      {data.jenis_kelamin === 'Laki-Laki' ? '✓' : ''}
-                    </span>
-                    Laki-Laki
-                  </span>
-                  <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
-                        data.jenis_kelamin === 'Perempuan' ? 'bg-black text-white' : ''
-                      }`}
-                    >
-                      {data.jenis_kelamin === 'Perempuan' ? '✓' : ''}
-                    </span>
-                    Perempuan
-                  </span>
-                </td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">3.</td>
-                <td className="align-top py-0.5">Tempat/ Tanggal Lahir</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5">
-                  {data.tempat_lahir}, {formatShortDate(data.tanggal_lahir)}
-                </td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">4.</td>
-                <td className="align-top py-0.5">Agama</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5">{data.agama}</td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">5.</td>
-                <td className="align-top py-0.5">Status Perkawinan</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5">
-                  {['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'].map((st) => (
-                    <span key={st} className="mr-3 inline-flex items-center gap-1.5">
+          <div className="font-bold text-xs uppercase mb-1">
+            A. DATA PRIBADI {data.kewarganegaraan === 'WNA' ? '(WARGA NEGARA ASING)' : ''}
+          </div>
+          {data.kewarganegaraan === 'WNA' ? (
+            <table className="w-full mb-2">
+              <tbody>
+                <tr>
+                  <td className="w-5 align-top py-0.5">1.</td>
+                  <td className="w-52 align-top py-0.5">Nama Lengkap (Sesuai Paspor)</td>
+                  <td className="w-3 align-top py-0.5">:</td>
+                  <td className="align-top py-0.5 font-bold uppercase">{data.nama_lengkap}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">2.</td>
+                  <td className="align-top py-0.5">Kewarganegaraan / Negara Asal</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5 font-semibold text-slate-800">{data.negara_asal || 'Asing'}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">3.</td>
+                  <td className="align-top py-0.5">Nomor Paspor</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5 font-mono font-bold">
+                    {data.nomor_paspor || '-'}{' '}
+                    {data.masa_berlaku_paspor && (
+                      <span className="font-sans font-normal text-[10px] text-slate-600">
+                        (Masa Berlaku s/d: {formatShortDate(data.masa_berlaku_paspor)})
+                      </span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">4.</td>
+                  <td className="align-top py-0.5">Jenis & No. Izin Tinggal</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    {data.jenis_izin_tinggal || '-'}
+                    {data.nomor_izin_tinggal ? ` (No: ${data.nomor_izin_tinggal})` : ''}
+                    {data.masa_berlaku_izin ? ` - Berlaku s/d: ${formatShortDate(data.masa_berlaku_izin)}` : ''}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">5.</td>
+                  <td className="align-top py-0.5">Jenis Kelamin</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    <span className="mr-4 inline-flex items-center gap-1.5">
                       <span
                         className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
-                          data.status_perkawinan === st ? 'bg-black text-white' : ''
+                          data.jenis_kelamin === 'Laki-Laki' ? 'bg-black text-white' : ''
                         }`}
                       >
-                        {data.status_perkawinan === st ? '✓' : ''}
+                        {data.jenis_kelamin === 'Laki-Laki' ? '✓' : ''}
                       </span>
-                      {st}
+                      Laki-Laki
                     </span>
-                  ))}
-                </td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">6.</td>
-                <td className="align-top py-0.5">Pekerjaan</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5">{data.pekerjaan}</td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">7.</td>
-                <td className="align-top py-0.5">Nomor Induk Kependudukan (NIK)</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5 font-bold font-mono">{data.nik}</td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">8.</td>
-                <td className="align-top py-0.5">Nomor Kartu Keluarga (KK)</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5 font-mono">{data.nomor_kk || '-'}</td>
-              </tr>
-              <tr>
-                <td className="align-top py-0.5">9.</td>
-                <td className="align-top py-0.5">Nomor Telp/ Hp</td>
-                <td className="align-top py-0.5">:</td>
-                <td className="align-top py-0.5">{data.nomor_telepon || '-'}</td>
-              </tr>
-            </tbody>
-          </table>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span
+                        className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                          data.jenis_kelamin === 'Perempuan' ? 'bg-black text-white' : ''
+                        }`}
+                      >
+                        {data.jenis_kelamin === 'Perempuan' ? '✓' : ''}
+                      </span>
+                      Perempuan
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">6.</td>
+                  <td className="align-top py-0.5">Tempat/ Tanggal Lahir</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    {data.tempat_lahir || '-'}, {formatShortDate(data.tanggal_lahir)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">7.</td>
+                  <td className="align-top py-0.5">Status Perkawinan</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    {['Belum Kawin', 'Kawin', 'Cerai'].map((st) => (
+                      <span key={st} className="mr-3 inline-flex items-center gap-1.5">
+                        <span
+                          className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                            (data.status_perkawinan || '').includes(st) ? 'bg-black text-white' : ''
+                          }`}
+                        >
+                          {(data.status_perkawinan || '').includes(st) ? '✓' : ''}
+                        </span>
+                        {st}
+                      </span>
+                    ))}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">8.</td>
+                  <td className="align-top py-0.5">Status Bekerja di Indonesia</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    <span className="font-bold text-slate-800">{data.status_bekerja || '-'}</span>
+                    {data.status_bekerja === 'Bekerja' && (
+                      <span className="block text-[10.5px] mt-0.5">
+                        Pemberi Kerja: <strong>{data.nama_perusahaan || '-'}</strong> &bull; Posisi:{' '}
+                        {data.jabatan_pekerjaan || '-'}
+                        {data.nomor_dokumen_kerja ? ` (RPTKA: ${data.nomor_dokumen_kerja})` : ''}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">9.</td>
+                  <td className="align-top py-0.5">Penjamin / Sponsor di Bali</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    {data.nama_penjamin ? (
+                      <span>
+                        <strong>{data.nama_penjamin}</strong> ({data.kategori_penjamin || 'Sponsor'})
+                        {data.telepon_penjamin ? ` - Telp: ${data.telepon_penjamin}` : ''}
+                        {data.alamat_penjamin ? ` &bull; Alamat: ${data.alamat_penjamin}` : ''}
+                      </span>
+                    ) : (
+                      '-'
+                    )}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">10.</td>
+                  <td className="align-top py-0.5">Nomor Telp/ WhatsApp</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">{data.nomor_telepon || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full mb-2">
+              <tbody>
+                <tr>
+                  <td className="w-5 align-top py-0.5">1.</td>
+                  <td className="w-48 align-top py-0.5">Nama Lengkap</td>
+                  <td className="w-3 align-top py-0.5">:</td>
+                  <td className="align-top py-0.5 font-bold uppercase">{data.nama_lengkap}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">2.</td>
+                  <td className="align-top py-0.5">Jenis Kelamin</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    <span className="mr-4 inline-flex items-center gap-1.5">
+                      <span
+                        className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                          data.jenis_kelamin === 'Laki-Laki' ? 'bg-black text-white' : ''
+                        }`}
+                      >
+                        {data.jenis_kelamin === 'Laki-Laki' ? '✓' : ''}
+                      </span>
+                      Laki-Laki
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <span
+                        className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                          data.jenis_kelamin === 'Perempuan' ? 'bg-black text-white' : ''
+                        }`}
+                      >
+                        {data.jenis_kelamin === 'Perempuan' ? '✓' : ''}
+                      </span>
+                      Perempuan
+                    </span>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">3.</td>
+                  <td className="align-top py-0.5">Tempat/ Tanggal Lahir</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    {data.tempat_lahir}, {formatShortDate(data.tanggal_lahir)}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">4.</td>
+                  <td className="align-top py-0.5">Agama</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">{data.agama}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">5.</td>
+                  <td className="align-top py-0.5">Status Perkawinan</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">
+                    {['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati'].map((st) => (
+                      <span key={st} className="mr-3 inline-flex items-center gap-1.5">
+                        <span
+                          className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                            data.status_perkawinan === st ? 'bg-black text-white' : ''
+                          }`}
+                        >
+                          {data.status_perkawinan === st ? '✓' : ''}
+                        </span>
+                        {st}
+                      </span>
+                    ))}
+                  </td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">6.</td>
+                  <td className="align-top py-0.5">Pekerjaan</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">{data.pekerjaan}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">7.</td>
+                  <td className="align-top py-0.5">Nomor Induk Kependudukan (NIK)</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5 font-bold font-mono">{data.nik}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">8.</td>
+                  <td className="align-top py-0.5">Nomor Kartu Keluarga (KK)</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5 font-mono">{data.nomor_kk || '-'}</td>
+                </tr>
+                <tr>
+                  <td className="align-top py-0.5">9.</td>
+                  <td className="align-top py-0.5">Nomor Telp/ Hp</td>
+                  <td className="align-top py-0.5">:</td>
+                  <td className="align-top py-0.5">{data.nomor_telepon || '-'}</td>
+                </tr>
+              </tbody>
+            </table>
+          )}
 
           {/* Bagian B: DATA TEMPAT TINGGAL BARU */}
           <div className="font-bold text-xs uppercase mb-1 mt-2">
@@ -316,7 +452,9 @@ export default function LaporDiriCetakPage() {
               <tr className="bg-slate-100">
                 <th className="border border-black py-1 px-2 text-center w-8">NO</th>
                 <th className="border border-black py-1 px-2 text-left">Nama</th>
-                <th className="border border-black py-1 px-2 text-center w-40">NIK</th>
+                <th className="border border-black py-1 px-2 text-center w-40">
+                  {data.kewarganegaraan === 'WNA' ? 'No. Paspor / NIK' : 'NIK'}
+                </th>
                 <th className="border border-black py-1 px-2 text-left">Tempat, Tanggal Lahir</th>
                 <th className="border border-black py-1 px-2 text-left w-32">Hubungan Keluarga</th>
               </tr>
@@ -327,7 +465,9 @@ export default function LaporDiriCetakPage() {
                   <tr key={idx}>
                     <td className="border border-black py-1 px-2 text-center">{idx + 1}</td>
                     <td className="border border-black py-1 px-2 font-semibold">{ang.nama}</td>
-                    <td className="border border-black py-1 px-2 text-center font-mono">{ang.nik || '-'}</td>
+                    <td className="border border-black py-1 px-2 text-center font-mono">
+                      {ang.nomor_paspor ? `Paspor: ${ang.nomor_paspor}` : (ang.nik || '-')}
+                    </td>
                     <td className="border border-black py-1 px-2">
                       {ang.tempat_lahir ? `${ang.tempat_lahir}, ` : ''}
                       {formatShortDate(ang.tanggal_lahir)}
@@ -351,46 +491,125 @@ export default function LaporDiriCetakPage() {
 
           {/* Bagian E: DOKUMEN YANG DILAMPIRKAN */}
           <div className="font-bold text-xs uppercase mb-1 mt-2">E. DOKUMEN YANG DILAMPIRKAN</div>
-          <table className="w-full mb-3 ml-2">
-            <tbody>
-              <tr>
-                <td className="w-6 py-0.5">
-                  <span
-                    className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
-                      data.lampiran_ktp ? 'bg-black text-white' : ''
-                    }`}
-                  >
-                    {data.lampiran_ktp ? '✓' : ''}
-                  </span>
-                </td>
-                <td className="py-0.5">1. Fotokopi Kartu Tanda Penduduk (KTP)</td>
-              </tr>
-              <tr>
-                <td className="py-0.5">
-                  <span
-                    className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
-                      data.lampiran_kk ? 'bg-black text-white' : ''
-                    }`}
-                  >
-                    {data.lampiran_kk ? '✓' : ''}
-                  </span>
-                </td>
-                <td className="py-0.5">2. Fotokopi Kartu Keluarga (KK)</td>
-              </tr>
-              <tr>
-                <td className="py-0.5">
-                  <span
-                    className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
-                      data.lampiran_surat_pindah ? 'bg-black text-white' : ''
-                    }`}
-                  >
-                    {data.lampiran_surat_pindah ? '✓' : ''}
-                  </span>
-                </td>
-                <td className="py-0.5">3. Surat Keterangan Pindah dari daerah asal (Jika Ada)</td>
-              </tr>
-            </tbody>
-          </table>
+          {data.kewarganegaraan === 'WNA' ? (
+            <table className="w-full mb-3 ml-2">
+              <tbody>
+                <tr>
+                  <td className="w-6 py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_paspor ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_paspor ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">1. Fotokopi Paspor Asing</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_kitas_kitap ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_kitas_kitap ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">2. Fotokopi Izin Tinggal Terbatas / Tetap (KITAS / KITAP)</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_surat_permohonan ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_surat_permohonan ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">3. Surat Permohonan / Pernyataan Sponsor / Penjamin</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_ktp_penjamin ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_ktp_penjamin ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">4. Fotokopi KTP / Identitas Penjamin / Sponsor</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_dokumen_kerja ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_dokumen_kerja ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">5. Dokumen Pendukung Kerja TKA (RPTKA / Kemenaker) (Bila Bekerja)</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_dokumen_lainnya ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_dokumen_lainnya ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">6. Dokumen Pendukung Lainnya</td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <table className="w-full mb-3 ml-2">
+              <tbody>
+                <tr>
+                  <td className="w-6 py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_ktp ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_ktp ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">1. Fotokopi Kartu Tanda Penduduk (KTP)</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_kk ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_kk ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">2. Fotokopi Kartu Keluarga (KK)</td>
+                </tr>
+                <tr>
+                  <td className="py-0.5">
+                    <span
+                      className={`inline-block w-3 h-3 border border-black text-[9px] font-bold text-center leading-[10px] ${
+                        data.lampiran_surat_pindah ? 'bg-black text-white' : ''
+                      }`}
+                    >
+                      {data.lampiran_surat_pindah ? '✓' : ''}
+                    </span>
+                  </td>
+                  <td className="py-0.5">3. Surat Keterangan Pindah dari daerah asal (Jika Ada)</td>
+                </tr>
+              </tbody>
+            </table>
+          )}
 
           {/* Bagian F: PERNYATAAN */}
           <div className="font-bold text-xs uppercase mb-1">F. PERNYATAAN</div>

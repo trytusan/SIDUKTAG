@@ -17,6 +17,9 @@ export default function AdminLaporDiriIndex() {
   const [stats, setStats] = useState<{
     total_pelapor?: number
     total_jiwa?: number
+    total_wni?: number
+    total_wna?: number
+    total_wna_bekerja?: number
     kost?: number
     kontrak_sewa?: number
     milik_sendiri?: number
@@ -25,6 +28,8 @@ export default function AdminLaporDiriIndex() {
 
   const [search, setSearch] = useState('')
   const [statusTinggal, setStatusTinggal] = useState('Semua')
+  const [kewarganegaraan, setKewarganegaraan] = useState('Semua')
+  const [statusBekerja, setStatusBekerja] = useState('Semua')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
   const [deleteId, setDeleteId] = useState<number | null>(null)
@@ -32,13 +37,21 @@ export default function AdminLaporDiriIndex() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-  async function fetchLaporDiri(p = 1, s = search, st = statusTinggal) {
+  async function fetchLaporDiri(
+    p = 1,
+    s = search,
+    st = statusTinggal,
+    kw = kewarganegaraan,
+    sb = statusBekerja
+  ) {
     setLoading(true)
     try {
       const params = new URLSearchParams()
       params.append('page', String(p))
       if (s.trim()) params.append('search', s.trim())
       if (st && st !== 'Semua') params.append('status_tempat_tinggal', st)
+      if (kw && kw !== 'Semua') params.append('kewarganegaraan', kw)
+      if (sb && sb !== 'Semua') params.append('status_bekerja', sb)
 
       const res = await api.get('/admin/lapor-diri?' + params.toString())
       setData(res.data.data || res.data.lapor_diri || res.data)
@@ -54,8 +67,8 @@ export default function AdminLaporDiriIndex() {
   }
 
   useEffect(() => {
-    fetchLaporDiri(1, search, statusTinggal)
-  }, [search, statusTinggal])
+    fetchLaporDiri(1, search, statusTinggal, kewarganegaraan, statusBekerja)
+  }, [search, statusTinggal, kewarganegaraan, statusBekerja])
 
   const handleDelete = async () => {
     if (!deleteId) return
@@ -118,6 +131,9 @@ export default function AdminLaporDiriIndex() {
 
   const totalPelapor = stats?.total_pelapor ?? data?.total ?? 0
   const totalJiwa = stats?.total_jiwa ?? totalPelapor
+  const totalWni = stats?.total_wni ?? 0
+  const totalWna = stats?.total_wna ?? 0
+  const totalWnaBekerja = stats?.total_wna_bekerja ?? 0
   const totalKost = stats?.kost ?? 0
   const totalKontrak = stats?.kontrak_sewa ?? 0
 
@@ -138,13 +154,13 @@ export default function AdminLaporDiriIndex() {
   return (
     <AdminLayout
       pageTitle="Lapor Diri Warga Baru"
-      subtitle="Manajemen dan pencatatan formulir lapor diri warga baru di Banjar Saba Penatih"
+      subtitle="Manajemen dan pencatatan formulir lapor diri warga baru (WNI & WNA) di Banjar Saba Penatih"
     >
       {/* Page Header */}
       <div className="mb-6">
         <PageHeader
           title="Lapor Diri Warga Baru"
-          description="Pencatatan data warga baru yang menyerahkan formulir fisik lapor diri ke kantor Banjar Saba Penatih."
+          description="Pencatatan data warga baru (WNI & WNA) yang menyerahkan formulir lapor diri ke kantor Banjar Saba Penatih."
         />
       </div>
 
@@ -153,7 +169,7 @@ export default function AdminLaporDiriIndex() {
         <CardStat
           title="Total Pelapor"
           value={totalPelapor.toLocaleString('id-ID')}
-          description="Formulir lapor diri tercatat"
+          description={`WNI: ${totalWni} • WNA: ${totalWna}`}
           variant="emerald"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,9 +189,20 @@ export default function AdminLaporDiriIndex() {
           }
         />
         <CardStat
-          title="Tinggal di Kost"
-          value={totalKost.toLocaleString('id-ID')}
-          description="Warga indekos / sewa kamar"
+          title="WNA Terdaftar"
+          value={totalWna.toLocaleString('id-ID')}
+          description={`${totalWnaBekerja} Orang Status Bekerja`}
+          variant="violet"
+          icon={
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+        <CardStat
+          title="Kost & Kontrak"
+          value={`${totalKost} / ${totalKontrak}`}
+          description="Hunian Kost / Sewa Rumah"
           variant="amber"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -183,23 +210,12 @@ export default function AdminLaporDiriIndex() {
             </svg>
           }
         />
-        <CardStat
-          title="Rumah Kontrak"
-          value={totalKontrak.toLocaleString('id-ID')}
-          description="Sewa rumah di lingkungan banjar"
-          variant="rose"
-          icon={
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3" />
-            </svg>
-          }
-        />
       </div>
 
       {/* Filter & Search Bar */}
       <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs mb-6 space-y-4">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="sm:col-span-2 relative">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="relative">
             <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -209,7 +225,7 @@ export default function AdminLaporDiriIndex() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Cari nama pelapor, NIK, alamat baru, kota asal, pemilik kost..."
+              placeholder="Cari nama, NIK, paspor, perusahaan..."
               className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
             />
           </div>
@@ -227,6 +243,33 @@ export default function AdminLaporDiriIndex() {
               <option value="Numpang">Numpang</option>
             </select>
           </div>
+
+          <div>
+            <select
+              value={kewarganegaraan}
+              onChange={(e) => setKewarganegaraan(e.target.value)}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="Semua">Semua Kewarganegaraan</option>
+              <option value="WNI">WNI (Warga Negara Indonesia)</option>
+              <option value="WNA">WNA (Warga Negara Asing)</option>
+            </select>
+          </div>
+
+          <div>
+            <select
+              value={statusBekerja}
+              onChange={(e) => setStatusBekerja(e.target.value)}
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-3.5 py-2.5 text-xs text-slate-800 outline-none transition focus:border-emerald-500 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
+            >
+              <option value="Semua">Semua Status Bekerja</option>
+              <option value="Bekerja">Bekerja</option>
+              <option value="Tidak Bekerja">Tidak Bekerja</option>
+              <option value="Pelajar/Mahasiswa">Pelajar / Mahasiswa</option>
+              <option value="Wisatawan/Turis">Wisatawan / Turis</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+          </div>
         </div>
 
         {/* Action Buttons Toolbar */}
@@ -240,6 +283,10 @@ export default function AdminLaporDiriIndex() {
             <a
               href={`${apiUrl}/admin/lapor-diri?export=pdf${search ? `&search=${encodeURIComponent(search)}` : ''}${
                 statusTinggal !== 'Semua' ? `&status_tempat_tinggal=${encodeURIComponent(statusTinggal)}` : ''
+              }${
+                kewarganegaraan !== 'Semua' ? `&kewarganegaraan=${encodeURIComponent(kewarganegaraan)}` : ''
+              }${
+                statusBekerja !== 'Semua' ? `&status_bekerja=${encodeURIComponent(statusBekerja)}` : ''
               }`}
               target="_blank"
               rel="noopener noreferrer"
@@ -273,19 +320,47 @@ export default function AdminLaporDiriIndex() {
             columns={[
               {
                 key: 'pelapor',
-                label: 'Nama Pelapor & NIK',
+                label: 'Nama Pelapor & Identitas',
                 render: (item: LaporDiri) => (
                   <div>
-                    <Link
-                      href={`/admin/lapor-diri/${item.id}`}
-                      className="font-bold text-slate-900 hover:text-emerald-700 transition"
-                    >
-                      {item.nama_lengkap}
-                    </Link>
-                    <p className="text-xs text-slate-500 font-mono">NIK: {item.nik}</p>
-                    <p className="text-[11px] text-slate-400">
-                      {item.jenis_kelamin} • {item.pekerjaan}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <Link
+                        href={`/admin/lapor-diri/${item.id}`}
+                        className="font-bold text-slate-900 hover:text-emerald-700 transition"
+                      >
+                        {item.nama_lengkap}
+                      </Link>
+                      <span
+                        className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-bold border ${
+                          item.kewarganegaraan === 'WNA'
+                            ? 'bg-purple-50 text-purple-700 border-purple-200'
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }`}
+                      >
+                        {item.kewarganegaraan === 'WNA' ? `WNA (${item.negara_asal || 'Asing'})` : 'WNI'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 font-mono mt-0.5">
+                      {item.kewarganegaraan === 'WNA'
+                        ? `Paspor: ${item.nomor_paspor || '-'}`
+                        : `NIK: ${item.nik || '-'}`}
                     </p>
+                    <p className="text-[11px] text-slate-400">
+                      {item.jenis_kelamin}{' '}
+                      {item.kewarganegaraan === 'WNA'
+                        ? item.status_bekerja
+                          ? `• Status: ${item.status_bekerja}`
+                          : ''
+                        : item.pekerjaan
+                        ? `• ${item.pekerjaan}`
+                        : ''}
+                    </p>
+                    {item.kewarganegaraan === 'WNA' && item.status_bekerja === 'Bekerja' && (
+                      <p className="text-[10px] text-amber-700 font-semibold mt-0.5">
+                        🏢 {item.nama_perusahaan || 'Perusahaan'}{' '}
+                        {item.jabatan_pekerjaan ? `(${item.jabatan_pekerjaan})` : ''}
+                      </p>
+                    )}
                   </div>
                 ),
               },
@@ -305,7 +380,8 @@ export default function AdminLaporDiriIndex() {
                     <p className="text-xs text-slate-800 line-clamp-2">{item.alamat_baru}</p>
                     {item.nama_pemilik_rumah && (
                       <p className="text-[11px] text-slate-500">
-                        Pemilik: <strong>{item.nama_pemilik_rumah}</strong> {item.nomor_kontak_pemilik ? `(${item.nomor_kontak_pemilik})` : ''}
+                        Pemilik: <strong>{item.nama_pemilik_rumah}</strong>{' '}
+                        {item.nomor_kontak_pemilik ? `(${item.nomor_kontak_pemilik})` : ''}
                       </p>
                     )}
                   </div>
@@ -313,18 +389,38 @@ export default function AdminLaporDiriIndex() {
               },
               {
                 key: 'asal',
-                label: 'Daerah Asal',
+                label: 'Daerah Asal / Penjamin',
                 render: (item: LaporDiri) => (
                   <div>
-                    <p className="font-semibold text-slate-800 text-xs">
-                      {item.kota_kabupaten_asal || '-'}
-                    </p>
-                    <p className="text-[11px] text-slate-500">
-                      Kec. {item.kecamatan_asal || '-'}
-                    </p>
-                    <p className="text-[11px] text-slate-400 line-clamp-1">
-                      {item.alamat_asal}
-                    </p>
+                    {item.kewarganegaraan === 'WNA' ? (
+                      <>
+                        <p className="font-semibold text-purple-800 text-xs">
+                          Negara: {item.negara_asal || '-'}
+                        </p>
+                        {item.nama_penjamin && (
+                          <p className="text-[11px] text-slate-600 mt-0.5">
+                            Penjamin: <strong>{item.nama_penjamin}</strong>
+                          </p>
+                        )}
+                        {item.jenis_izin_tinggal && (
+                          <p className="text-[10px] text-slate-400">
+                            Izin: {item.jenis_izin_tinggal}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <p className="font-semibold text-slate-800 text-xs">
+                          {item.kota_kabupaten_asal || '-'}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          Kec. {item.kecamatan_asal || '-'}
+                        </p>
+                        <p className="text-[11px] text-slate-400 line-clamp-1">
+                          {item.alamat_asal}
+                        </p>
+                      </>
+                    )}
                   </div>
                 ),
               },
@@ -355,15 +451,36 @@ export default function AdminLaporDiriIndex() {
                 label: 'Berkas Fisik',
                 render: (item: LaporDiri) => (
                   <div className="flex flex-col gap-1 text-[11px]">
-                    <span className={item.lampiran_ktp ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
-                      {item.lampiran_ktp ? '✓' : '✗'} FC KTP
-                    </span>
-                    <span className={item.lampiran_kk ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
-                      {item.lampiran_kk ? '✓' : '✗'} FC KK
-                    </span>
-                    <span className={item.lampiran_surat_pindah ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
-                      {item.lampiran_surat_pindah ? '✓' : '✗'} Surat Pindah
-                    </span>
+                    {item.kewarganegaraan === 'WNA' ? (
+                      <>
+                        <span className={item.lampiran_paspor ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
+                          {item.lampiran_paspor ? '✓' : '✗'} FC Paspor
+                        </span>
+                        <span className={item.lampiran_kitas_kitap ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
+                          {item.lampiran_kitas_kitap ? '✓' : '✗'} KITAS/KITAP
+                        </span>
+                        <span className={item.lampiran_surat_permohonan ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
+                          {item.lampiran_surat_permohonan ? '✓' : '✗'} Surat Sponsor
+                        </span>
+                        {item.status_bekerja === 'Bekerja' && (
+                          <span className={item.lampiran_dokumen_kerja ? 'text-emerald-700 font-semibold' : 'text-amber-600'}>
+                            {item.lampiran_dokumen_kerja ? '✓' : '○'} Dok. Kerja (RPTKA)
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <span className={item.lampiran_ktp ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
+                          {item.lampiran_ktp ? '✓' : '✗'} FC KTP
+                        </span>
+                        <span className={item.lampiran_kk ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
+                          {item.lampiran_kk ? '✓' : '✗'} FC KK
+                        </span>
+                        <span className={item.lampiran_surat_pindah ? 'text-emerald-700 font-semibold' : 'text-slate-300 line-through'}>
+                          {item.lampiran_surat_pindah ? '✓' : '✗'} Surat Pindah
+                        </span>
+                      </>
+                    )}
                   </div>
                 ),
               },

@@ -161,11 +161,107 @@
     </div>
 
     <div class="doc-title">
-        <h4>FORMULIR LAPOR DIRI WARGA BARU / PENDATANG</h4>
+        <h4>FORMULIR LAPOR DIRI WARGA BARU / PENDATANG {{ $laporDiri->kewarganegaraan === 'WNA' ? '(WARGA NEGARA ASING / WNA)' : '' }}</h4>
     </div>
 
     <!-- A. DATA PRIBADI -->
-    <div class="section-title">A. DATA PRIBADI</div>
+    <div class="section-title">A. DATA PRIBADI {{ $laporDiri->kewarganegaraan === 'WNA' ? '(WARGA NEGARA ASING)' : '' }}</div>
+    @if($laporDiri->kewarganegaraan === 'WNA')
+    <table class="form-table">
+        <tr>
+            <td class="col-num">1.</td>
+            <td class="col-label">Nama Lengkap (Sesuai Paspor)</td>
+            <td class="col-colon">:</td>
+            <td class="col-value"><strong>{{ strtoupper($laporDiri->nama_lengkap) }}</strong></td>
+        </tr>
+        <tr>
+            <td class="col-num">2.</td>
+            <td class="col-label">Kewarganegaraan / Negara Asal</td>
+            <td class="col-colon">:</td>
+            <td class="col-value"><strong>{{ $laporDiri->negara_asal ?? 'Asing' }}</strong></td>
+        </tr>
+        <tr>
+            <td class="col-num">3.</td>
+            <td class="col-label">Nomor Paspor</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                <strong>{{ $laporDiri->nomor_paspor ?? '-' }}</strong>
+                @if($laporDiri->masa_berlaku_paspor)
+                    <span style="font-size: 9.5pt; color: #555;">(Masa Berlaku s/d: {{ $laporDiri->masa_berlaku_paspor->format('d-m-Y') }})</span>
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <td class="col-num">4.</td>
+            <td class="col-label">Jenis & No. Izin Tinggal</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                {{ $laporDiri->jenis_izin_tinggal ?? '-' }}
+                @if($laporDiri->nomor_izin_tinggal) (No: {{ $laporDiri->nomor_izin_tinggal }}) @endif
+                @if($laporDiri->masa_berlaku_izin) - Berlaku s/d: {{ $laporDiri->masa_berlaku_izin->format('d-m-Y') }} @endif
+            </td>
+        </tr>
+        <tr>
+            <td class="col-num">5.</td>
+            <td class="col-label">Jenis Kelamin</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                <span class="option-item"><span class="box {{ $laporDiri->jenis_kelamin === 'Laki-Laki' ? 'checked' : '' }}">{!! $laporDiri->jenis_kelamin === 'Laki-Laki' ? '&#10003;' : '' !!}</span> Laki-Laki</span>
+                <span class="option-item"><span class="box {{ $laporDiri->jenis_kelamin === 'Perempuan' ? 'checked' : '' }}">{!! $laporDiri->jenis_kelamin === 'Perempuan' ? '&#10003;' : '' !!}</span> Perempuan</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="col-num">6.</td>
+            <td class="col-label">Tempat/ Tanggal Lahir</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $laporDiri->tempat_lahir ?? '-' }}, {{ $laporDiri->tanggal_lahir ? $laporDiri->tanggal_lahir->format('d-m-Y') : '-' }}</td>
+        </tr>
+        <tr>
+            <td class="col-num">7.</td>
+            <td class="col-label">Status Perkawinan</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                <span class="option-item"><span class="box {{ $laporDiri->status_perkawinan === 'Belum Kawin' ? 'checked' : '' }}">{!! $laporDiri->status_perkawinan === 'Belum Kawin' ? '&#10003;' : '' !!}</span> Belum Kawin</span>
+                <span class="option-item"><span class="box {{ $laporDiri->status_perkawinan === 'Kawin' ? 'checked' : '' }}">{!! $laporDiri->status_perkawinan === 'Kawin' ? '&#10003;' : '' !!}</span> Kawin</span>
+                <span class="option-item"><span class="box {{ str_contains($laporDiri->status_perkawinan ?? '', 'Cerai') ? 'checked' : '' }}">{!! str_contains($laporDiri->status_perkawinan ?? '', 'Cerai') ? '&#10003;' : '' !!}</span> Cerai</span>
+            </td>
+        </tr>
+        <tr>
+            <td class="col-num">8.</td>
+            <td class="col-label">Status Bekerja di Indonesia</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                <strong>{{ $laporDiri->status_bekerja ?? '-' }}</strong>
+                @if($laporDiri->status_bekerja === 'Bekerja')
+                    <div style="font-size: 10pt; margin-top: 2px;">
+                        Pemberi Kerja: <strong>{{ $laporDiri->nama_perusahaan ?? '-' }}</strong> &bull; Posisi: {{ $laporDiri->jabatan_pekerjaan ?? '-' }}
+                        @if($laporDiri->nomor_dokumen_kerja) (RPTKA: {{ $laporDiri->nomor_dokumen_kerja }}) @endif
+                    </div>
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <td class="col-num">9.</td>
+            <td class="col-label">Penjamin / Sponsor di Bali</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">
+                @if($laporDiri->nama_penjamin)
+                    <strong>{{ $laporDiri->nama_penjamin }}</strong> ({{ $laporDiri->kategori_penjamin ?? 'Sponsor' }})
+                    @if($laporDiri->telepon_penjamin) - Telp: {{ $laporDiri->telepon_penjamin }} @endif
+                    @if($laporDiri->alamat_penjamin) &bull; Alamat: {{ $laporDiri->alamat_penjamin }} @endif
+                @else
+                    -
+                @endif
+            </td>
+        </tr>
+        <tr>
+            <td class="col-num">10.</td>
+            <td class="col-label">Nomor Telp/ WhatsApp</td>
+            <td class="col-colon">:</td>
+            <td class="col-value">{{ $laporDiri->nomor_telepon ?? '-' }}</td>
+        </tr>
+    </table>
+    @else
     <table class="form-table">
         <tr>
             <td class="col-num">1.</td>
@@ -230,6 +326,7 @@
             <td class="col-value">{{ $laporDiri->nomor_telepon ?? '-' }}</td>
         </tr>
     </table>
+    @endif
 
     <!-- B. DATA TEMPAT TINGGAL BARU -->
     <div class="section-title">B. DATA TEMPAT TINGGAL BARU (DI BANJAR SABA PENATIH)</div>
@@ -313,7 +410,7 @@
             <tr>
                 <th style="width: 30px;">No</th>
                 <th>Nama</th>
-                <th style="width: 140px;">NIK</th>
+                <th style="width: 140px;">{{ $laporDiri->kewarganegaraan === 'WNA' ? 'No. Paspor / NIK' : 'NIK' }}</th>
                 <th>Tempat, Tanggal Lahir</th>
                 <th style="width: 120px;">Hubungan Keluarga</th>
             </tr>
@@ -323,7 +420,7 @@
                 <tr>
                     <td style="text-align: center;">{{ $idx + 1 }}</td>
                     <td>{{ $ang->nama }}</td>
-                    <td style="text-align: center;">{{ $ang->nik ?? '-' }}</td>
+                    <td style="text-align: center;">{{ $ang->nomor_paspor ? 'Paspor: ' . $ang->nomor_paspor : ($ang->nik ?? '-') }}</td>
                     <td>{{ $ang->tempat_lahir ? $ang->tempat_lahir . ', ' : '' }}{{ $ang->tanggal_lahir ? $ang->tanggal_lahir->format('d-m-Y') : '-' }}</td>
                     <td>{{ $ang->hubungan_keluarga ?? '-' }}</td>
                 </tr>
@@ -343,6 +440,38 @@
 
     <!-- E. DOKUMEN YANG DILAMPIRKAN -->
     <div class="section-title">E. DOKUMEN YANG DILAMPIRKAN</div>
+    @if($laporDiri->kewarganegaraan === 'WNA')
+    <table class="form-table" style="margin-left: 10px;">
+        <tr>
+            <td style="width: 25px;"><span class="box {{ $laporDiri->lampiran_paspor ? 'checked' : '' }}">{!! $laporDiri->lampiran_paspor ? '&#10003;' : '' !!}</span></td>
+            <td>1. Fotokopi Paspor Asing</td>
+        </tr>
+        <tr>
+            <td><span class="box {{ $laporDiri->lampiran_kitas_kitap ? 'checked' : '' }}">{!! $laporDiri->lampiran_kitas_kitap ? '&#10003;' : '' !!}</span></td>
+            <td>2. Fotokopi Izin Tinggal Terbatas / Tetap (KITAS / KITAP)</td>
+        </tr>
+        <tr>
+            <td><span class="box {{ $laporDiri->lampiran_surat_permohonan ? 'checked' : '' }}">{!! $laporDiri->lampiran_surat_permohonan ? '&#10003;' : '' !!}</span></td>
+            <td>3. Surat Permohonan / Pernyataan Sponsor / Penjamin</td>
+        </tr>
+        <tr>
+            <td><span class="box {{ $laporDiri->lampiran_ktp_penjamin ? 'checked' : '' }}">{!! $laporDiri->lampiran_ktp_penjamin ? '&#10003;' : '' !!}</span></td>
+            <td>4. Fotokopi KTP / Identitas Penjamin / Sponsor</td>
+        </tr>
+        <tr>
+            <td><span class="box {{ $laporDiri->lampiran_dokumen_kerja ? 'checked' : '' }}">{!! $laporDiri->lampiran_dokumen_kerja ? '&#10003;' : '' !!}</span></td>
+            <td>5. Dokumen Pendukung Kerja TKA (RPTKA / IMTA / Kemenaker) (Bila Bekerja)</td>
+        </tr>
+        <tr>
+            <td><span class="box {{ $laporDiri->lampiran_dokumen_lainnya ? 'checked' : '' }}">{!! $laporDiri->lampiran_dokumen_lainnya ? '&#10003;' : '' !!}</span></td>
+            <td>6. Dokumen Pendukung Lainnya</td>
+        </tr>
+        <tr>
+            <td><span class="box {{ $laporDiri->lampiran_ttd || $laporDiri->tanda_tangan ? 'checked' : '' }}">{!! ($laporDiri->lampiran_ttd || $laporDiri->tanda_tangan) ? '&#10003;' : '' !!}</span></td>
+            <td>7. Tanda Tangan Digital / Berkas Tanda Tangan Pelapor</td>
+        </tr>
+    </table>
+    @else
     <table class="form-table" style="margin-left: 10px;">
         <tr>
             <td style="width: 25px;"><span class="box {{ $laporDiri->lampiran_ktp ? 'checked' : '' }}">{!! $laporDiri->lampiran_ktp ? '&#10003;' : '' !!}</span></td>
@@ -361,6 +490,7 @@
             <td>4. Tanda Tangan Digital / Berkas Tanda Tangan Pelapor</td>
         </tr>
     </table>
+    @endif
 
     <!-- F. PERNYATAAN -->
     <div class="section-title">F. PERNYATAAN</div>

@@ -67,13 +67,15 @@
             <tr>
                 <th style="width: 25px;" class="text-center">No</th>
                 <th>Nama Pelapor</th>
-                <th style="width: 110px;">NIK</th>
+                <th style="width: 60px;" class="text-center">Warga</th>
+                <th style="width: 110px;">NIK / No. Paspor</th>
                 <th>Alamat Baru di Banjar</th>
-                <th style="width: 90px;">Status Hunian</th>
-                <th>Daerah Asal</th>
-                <th style="width: 60px;" class="text-center">Keluarga</th>
-                <th style="width: 80px;" class="text-center">Tgl Lapor</th>
-                <th style="width: 70px;" class="text-center">Status TTD</th>
+                <th style="width: 80px;">Status Hunian</th>
+                <th>Daerah / Negara Asal</th>
+                <th style="width: 90px;">Pekerjaan / Kegiatan</th>
+                <th style="width: 55px;" class="text-center">Keluarga</th>
+                <th style="width: 75px;" class="text-center">Tgl Lapor</th>
+                <th style="width: 65px;" class="text-center">Status TTD</th>
             </tr>
         </thead>
         <tbody>
@@ -81,17 +83,30 @@
                 <tr>
                     <td class="text-center">{{ $idx + 1 }}</td>
                     <td><strong>{{ $item->nama_lengkap }}</strong></td>
-                    <td style="font-family: monospace;">{{ $item->nik }}</td>
+                    <td class="text-center">
+                        <strong style="color: {{ $item->kewarganegaraan === 'WNA' ? '#7e22ce' : '#1d4ed8' }};">
+                            {{ $item->kewarganegaraan ?? 'WNI' }}
+                        </strong>
+                    </td>
+                    <td style="font-family: monospace;">
+                        {{ $item->kewarganegaraan === 'WNA' ? ($item->nomor_paspor ?? '-') : ($item->nik ?? '-') }}
+                    </td>
                     <td>{{ $item->alamat_baru }}</td>
                     <td>{{ $item->status_tempat_tinggal }}</td>
-                    <td>{{ $item->kota_kabupaten_asal ?? '-' }}</td>
+                    <td>{{ $item->kewarganegaraan === 'WNA' ? ($item->negara_asal ?? 'Asing') : ($item->kota_kabupaten_asal ?? '-') }}</td>
+                    <td>
+                        {{ $item->kewarganegaraan === 'WNA' ? ($item->status_bekerja ?? '-') : ($item->pekerjaan ?? '-') }}
+                        @if($item->kewarganegaraan === 'WNA' && $item->status_bekerja === 'Bekerja' && $item->nama_perusahaan)
+                            <div style="font-size: 7.5pt; color: #64748b;">{{ $item->nama_perusahaan }}</div>
+                        @endif
+                    </td>
                     <td class="text-center">{{ $item->anggota->count() }} Jiwa</td>
                     <td class="text-center">{{ $item->tanggal_lapor ? $item->tanggal_lapor->format('d/m/Y') : '-' }}</td>
                     <td class="text-center">{{ $item->tanda_tangan || $item->lampiran_ttd ? 'Lengkap' : 'Belum' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" class="text-center" style="padding: 20px; color: #94a3b8;">
+                    <td colspan="11" class="text-center" style="padding: 20px; color: #94a3b8;">
                         Tidak ada data lapor diri warga baru yang ditemukan.
                     </td>
                 </tr>

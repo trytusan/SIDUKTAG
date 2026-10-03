@@ -21,6 +21,9 @@ class LaporDiriController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('nama_lengkap', 'like', "%{$search}%")
                   ->orWhere('nik', 'like', "%{$search}%")
+                  ->orWhere('nomor_paspor', 'like', "%{$search}%")
+                  ->orWhere('negara_asal', 'like', "%{$search}%")
+                  ->orWhere('nama_perusahaan', 'like', "%{$search}%")
                   ->orWhere('alamat_baru', 'like', "%{$search}%")
                   ->orWhere('kota_kabupaten_asal', 'like', "%{$search}%")
                   ->orWhere('nama_pemilik_rumah', 'like', "%{$search}%");
@@ -29,6 +32,14 @@ class LaporDiriController extends Controller
 
         if ($request->filled('status_tempat_tinggal') && $request->status_tempat_tinggal !== 'Semua') {
             $query->where('status_tempat_tinggal', $request->status_tempat_tinggal);
+        }
+
+        if ($request->filled('kewarganegaraan') && $request->kewarganegaraan !== 'Semua') {
+            $query->where('kewarganegaraan', $request->kewarganegaraan);
+        }
+
+        if ($request->filled('status_bekerja') && $request->status_bekerja !== 'Semua') {
+            $query->where('status_bekerja', $request->status_bekerja);
         }
 
         if ($request->query('export') === 'pdf') {
@@ -42,8 +53,16 @@ class LaporDiriController extends Controller
         $totalPelapor = LaporDiri::count();
         $totalAnggota = LaporDiriAnggota::count();
         $totalJiwa = $totalPelapor + $totalAnggota;
+        $totalWni = LaporDiri::where(function ($q) {
+            $q->where('kewarganegaraan', 'WNI')->orWhereNull('kewarganegaraan');
+        })->count();
+        $totalWna = LaporDiri::where('kewarganegaraan', 'WNA')->count();
+        $totalWnaBekerja = LaporDiri::where('kewarganegaraan', 'WNA')->where('status_bekerja', 'Bekerja')->count();
+
         $totalKost = LaporDiri::where('status_tempat_tinggal', 'Kost')->count();
         $totalKontrak = LaporDiri::where('status_tempat_tinggal', 'Kontrak/Sewa')->count();
+        $totalMilikSendiri = LaporDiri::where('status_tempat_tinggal', 'Milik Sendiri')->count();
+        $totalNumpang = LaporDiri::where('status_tempat_tinggal', 'Numpang')->count();
 
         return response()->json([
             'success' => true,
@@ -51,25 +70,54 @@ class LaporDiriController extends Controller
             'stats' => [
                 'total_pelapor' => $totalPelapor,
                 'total_jiwa' => $totalJiwa,
-                'total_kost' => $totalKost,
-                'total_kontrak' => $totalKontrak,
+                'total_wni' => $totalWni,
+                'total_wna' => $totalWna,
+                'total_wna_bekerja' => $totalWnaBekerja,
+                'kost' => $totalKost,
+                'kontrak_sewa' => $totalKontrak,
+                'milik_sendiri' => $totalMilikSendiri,
+                'numpang' => $totalNumpang,
             ],
         ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $isWna = $request->kewarganegaraan === 'WNA';
+
+        $rules = [
+            'kewarganegaraan' => 'required|in:WNI,WNA',
             'nama_lengkap' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
             'tempat_lahir' => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
-            'agama' => 'required|string|max:50',
+            'agama' => $isWna ? 'nullable|string|max:50' : 'required|string|max:50',
             'status_perkawinan' => 'required|string|max:50',
-            'pekerjaan' => 'required|string|max:100',
-            'nik' => 'required|string|size:16',
+            'pekerjaan' => $isWna ? 'nullable|string|max:100' : 'required|string|max:100',
+            'nik' => $isWna ? 'nullable|string|max:20' : 'required|string|size:16',
             'nomor_kk' => 'nullable|string|max:16',
             'nomor_telepon' => 'nullable|string|max:20',
+
+            // WNA specific fields
+            'negara_asal' => $isWna ? 'required|string|max:100' : 'nullable|string|max:100',
+            'nomor_paspor' => $isWna ? 'required|string|max:50' : 'nullable|string|max:50',
+            'masa_berlaku_paspor' => 'nullable|date',
+            'jenis_izin_tinggal' => 'nullable|string|max:50',
+            'nomor_izin_tinggal' => 'nullable|string|max:50',
+            'masa_berlaku_izin' => 'nullable|date',
+
+            // Status Bekerja
+            'status_bekerja' => 'nullable|in:Bekerja,Tidak Bekerja,Pelajar/Mahasiswa,Wisatawan/Turis,Lainnya',
+            'nama_perusahaan' => 'nullable|string|max:255',
+            'jabatan_pekerjaan' => 'nullable|string|max:100',
+            'nomor_dokumen_kerja' => 'nullable|string|max:100',
+
+            // Penjamin / Sponsor
+            'nama_penjamin' => 'nullable|string|max:255',
+            'kategori_penjamin' => 'nullable|string|max:100',
+            'nik_penjamin' => 'nullable|string|max:20',
+            'telepon_penjamin' => 'nullable|string|max:20',
+            'alamat_penjamin' => 'nullable|string',
 
             // B. Alamat Baru
             'alamat_baru' => 'required|string',
@@ -81,20 +129,35 @@ class LaporDiriController extends Controller
             'longitude' => 'nullable|numeric',
 
             // C. Alamat Asal
-            'alamat_asal' => 'required|string',
+            'alamat_asal' => $isWna ? 'nullable|string' : 'required|string',
             'rt_rw_asal' => 'nullable|string|max:50',
             'kelurahan_asal' => 'nullable|string|max:100',
             'kecamatan_asal' => 'nullable|string|max:100',
             'kota_kabupaten_asal' => 'nullable|string|max:100',
 
-            // E. Dokumen
+            // Dokumen WNI
             'lampiran_ktp' => 'nullable|boolean',
             'lampiran_kk' => 'nullable|boolean',
             'lampiran_surat_pindah' => 'nullable|boolean',
-            'lampiran_ttd' => 'nullable|boolean',
             'file_ktp' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
             'file_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
             'file_surat_pindah' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+
+            // Dokumen WNA
+            'lampiran_paspor' => 'nullable|boolean',
+            'lampiran_kitas_kitap' => 'nullable|boolean',
+            'lampiran_surat_permohonan' => 'nullable|boolean',
+            'lampiran_ktp_penjamin' => 'nullable|boolean',
+            'lampiran_dokumen_kerja' => 'nullable|boolean',
+            'lampiran_dokumen_lainnya' => 'nullable|boolean',
+            'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_kitas_kitap' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_surat_permohonan' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_ktp_penjamin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_dokumen_kerja' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_dokumen_lainnya' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+
+            'lampiran_ttd' => 'nullable|boolean',
             'file_tanda_tangan' => 'nullable|file|mimes:jpeg,png,jpg|max:4096',
             'tanda_tangan_data' => 'nullable|string',
 
@@ -106,26 +169,38 @@ class LaporDiriController extends Controller
             'anggota' => 'nullable|array',
             'anggota.*.nama' => 'required|string|max:255',
             'anggota.*.nik' => 'nullable|string|max:16',
+            'anggota.*.nomor_paspor' => 'nullable|string|max:50',
             'anggota.*.tempat_lahir' => 'nullable|string|max:100',
             'anggota.*.tanggal_lahir' => 'nullable|date',
             'anggota.*.hubungan_keluarga' => 'nullable|string|max:50',
-        ]);
+        ];
+
+        $validated = $request->validate($rules);
 
         return DB::transaction(function () use ($request, $validated) {
             $data = $validated;
-            unset($data['anggota'], $data['file_ktp'], $data['file_kk'], $data['file_surat_pindah'], $data['file_tanda_tangan'], $data['tanda_tangan_data']);
+            $fileFields = [
+                'file_ktp' => ['dir' => 'lapor-diri/ktp', 'flag' => 'lampiran_ktp'],
+                'file_kk' => ['dir' => 'lapor-diri/kk', 'flag' => 'lampiran_kk'],
+                'file_surat_pindah' => ['dir' => 'lapor-diri/surat-pindah', 'flag' => 'lampiran_surat_pindah'],
+                'file_paspor' => ['dir' => 'lapor-diri/paspor', 'flag' => 'lampiran_paspor'],
+                'file_kitas_kitap' => ['dir' => 'lapor-diri/kitas-kitap', 'flag' => 'lampiran_kitas_kitap'],
+                'file_surat_permohonan' => ['dir' => 'lapor-diri/permohonan', 'flag' => 'lampiran_surat_permohonan'],
+                'file_ktp_penjamin' => ['dir' => 'lapor-diri/ktp-penjamin', 'flag' => 'lampiran_ktp_penjamin'],
+                'file_dokumen_kerja' => ['dir' => 'lapor-diri/dokumen-kerja', 'flag' => 'lampiran_dokumen_kerja'],
+                'file_dokumen_lainnya' => ['dir' => 'lapor-diri/dokumen-lainnya', 'flag' => 'lampiran_dokumen_lainnya'],
+            ];
 
-            if ($request->hasFile('file_ktp')) {
-                $data['file_ktp'] = $request->file('file_ktp')->store('lapor-diri/ktp', 'public');
-                $data['lampiran_ktp'] = true;
+            unset($data['anggota'], $data['file_tanda_tangan'], $data['tanda_tangan_data']);
+            foreach ($fileFields as $key => $cfg) {
+                unset($data[$key]);
             }
-            if ($request->hasFile('file_kk')) {
-                $data['file_kk'] = $request->file('file_kk')->store('lapor-diri/kk', 'public');
-                $data['lampiran_kk'] = true;
-            }
-            if ($request->hasFile('file_surat_pindah')) {
-                $data['file_surat_pindah'] = $request->file('file_surat_pindah')->store('lapor-diri/surat-pindah', 'public');
-                $data['lampiran_surat_pindah'] = true;
+
+            foreach ($fileFields as $key => $cfg) {
+                if ($request->hasFile($key)) {
+                    $data[$key] = $request->file($key)->store($cfg['dir'], 'public');
+                    $data[$cfg['flag']] = true;
+                }
             }
 
             if ($request->hasFile('file_tanda_tangan')) {
@@ -194,17 +269,41 @@ class LaporDiriController extends Controller
     {
         $laporDiri = LaporDiri::findOrFail($id);
 
-        $validated = $request->validate([
+        $isWna = ($request->input('kewarganegaraan') ?? $laporDiri->kewarganegaraan) === 'WNA';
+
+        $rules = [
+            'kewarganegaraan' => 'required|in:WNI,WNA',
             'nama_lengkap' => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:Laki-Laki,Perempuan',
             'tempat_lahir' => 'required|string|max:100',
             'tanggal_lahir' => 'required|date',
-            'agama' => 'required|string|max:50',
+            'agama' => $isWna ? 'nullable|string|max:50' : 'required|string|max:50',
             'status_perkawinan' => 'required|string|max:50',
-            'pekerjaan' => 'required|string|max:100',
-            'nik' => 'required|string|size:16',
+            'pekerjaan' => $isWna ? 'nullable|string|max:100' : 'required|string|max:100',
+            'nik' => $isWna ? 'nullable|string|max:20' : 'required|string|size:16',
             'nomor_kk' => 'nullable|string|max:16',
             'nomor_telepon' => 'nullable|string|max:20',
+
+            // WNA specific fields
+            'negara_asal' => $isWna ? 'required|string|max:100' : 'nullable|string|max:100',
+            'nomor_paspor' => $isWna ? 'required|string|max:50' : 'nullable|string|max:50',
+            'masa_berlaku_paspor' => 'nullable|date',
+            'jenis_izin_tinggal' => 'nullable|string|max:50',
+            'nomor_izin_tinggal' => 'nullable|string|max:50',
+            'masa_berlaku_izin' => 'nullable|date',
+
+            // Status Bekerja
+            'status_bekerja' => 'nullable|in:Bekerja,Tidak Bekerja,Pelajar/Mahasiswa,Wisatawan/Turis,Lainnya',
+            'nama_perusahaan' => 'nullable|string|max:255',
+            'jabatan_pekerjaan' => 'nullable|string|max:100',
+            'nomor_dokumen_kerja' => 'nullable|string|max:100',
+
+            // Penjamin / Sponsor
+            'nama_penjamin' => 'nullable|string|max:255',
+            'kategori_penjamin' => 'nullable|string|max:100',
+            'nik_penjamin' => 'nullable|string|max:20',
+            'telepon_penjamin' => 'nullable|string|max:20',
+            'alamat_penjamin' => 'nullable|string',
 
             // B. Alamat Baru
             'alamat_baru' => 'required|string',
@@ -216,20 +315,35 @@ class LaporDiriController extends Controller
             'longitude' => 'nullable|numeric',
 
             // C. Alamat Asal
-            'alamat_asal' => 'required|string',
+            'alamat_asal' => $isWna ? 'nullable|string' : 'required|string',
             'rt_rw_asal' => 'nullable|string|max:50',
             'kelurahan_asal' => 'nullable|string|max:100',
             'kecamatan_asal' => 'nullable|string|max:100',
             'kota_kabupaten_asal' => 'nullable|string|max:100',
 
-            // E. Dokumen
+            // Dokumen WNI
             'lampiran_ktp' => 'nullable|boolean',
             'lampiran_kk' => 'nullable|boolean',
             'lampiran_surat_pindah' => 'nullable|boolean',
-            'lampiran_ttd' => 'nullable|boolean',
             'file_ktp' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
             'file_kk' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
             'file_surat_pindah' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+
+            // Dokumen WNA
+            'lampiran_paspor' => 'nullable|boolean',
+            'lampiran_kitas_kitap' => 'nullable|boolean',
+            'lampiran_surat_permohonan' => 'nullable|boolean',
+            'lampiran_ktp_penjamin' => 'nullable|boolean',
+            'lampiran_dokumen_kerja' => 'nullable|boolean',
+            'lampiran_dokumen_lainnya' => 'nullable|boolean',
+            'file_paspor' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_kitas_kitap' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_surat_permohonan' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_ktp_penjamin' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_dokumen_kerja' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+            'file_dokumen_lainnya' => 'nullable|file|mimes:jpeg,png,jpg,pdf|max:4096',
+
+            'lampiran_ttd' => 'nullable|boolean',
             'file_tanda_tangan' => 'nullable|file|mimes:jpeg,png,jpg|max:4096',
             'tanda_tangan_data' => 'nullable|string',
 
@@ -243,29 +357,41 @@ class LaporDiriController extends Controller
             'anggota.*.id' => 'nullable|integer',
             'anggota.*.nama' => 'required|string|max:255',
             'anggota.*.nik' => 'nullable|string|max:16',
+            'anggota.*.nomor_paspor' => 'nullable|string|max:50',
             'anggota.*.tempat_lahir' => 'nullable|string|max:100',
             'anggota.*.tanggal_lahir' => 'nullable|date',
             'anggota.*.hubungan_keluarga' => 'nullable|string|max:50',
-        ]);
+        ];
+
+        $validated = $request->validate($rules);
 
         return DB::transaction(function () use ($request, $validated, $laporDiri) {
             $data = $validated;
-            unset($data['anggota'], $data['file_ktp'], $data['file_kk'], $data['file_surat_pindah'], $data['file_tanda_tangan'], $data['tanda_tangan_data']);
+            $fileFields = [
+                'file_ktp' => ['dir' => 'lapor-diri/ktp', 'flag' => 'lampiran_ktp'],
+                'file_kk' => ['dir' => 'lapor-diri/kk', 'flag' => 'lampiran_kk'],
+                'file_surat_pindah' => ['dir' => 'lapor-diri/surat-pindah', 'flag' => 'lampiran_surat_pindah'],
+                'file_paspor' => ['dir' => 'lapor-diri/paspor', 'flag' => 'lampiran_paspor'],
+                'file_kitas_kitap' => ['dir' => 'lapor-diri/kitas-kitap', 'flag' => 'lampiran_kitas_kitap'],
+                'file_surat_permohonan' => ['dir' => 'lapor-diri/permohonan', 'flag' => 'lampiran_surat_permohonan'],
+                'file_ktp_penjamin' => ['dir' => 'lapor-diri/ktp-penjamin', 'flag' => 'lampiran_ktp_penjamin'],
+                'file_dokumen_kerja' => ['dir' => 'lapor-diri/dokumen-kerja', 'flag' => 'lampiran_dokumen_kerja'],
+                'file_dokumen_lainnya' => ['dir' => 'lapor-diri/dokumen-lainnya', 'flag' => 'lampiran_dokumen_lainnya'],
+            ];
 
-            if ($request->hasFile('file_ktp')) {
-                if ($laporDiri->file_ktp) Storage::disk('public')->delete($laporDiri->file_ktp);
-                $data['file_ktp'] = $request->file('file_ktp')->store('lapor-diri/ktp', 'public');
-                $data['lampiran_ktp'] = true;
+            unset($data['anggota'], $data['file_tanda_tangan'], $data['tanda_tangan_data']);
+            foreach ($fileFields as $key => $cfg) {
+                unset($data[$key]);
             }
-            if ($request->hasFile('file_kk')) {
-                if ($laporDiri->file_kk) Storage::disk('public')->delete($laporDiri->file_kk);
-                $data['file_kk'] = $request->file('file_kk')->store('lapor-diri/kk', 'public');
-                $data['lampiran_kk'] = true;
-            }
-            if ($request->hasFile('file_surat_pindah')) {
-                if ($laporDiri->file_surat_pindah) Storage::disk('public')->delete($laporDiri->file_surat_pindah);
-                $data['file_surat_pindah'] = $request->file('file_surat_pindah')->store('lapor-diri/surat-pindah', 'public');
-                $data['lampiran_surat_pindah'] = true;
+
+            foreach ($fileFields as $key => $cfg) {
+                if ($request->hasFile($key)) {
+                    if ($laporDiri->{$key}) {
+                        Storage::disk('public')->delete($laporDiri->{$key});
+                    }
+                    $data[$key] = $request->file($key)->store($cfg['dir'], 'public');
+                    $data[$cfg['flag']] = true;
+                }
             }
 
             if ($request->hasFile('file_tanda_tangan')) {
@@ -324,10 +450,24 @@ class LaporDiriController extends Controller
     {
         $laporDiri = LaporDiri::findOrFail($id);
 
-        if ($laporDiri->file_ktp) Storage::disk('public')->delete($laporDiri->file_ktp);
-        if ($laporDiri->file_kk) Storage::disk('public')->delete($laporDiri->file_kk);
-        if ($laporDiri->file_surat_pindah) Storage::disk('public')->delete($laporDiri->file_surat_pindah);
-        if ($laporDiri->tanda_tangan) Storage::disk('public')->delete($laporDiri->tanda_tangan);
+        $fileFields = [
+            'file_ktp',
+            'file_kk',
+            'file_surat_pindah',
+            'file_paspor',
+            'file_kitas_kitap',
+            'file_surat_permohonan',
+            'file_ktp_penjamin',
+            'file_dokumen_kerja',
+            'file_dokumen_lainnya',
+            'tanda_tangan',
+        ];
+
+        foreach ($fileFields as $field) {
+            if ($laporDiri->{$field}) {
+                Storage::disk('public')->delete($laporDiri->{$field});
+            }
+        }
 
         $laporDiri->delete();
 

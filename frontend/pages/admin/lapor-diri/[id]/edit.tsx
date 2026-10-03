@@ -927,7 +927,7 @@ export default function AdminLaporDiriEdit() {
           <div className="mt-6 border-t border-slate-100 pt-6">
             <SignaturePad
               label="Tanda Tangan Pelapor (Digital / Upload Berkas)"
-              initialUrl={existingSignature}
+              initialUrl={existingSignature ? getStorageUrl(existingSignature) : null}
               onChange={(val) => {
                 setSignatureData(val)
                 if (val) setLampiranTtd(true)

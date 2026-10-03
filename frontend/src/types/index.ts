@@ -278,6 +278,7 @@ export interface LaporDiriAnggota {
   lapor_diri_id?: number
   nama: string
   nik?: string | null
+  nomor_paspor?: string | null
   tempat_lahir?: string | null
   tanggal_lahir?: string | null
   hubungan_keluarga?: string | null
@@ -287,41 +288,81 @@ export interface LaporDiriAnggota {
 
 export interface LaporDiri {
   id: number
+  // Kewarganegaraan
+  kewarganegaraan?: 'WNI' | 'WNA'
+
   // A. Data Pribadi
   nama_lengkap: string
   jenis_kelamin: 'Laki-Laki' | 'Perempuan'
   tempat_lahir: string
   tanggal_lahir: string
-  agama: string
-  status_perkawinan: 'Belum Kawin' | 'Kawin' | 'Cerai Hidup' | 'Cerai Mati'
-  pekerjaan: string
-  nik: string
+  agama?: string | null
+  status_perkawinan: 'Belum Kawin' | 'Kawin' | 'Cerai Hidup' | 'Cerai Mati' | string
+  pekerjaan?: string | null
+  nik?: string | null
   nomor_kk?: string | null
   nomor_telepon?: string | null
+
+  // Khusus WNA
+  negara_asal?: string | null
+  nomor_paspor?: string | null
+  masa_berlaku_paspor?: string | null
+  jenis_izin_tinggal?: string | null
+  nomor_izin_tinggal?: string | null
+  masa_berlaku_izin?: string | null
+
+  // Status Bekerja
+  status_bekerja?: 'Bekerja' | 'Tidak Bekerja' | 'Pelajar/Mahasiswa' | 'Wisatawan/Turis' | 'Lainnya' | string | null
+  nama_perusahaan?: string | null
+  jabatan_pekerjaan?: string | null
+  nomor_dokumen_kerja?: string | null
+
+  // Data Penjamin / Sponsor
+  nama_penjamin?: string | null
+  kategori_penjamin?: string | null
+  nik_penjamin?: string | null
+  telepon_penjamin?: string | null
+  alamat_penjamin?: string | null
 
   // B. Data Tempat Tinggal Baru
   alamat_baru: string
   tanggal_mulai_tinggal?: string | null
-  status_tempat_tinggal: 'Milik Sendiri' | 'Kontrak/Sewa' | 'Numpang' | 'Kost'
+  status_tempat_tinggal: 'Milik Sendiri' | 'Kontrak/Sewa' | 'Numpang' | 'Kost' | string
   nama_pemilik_rumah?: string | null
   nomor_kontak_pemilik?: string | null
   latitude?: number | null
   longitude?: number | null
 
   // C. Data Asal
-  alamat_asal: string
+  alamat_asal?: string | null
   rt_rw_asal?: string | null
   kelurahan_asal?: string | null
   kecamatan_asal?: string | null
   kota_kabupaten_asal?: string | null
 
-  // E. Dokumen Checklist & Upload
+  // E. Dokumen Checklist & Upload (WNI)
   lampiran_ktp?: boolean
   lampiran_kk?: boolean
   lampiran_surat_pindah?: boolean
   file_ktp?: string | null
   file_kk?: string | null
   file_surat_pindah?: string | null
+
+  // Dokumen WNA (Tanpa Pasfoto)
+  lampiran_paspor?: boolean
+  lampiran_kitas_kitap?: boolean
+  lampiran_surat_permohonan?: boolean
+  lampiran_ktp_penjamin?: boolean
+  lampiran_dokumen_kerja?: boolean
+  lampiran_dokumen_lainnya?: boolean
+  file_paspor?: string | null
+  file_kitas_kitap?: string | null
+  file_surat_permohonan?: string | null
+  file_ktp_penjamin?: string | null
+  file_dokumen_kerja?: string | null
+  file_dokumen_lainnya?: string | null
+
+  // Tanda Tangan
   lampiran_ttd?: boolean
   tanda_tangan?: string | null
 
@@ -330,6 +371,11 @@ export interface LaporDiri {
   status_lapor?: string
   catatan?: string | null
   created_by?: number | null
+  creator?: {
+    id: number
+    name: string
+    email?: string
+  } | null
   created_at?: string
   updated_at?: string
 

@@ -15,6 +15,7 @@ class LaporDiriAnggota extends Model
         'lapor_diri_id',
         'nama',
         'nik',
+        'nomor_paspor',
         'tempat_lahir',
         'tanggal_lahir',
         'hubungan_keluarga',
