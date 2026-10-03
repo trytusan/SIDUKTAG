@@ -61,7 +61,23 @@ class FormulirController extends Controller
         $formulir->increment('download_count');
 
         $ext = $formulir->file_format ?: 'docx';
-        $downloadName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $formulir->nama_formulir) . '.' . $ext;
+        $downloadName = null;
+
+        if (!empty($formulir->nama_file_asli)) {
+            $downloadName = trim(preg_replace('/[\/\\:\*\?"<>\|]/', '', $formulir->nama_file_asli));
+        }
+
+        if (empty($downloadName)) {
+            $cleanName = trim(preg_replace('/[\/\\:\*\?"<>\|]/', '', $formulir->nama_formulir));
+            if (empty($cleanName)) {
+                $cleanName = 'Formulir_' . $formulir->id;
+            }
+            $downloadName = $cleanName . '.' . $ext;
+        }
+
+        if (!str_contains($downloadName, '.')) {
+            $downloadName .= '.' . $ext;
+        }
 
         return Storage::disk('public')->download($formulir->file_template, $downloadName);
     }

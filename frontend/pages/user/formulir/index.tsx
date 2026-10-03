@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import UserLayout from '../../../src/components/layouts/user'
 import PageHeader from '../../../src/components/ui/page-header'
 import LoadingSpinner from '../../../src/components/ui/loading'
-import api, { getStorageUrl } from '../../../src/lib/api'
+import api, { getStorageUrl, downloadFile } from '../../../src/lib/api'
 import { Formulir } from '../../../src/types'
 
 export default function UserFormulirIndex() {
@@ -15,6 +15,24 @@ export default function UserFormulirIndex() {
 
   const [selectedFormulir, setSelectedFormulir] = useState<Formulir | null>(null)
   const [detailModalOpen, setDetailModalOpen] = useState(false)
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
+
+  const handleDownload = async (item: Formulir) => {
+    setDownloadingId(item.id)
+    const fallbackName = `${item.nama_formulir}.${item.file_format || 'docx'}`
+    await downloadFile(`/user/formulir/${item.id}/download`, fallbackName)
+    setDownloadingId(null)
+
+    // Optimistically update download count in local state
+    setFormulirList((prev) =>
+      prev.map((f) => (f.id === item.id ? { ...f, download_count: (f.download_count || 0) + 1 } : f))
+    )
+    if (selectedFormulir && selectedFormulir.id === item.id) {
+      setSelectedFormulir((prev) =>
+        prev ? { ...prev, download_count: (prev.download_count || 0) + 1 } : null
+      )
+    }
+  }
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -191,19 +209,27 @@ export default function UserFormulirIndex() {
 
               {/* Action Buttons */}
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center gap-2">
-                <a
-                  href={getStorageUrl(item.file_template)}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 py-2.5 px-3 text-xs font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-700 active:scale-95 transition"
+                <button
+                  type="button"
+                  onClick={() => handleDownload(item)}
+                  disabled={downloadingId === item.id}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-2xl bg-emerald-600 py-2.5 px-3 text-xs font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-700 active:scale-95 transition disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                   title="Unduh Berkas Template"
                 >
-                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  <span>Unduh (.{(item.file_format || 'doc').toLowerCase()})</span>
-                </a>
+                  {downloadingId === item.id ? (
+                    <>
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      <span>Mengunduh...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>Unduh (.{(item.file_format || 'doc').toLowerCase()})</span>
+                    </>
+                  )}
+                </button>
 
                 {item.persyaratan && (
                   <button
@@ -276,18 +302,26 @@ export default function UserFormulirIndex() {
               >
                 Tutup
               </button>
-              <a
-                href={getStorageUrl(selectedFormulir.file_template)}
-                download
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-700"
+              <button
+                type="button"
+                onClick={() => handleDownload(selectedFormulir)}
+                disabled={downloadingId === selectedFormulir.id}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white shadow-sm shadow-emerald-600/20 hover:bg-emerald-700 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
               >
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                <span>Download Template Berkas</span>
-              </a>
+                {downloadingId === selectedFormulir.id ? (
+                  <>
+                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    <span>Mengunduh...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    <span>Download Template Berkas</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

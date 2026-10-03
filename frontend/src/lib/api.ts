@@ -119,5 +119,48 @@ export function getBeritaImageUrl(gambar?: string | null, kategori?: string): st
   return DEFAULT_BERITA_FALLBACK
 }
 
+export async function downloadFile(
+  endpointUrl: string,
+  fallbackFilename: string = 'dokumen.docx',
+  onProgress?: (downloading: boolean) => void
+): Promise<void> {
+  try {
+    if (onProgress) onProgress(true)
+    const response = await api.get(endpointUrl, {
+      responseType: 'blob',
+    })
+
+    let filename = fallbackFilename
+    const disposition = response.headers['content-disposition']
+    if (disposition) {
+      const utf8Match = /filename\*=UTF-8''([^;]+)/i.exec(disposition)
+      if (utf8Match && utf8Match[1]) {
+        filename = decodeURIComponent(utf8Match[1])
+      } else {
+        const standardMatch = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition)
+        if (standardMatch && standardMatch[1]) {
+          filename = standardMatch[1].replace(/['"]/g, '').trim()
+        }
+      }
+    }
+
+    const blob = new Blob([response.data])
+    const url = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', filename)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    window.URL.revokeObjectURL(url)
+  } catch (err) {
+    console.error('Download error:', err)
+    const fullUrl = endpointUrl.startsWith('http') ? endpointUrl : `${API_BASE_URL}${endpointUrl.startsWith('/') ? '' : '/'}${endpointUrl}`
+    window.open(fullUrl, '_blank')
+  } finally {
+    if (onProgress) onProgress(false)
+  }
+}
+
 export default api
 

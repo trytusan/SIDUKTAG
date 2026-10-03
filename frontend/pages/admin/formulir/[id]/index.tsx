@@ -5,7 +5,7 @@ import AdminLayout from '../../../../src/components/layouts/admin'
 import LoadingSpinner from '../../../../src/components/ui/loading'
 import ConfirmModal from '../../../../src/components/modal/Confirm'
 import { useAlert } from '../../../../src/context/AlertContext'
-import api, { getStorageUrl } from '../../../../src/lib/api'
+import api, { getStorageUrl, downloadFile } from '../../../../src/lib/api'
 import { Formulir } from '../../../../src/types'
 
 export default function AdminFormulirDetail() {
@@ -17,6 +17,16 @@ export default function AdminFormulirDetail() {
   const [loading, setLoading] = useState(true)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    if (!formulir) return
+    setDownloading(true)
+    const fallbackName = `${formulir.nama_formulir}.${formulir.file_format || 'docx'}`
+    await downloadFile(`/admin/formulir/${formulir.id}/download`, fallbackName)
+    setDownloading(false)
+    setFormulir((prev) => (prev ? { ...prev, download_count: (prev.download_count || 0) + 1 } : null))
+  }
 
   useEffect(() => {
     if (!id) return
@@ -206,18 +216,26 @@ export default function AdminFormulirDetail() {
               </div>
             </div>
 
-            <a
-              href={getStorageUrl(formulir.file_template)}
-              download
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 active:scale-95 transition"
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={downloading}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-5 py-3 text-xs font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 active:scale-95 transition disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
             >
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              <span>Download Berkas Template</span>
-            </a>
+              {downloading ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Mengunduh Berkas...</span>
+                </>
+              ) : (
+                <>
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  <span>Download Berkas Template</span>
+                </>
+              )}
+            </button>
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-5 text-xs text-slate-500 space-y-2">

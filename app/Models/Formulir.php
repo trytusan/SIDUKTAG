@@ -18,6 +18,7 @@ class Formulir extends Model
         'deskripsi',
         'persyaratan',
         'file_template',
+        'nama_file_asli',
         'file_format',
         'file_size',
         'download_count',

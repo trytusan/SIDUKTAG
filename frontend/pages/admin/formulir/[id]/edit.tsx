@@ -9,7 +9,7 @@ import FormSelect from '../../../../src/components/form/select'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
 import { useAlert } from '../../../../src/context/AlertContext'
-import api, { getStorageUrl } from '../../../../src/lib/api'
+import api, { getStorageUrl, downloadFile } from '../../../../src/lib/api'
 import { Formulir } from '../../../../src/types'
 
 export default function AdminFormulirEdit() {
@@ -19,6 +19,15 @@ export default function AdminFormulirEdit() {
 
   const [formulir, setFormulir] = useState<Formulir | null>(null)
   const [loading, setLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
+
+  const handleDownload = async () => {
+    if (!formulir) return
+    setDownloading(true)
+    const fallbackName = `${formulir.nama_formulir}.${formulir.file_format || 'docx'}`
+    await downloadFile(`/admin/formulir/${formulir.id}/download`, fallbackName)
+    setDownloading(false)
+  }
 
   const [formData, setFormData] = useState({
     nama_formulir: '',
@@ -265,18 +274,26 @@ export default function AdminFormulirEdit() {
                     </p>
                   </div>
                 </div>
-                <a
-                  href={getStorageUrl(formulir.file_template)}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="rounded-xl border border-emerald-300 bg-white px-3.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition inline-flex items-center gap-1.5"
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="rounded-xl border border-emerald-300 bg-white px-3.5 py-1.5 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition inline-flex items-center gap-1.5 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer"
                 >
-                  <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                  </svg>
-                  <span>Unduh Template Saat Ini</span>
-                </a>
+                  {downloading ? (
+                    <>
+                      <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-emerald-700 border-t-transparent" />
+                      <span>Mengunduh...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>Unduh Template Saat Ini</span>
+                    </>
+                  )}
+                </button>
               </div>
             )}
 

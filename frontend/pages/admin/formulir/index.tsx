@@ -8,7 +8,7 @@ import Pagination from '../../../src/components/utils/pagination'
 import ConfirmModal from '../../../src/components/modal/Confirm'
 import LoadingSpinner from '../../../src/components/ui/loading'
 import { useAlert } from '../../../src/context/AlertContext'
-import api, { getStorageUrl } from '../../../src/lib/api'
+import api, { getStorageUrl, downloadFile } from '../../../src/lib/api'
 import { Formulir } from '../../../src/types'
 
 export default function AdminFormulirIndex() {
@@ -37,6 +37,26 @@ export default function AdminFormulirIndex() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [selectedFormulir, setSelectedFormulir] = useState<Formulir | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [downloadingId, setDownloadingId] = useState<number | null>(null)
+
+  const handleDownload = async (item: Formulir) => {
+    setDownloadingId(item.id)
+    const fallbackName = `${item.nama_formulir}.${item.file_format || 'docx'}`
+    await downloadFile(`/admin/formulir/${item.id}/download`, fallbackName)
+    setDownloadingId(null)
+
+    setData((prev) => {
+      if (!prev) return prev
+      return {
+        ...prev,
+        data: prev.data.map((f) => (f.id === item.id ? { ...f, download_count: (f.download_count || 0) + 1 } : f)),
+      }
+    })
+    setStats((prev) => ({
+      ...prev,
+      total_download: prev.total_download + 1,
+    }))
+  }
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -320,18 +340,21 @@ export default function AdminFormulirIndex() {
                 render: (item: Formulir) => (
                   <div className="flex items-center gap-1.5">
                     {/* Unduh Template */}
-                    <a
-                      href={getStorageUrl(item.file_template)}
-                      download
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition"
+                    <button
+                      type="button"
+                      onClick={() => handleDownload(item)}
+                      disabled={downloadingId === item.id}
+                      className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 hover:bg-slate-50 hover:text-emerald-600 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       title="Download Template Berkas"
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                      </svg>
-                    </a>
+                      {downloadingId === item.id ? (
+                        <span className="block h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+                      ) : (
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      )}
+                    </button>
 
                     {/* Detail */}
                     <Link

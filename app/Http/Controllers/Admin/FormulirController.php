@@ -66,6 +66,7 @@ class FormulirController extends Controller
         $file = $request->file('file_template');
         $extension = strtolower($file->getClientOriginalExtension());
         $fileSize = $file->getSize();
+        $originalName = $file->getClientOriginalName();
 
         $path = $file->store('formulir/templates', 'public');
 
@@ -76,6 +77,7 @@ class FormulirController extends Controller
             'deskripsi' => $validated['deskripsi'] ?? null,
             'persyaratan' => $validated['persyaratan'] ?? null,
             'file_template' => $path,
+            'nama_file_asli' => $originalName,
             'file_format' => $extension,
             'file_size' => $fileSize,
             'download_count' => 0,
@@ -134,6 +136,7 @@ class FormulirController extends Controller
 
             $file = $request->file('file_template');
             $data['file_template'] = $file->store('formulir/templates', 'public');
+            $data['nama_file_asli'] = $file->getClientOriginalName();
             $data['file_format'] = strtolower($file->getClientOriginalExtension());
             $data['file_size'] = $file->getSize();
         }
@@ -174,7 +177,23 @@ class FormulirController extends Controller
         $formulir->increment('download_count');
 
         $ext = $formulir->file_format ?: 'docx';
-        $downloadName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $formulir->nama_formulir) . '.' . $ext;
+        $downloadName = null;
+
+        if (!empty($formulir->nama_file_asli)) {
+            $downloadName = trim(preg_replace('/[\/\\:\*\?"<>\|]/', '', $formulir->nama_file_asli));
+        }
+
+        if (empty($downloadName)) {
+            $cleanName = trim(preg_replace('/[\/\\:\*\?"<>\|]/', '', $formulir->nama_formulir));
+            if (empty($cleanName)) {
+                $cleanName = 'Formulir_' . $formulir->id;
+            }
+            $downloadName = $cleanName . '.' . $ext;
+        }
+
+        if (!str_contains($downloadName, '.')) {
+            $downloadName .= '.' . $ext;
+        }
 
         return Storage::disk('public')->download($formulir->file_template, $downloadName);
     }
