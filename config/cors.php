@@ -21,8 +21,10 @@ return [
         'http://127.0.0.1:3000',
         'http://localhost:8000',
         'http://127.0.0.1:8000',
+        'https://sidulisa.com',
+        'https://www.sidulisa.com',
         'https://powderblue-tarsier-827834.hostingersite.com',
-        env('FRONTEND_URL', 'http://localhost:3000'),
+        env('FRONTEND_URL', 'https://sidulisa.com'),
     ],
 
     'allowed_origins_patterns' => [

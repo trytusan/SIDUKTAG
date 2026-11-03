@@ -12,6 +12,12 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  useEffect(() => {
+    if (router.query.email && typeof router.query.email === 'string') {
+      setEmail(router.query.email)
+    }
+  }, [router.query])
+
   // Preload potential destination routes into browser cache
   useEffect(() => {
     router.prefetch('/admin/dashboard')
@@ -53,7 +59,7 @@ export default function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form method="POST" action="#" onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-xs font-medium text-rose-700">
           {error}
