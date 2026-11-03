@@ -22,8 +22,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'profile.completed' => \App\Http\Middleware\EnsureProfileCompleted::class,
         ]);
 
-        // 2. Izinkan same-site request dan kecualikan rute API dari CSRF
-        $middleware->preventRequestForgery(except: ['api/*'], allowSameSite: true);
+        // 2. Izinkan cross-domain request dan kecualikan rute API & auth dari CSRF
+        $middleware->preventRequestForgery(except: [
+            'api/*',
+            'login',
+            'register',
+            'logout',
+            'forgot-password',
+            'reset-password',
+            'sanctum/csrf-cookie',
+        ]);
 
         // 3. Logika redirect yang kita buat sebelumnya
         $middleware->redirectUsersTo(function () {

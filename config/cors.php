@@ -29,6 +29,7 @@ return [
 
     'allowed_origins_patterns' => [
         '#^https://.*\.hostingersite\.com$#',
+        '#^https://.*\.sidulisa\.com$#',
     ],
 
     'allowed_headers' => ['*'],
