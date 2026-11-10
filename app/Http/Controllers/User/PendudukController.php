@@ -179,6 +179,11 @@ class PendudukController extends Controller
             $dokumenKtpPath = null;
             $dokumenKkPath = null;
 
+            $dokumenDir = storage_path('app/public/dokumen-penduduk');
+            if (!file_exists($dokumenDir)) {
+                @mkdir($dokumenDir, 0775, true);
+            }
+
             if ($request->hasFile('dokumen_ktp')) {
                 $file = $request->file('dokumen_ktp');
                 $fileName = $data['nik'] . '_KTP_' . time() . '.' . $file->getClientOriginalExtension();

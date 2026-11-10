@@ -29,12 +29,82 @@ Route::post('/api/otp/reset-password', [OtpController::class, 'resetPassword'])-
 
 // Storage Fallback Route untuk Shared Hosting (Menangani akses file foto/dokumen jika symlink storage belum terpasang)
 Route::get('/storage/{path}', function ($path) {
-    $filePath = storage_path('app/public/' . $path);
-    if (!file_exists($filePath)) {
-        abort(404);
+    $candidates = [
+        storage_path('app/public/' . $path),
+        storage_path('app/' . $path),
+        storage_path('app/private/' . $path),
+        public_path('storage/' . $path),
+        base_path('storage/app/public/' . $path),
+        base_path('../storage/app/public/' . $path),
+    ];
+
+    foreach ($candidates as $filePath) {
+        if (file_exists($filePath) && is_file($filePath)) {
+            $mime = @mime_content_type($filePath) ?: 'application/octet-stream';
+            return response()->file($filePath, [
+                'Content-Type' => $mime,
+                'Access-Control-Allow-Origin' => '*',
+            ]);
+        }
     }
-    return response()->file($filePath);
+
+    // Pencarian cadangan berdasarkan nama file (basename)
+    $filename = basename($path);
+    $searchDirs = [
+        storage_path('app/public/dokumen-penduduk'),
+        storage_path('app/public/foto-profil'),
+        storage_path('app/public/akta-kematian'),
+        storage_path('app/public'),
+        storage_path('app/dokumen-penduduk'),
+        storage_path('app/private/dokumen-penduduk'),
+    ];
+
+    foreach ($searchDirs as $dir) {
+        $candidate = $dir . DIRECTORY_SEPARATOR . $filename;
+        if (file_exists($candidate) && is_file($candidate)) {
+            $mime = @mime_content_type($candidate) ?: 'application/octet-stream';
+            return response()->file($candidate, [
+                'Content-Type' => $mime,
+                'Access-Control-Allow-Origin' => '*',
+            ]);
+        }
+    }
+
+    abort(404, 'Berkas dokumen tidak ditemukan di server.');
 })->where('path', '.*');
+
+// Helper pengecekan dan perbaikan direktori storage di hosting
+Route::get('/debug-storage', function () {
+    $storagePublic = storage_path('app/public');
+    $dokumenDir = storage_path('app/public/dokumen-penduduk');
+    $fotoDir = storage_path('app/public/foto-profil');
+    $publicStorageSymlink = public_path('storage');
+
+    // Buat folder publik yang dibutuhkan jika belum ada
+    if (!file_exists($dokumenDir)) {
+        @mkdir($dokumenDir, 0775, true);
+    }
+    if (!file_exists($fotoDir)) {
+        @mkdir($fotoDir, 0775, true);
+    }
+
+    $filesInDokumen = file_exists($dokumenDir) ? scandir($dokumenDir) : [];
+    $storageDirs = file_exists($storagePublic) ? scandir($storagePublic) : [];
+
+    return response()->json([
+        'storage_path_public' => $storagePublic,
+        'storage_path_public_exists' => file_exists($storagePublic),
+        'storage_path_public_writable' => is_writable($storagePublic),
+        'dokumen_dir' => $dokumenDir,
+        'dokumen_dir_exists' => file_exists($dokumenDir),
+        'dokumen_dir_writable' => is_writable($dokumenDir),
+        'files_in_dokumen_penduduk' => array_values(array_diff($filesInDokumen, ['.', '..'])),
+        'folders_in_storage_public' => array_values(array_diff($storageDirs, ['.', '..'])),
+        'public_storage_exists' => file_exists($publicStorageSymlink),
+        'public_storage_is_link' => is_link($publicStorageSymlink),
+        'public_storage_is_dir' => is_dir($publicStorageSymlink),
+    ]);
+});
 
 // Helper Artisan storage:link untuk shared hosting cPanel / Hostinger tanpa akses SSH terminal
 Route::get('/artisan/storage-link', function () {
