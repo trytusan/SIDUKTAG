@@ -123,7 +123,16 @@ export async function downloadAuthorizedFile(
   }
 
   try {
-    const res = await api.get(url, { responseType: 'blob' })
+    const isStorageFile = url.includes('/storage/') || pathOrUrl.includes('/storage/')
+    const requestClient = isStorageFile
+      ? axios.create({ withCredentials: false })
+      : api
+
+    const targetUrl = isStorageFile
+      ? (pathOrUrl.startsWith('http') ? pathOrUrl : `${API_BASE_URL}/${url.replace(/^\/+/, '')}`)
+      : url
+
+    const res = await requestClient.get(targetUrl, { responseType: 'blob' })
     const ext = defaultFilename.split('.').pop()?.toLowerCase() || ''
     const fallbackMime: Record<string, string> = {
       pdf: 'application/pdf',
@@ -154,7 +163,11 @@ export async function downloadAuthorizedFile(
       setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000)
     }
   } catch (error) {
-    if (printWindow) printWindow.close()
+    if (printWindow) {
+      const directFallbackUrl = pathOrUrl.startsWith('http') ? pathOrUrl : `${API_BASE_URL}/${pathOrUrl.replace(/^\/+/, '')}`
+      printWindow.location.href = directFallbackUrl
+      return
+    }
     throw error
   }
 }
