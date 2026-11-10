@@ -71,7 +71,28 @@ class PendudukController extends Controller
             $validated['foto_profil'] = $file->storeAs('foto-profil', $fileName, 'public');
         }
 
-        if ($request->hasFile('dokumen')) {
+        $dokumenKtpPath = null;
+        $dokumenKkPath = null;
+
+        if ($request->hasFile('dokumen_ktp')) {
+            $file = $request->file('dokumen_ktp');
+            $fileName = $request->nik . '_KTP_' . time() . '.' . $file->getClientOriginalExtension();
+            $dokumenKtpPath = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+        }
+
+        if ($request->hasFile('dokumen_kk')) {
+            $file = $request->file('dokumen_kk');
+            $fileName = $request->nik . '_KK_' . time() . '.' . $file->getClientOriginalExtension();
+            $dokumenKkPath = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+        }
+
+        if ($dokumenKtpPath && $dokumenKkPath) {
+            $validated['dokumen_pendukung'] = json_encode(['ktp' => $dokumenKtpPath, 'kk' => $dokumenKkPath]);
+        } elseif ($dokumenKtpPath) {
+            $validated['dokumen_pendukung'] = $dokumenKtpPath;
+        } elseif ($dokumenKkPath) {
+            $validated['dokumen_pendukung'] = $dokumenKkPath;
+        } elseif ($request->hasFile('dokumen')) {
             $file = $request->file('dokumen');
             $fileName = $request->nik . '_DOK_' . time() . '.' . $file->getClientOriginalExtension();
             $validated['dokumen_pendukung'] = $file->storeAs('dokumen-penduduk', $fileName, 'public');
@@ -173,7 +194,38 @@ class PendudukController extends Controller
         }
 
         // 3. Update Dokumen Pendukung
-        if ($request->hasFile('dokumen')) {
+        $dokumenKtpPath = null;
+        $dokumenKkPath = null;
+
+        if ($request->hasFile('dokumen_ktp')) {
+            $file = $request->file('dokumen_ktp');
+            $fileName = $penduduk->nik . '_KTP_' . time() . '.' . $file->getClientOriginalExtension();
+            $dokumenKtpPath = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+        }
+
+        if ($request->hasFile('dokumen_kk')) {
+            $file = $request->file('dokumen_kk');
+            $fileName = $penduduk->nik . '_KK_' . time() . '.' . $file->getClientOriginalExtension();
+            $dokumenKkPath = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+        }
+
+        if ($dokumenKtpPath && $dokumenKkPath) {
+            $validated['dokumen_pendukung'] = json_encode(['ktp' => $dokumenKtpPath, 'kk' => $dokumenKkPath]);
+        } elseif ($dokumenKtpPath) {
+            $oldJson = json_decode($penduduk->dokumen_pendukung ?? '', true);
+            if (is_array($oldJson) && isset($oldJson['kk'])) {
+                $validated['dokumen_pendukung'] = json_encode(['ktp' => $dokumenKtpPath, 'kk' => $oldJson['kk']]);
+            } else {
+                $validated['dokumen_pendukung'] = $dokumenKtpPath;
+            }
+        } elseif ($dokumenKkPath) {
+            $oldJson = json_decode($penduduk->dokumen_pendukung ?? '', true);
+            if (is_array($oldJson) && isset($oldJson['ktp'])) {
+                $validated['dokumen_pendukung'] = json_encode(['ktp' => $oldJson['ktp'], 'kk' => $dokumenKkPath]);
+            } else {
+                $validated['dokumen_pendukung'] = $dokumenKkPath;
+            }
+        } elseif ($request->hasFile('dokumen')) {
             if ($penduduk->dokumen_pendukung) {
                 Storage::disk('public')->delete($penduduk->dokumen_pendukung);
             }
@@ -293,6 +345,8 @@ class PendudukController extends Controller
             'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pendatang Sementara,Pindah,Meninggal'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'dokumen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+            'dokumen_ktp' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+            'dokumen_kk' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
 
             // Kolom Kondisional Status Kependudukan
             'tanggal_meninggal' => ['required_if:status_kependudukan,Meninggal', 'nullable', 'date'],

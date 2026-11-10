@@ -70,9 +70,28 @@ export default function AdminPendudukDetail() {
   }
 
   const fotoUrl = penduduk.foto_profil ? getStorageUrl(penduduk.foto_profil) : null
-  const dokumenUrl = penduduk.dokumen_pendukung ? getStorageUrl(penduduk.dokumen_pendukung) : null
   const aktaKematianUrl = penduduk.akta_kematian ? getStorageUrl(penduduk.akta_kematian) : null
   const pdfBiodataUrl = `${apiUrl}/admin/penduduk/export/pdf?id=${penduduk.id}`
+
+  // Parse dokumen pendukung (mendukung format JSON {ktp, kk} maupun format file tunggal)
+  let ktpUrl: string | null = null
+  let kkUrl: string | null = null
+  let singleDokumenUrl: string | null = null
+
+  if (penduduk.dokumen_pendukung) {
+    const raw = penduduk.dokumen_pendukung.trim()
+    if (raw.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(raw)
+        if (parsed.ktp) ktpUrl = getStorageUrl(parsed.ktp)
+        if (parsed.kk) kkUrl = getStorageUrl(parsed.kk)
+      } catch (e) {
+        singleDokumenUrl = getStorageUrl(raw)
+      }
+    } else {
+      singleDokumenUrl = getStorageUrl(raw)
+    }
+  }
 
   return (
     <AdminLayout pageTitle="Detail Penduduk" subtitle={'NIK: ' + penduduk.nik}>
@@ -195,10 +214,39 @@ export default function AdminPendudukDetail() {
             </h4>
 
             <div>
-              <span className="text-xs text-slate-500 block mb-1.5 font-medium">Dokumen Pendukung</span>
-              {dokumenUrl ? (
+              <span className="text-xs text-slate-500 block mb-2 font-medium">Dokumen Kependudukan</span>
+              {ktpUrl || kkUrl ? (
+                <div className="space-y-2">
+                  {ktpUrl && (
+                    <a
+                      href={ktpUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-slate-100 w-full justify-center transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+                      </svg>
+                      <span>Lihat Berkas KTP &rarr;</span>
+                    </a>
+                  )}
+                  {kkUrl && (
+                    <a
+                      href={kkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-bold text-sky-700 hover:bg-sky-100 w-full justify-center transition"
+                    >
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Lihat Kartu Keluarga (KK) &rarr;</span>
+                    </a>
+                  )}
+                </div>
+              ) : singleDokumenUrl ? (
                 <a
-                  href={dokumenUrl}
+                  href={singleDokumenUrl}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-slate-100 w-full justify-center transition"
@@ -206,7 +254,7 @@ export default function AdminPendudukDetail() {
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                   </svg>
-                  <span>Lihat Dokumen &rarr;</span>
+                  <span>Lihat Dokumen Pendukung &rarr;</span>
                 </a>
               ) : (
                 <p className="text-xs text-slate-400 italic">Tidak ada file yang diunggah</p>

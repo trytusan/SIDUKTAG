@@ -82,7 +82,8 @@ export default function AdminPendudukCreate() {
     longitude: '115.1536173',
   })
   const [fotoProfil, setFotoProfil] = useState<File | null>(null)
-  const [dokumen, setDokumen] = useState<File | null>(null)
+  const [dokumenKtp, setDokumenKtp] = useState<File | null>(null)
+  const [dokumenKk, setDokumenKk] = useState<File | null>(null)
   const [aktaKematian, setAktaKematian] = useState<File | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -108,6 +109,26 @@ export default function AdminPendudukCreate() {
     setError(null)
     setValidationErrors({})
 
+    const isKepalaKeluarga = formData.status_dalam_keluarga === 'Kepala Keluarga'
+    if (isKepalaKeluarga) {
+      if (!dokumenKk) {
+        setError('Sebagai Kepala Keluarga, wajib mengunggah dokumen Kartu Keluarga (KK).')
+        setSubmitting(false)
+        return
+      }
+      if (!dokumenKtp) {
+        setError('Sebagai Kepala Keluarga, wajib mengunggah dokumen KTP.')
+        setSubmitting(false)
+        return
+      }
+    } else {
+      if (!dokumenKtp) {
+        setError('Wajib mengunggah dokumen KTP untuk penduduk.')
+        setSubmitting(false)
+        return
+      }
+    }
+
     try {
       const payload = new FormData()
       Object.entries(formData).forEach(([k, v]) => {
@@ -116,7 +137,13 @@ export default function AdminPendudukCreate() {
       payload.append('latitude', coords.latitude)
       payload.append('longitude', coords.longitude)
       if (fotoProfil) payload.append('foto_profil', fotoProfil)
-      if (dokumen) payload.append('dokumen', dokumen)
+      if (dokumenKtp) payload.append('dokumen_ktp', dokumenKtp)
+      if (dokumenKk) payload.append('dokumen_kk', dokumenKk)
+      if (dokumenKk) {
+        payload.append('dokumen', dokumenKk)
+      } else if (dokumenKtp) {
+        payload.append('dokumen', dokumenKtp)
+      }
       if (formData.status_kependudukan === 'Meninggal' && aktaKematian) {
         payload.append('akta_kematian', aktaKematian)
       }
@@ -571,7 +598,7 @@ export default function AdminPendudukCreate() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormFile
-                label="Foto Profil"
+                label="Foto Profil (Opsional)"
                 accept="image/*"
                 onChange={(e) => {
                   if (e.target.files?.[0]) setFotoProfil(e.target.files[0])
@@ -579,12 +606,44 @@ export default function AdminPendudukCreate() {
               />
 
               <FormFile
-                label="Dokumen Pendukung (KK/KTP)"
+                label="Dokumen KTP (Wajib)"
                 accept="image/*,application/pdf"
+                required
                 onChange={(e) => {
-                  if (e.target.files?.[0]) setDokumen(e.target.files[0])
+                  if (e.target.files?.[0]) setDokumenKtp(e.target.files[0])
                 }}
+                error={validationErrors.dokumen_ktp?.[0]}
+                helperText="Format: JPG, PNG, PDF (Maksimal 4MB)"
               />
+
+              {isKepalaKeluarga ? (
+                <div className="sm:col-span-2">
+                  <FormFile
+                    label="Dokumen Kartu Keluarga / KK (Wajib untuk Kepala Keluarga)"
+                    accept="image/*,application/pdf"
+                    required
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) setDokumenKk(e.target.files[0])
+                    }}
+                    error={validationErrors.dokumen_kk?.[0]}
+                    helperText="Wajib diunggah saat mendaftarkan Kepala Keluarga."
+                  />
+                </div>
+              ) : (
+                <div className="sm:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 flex items-start gap-3">
+                  <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-emerald-900">Dokumen Kartu Keluarga Terhubung</h4>
+                    <p className="text-xs text-emerald-700 mt-0.5">
+                      Sebagai <strong>{formData.status_dalam_keluarga}</strong>, berkas KK mengikuti dokumen yang diunggah oleh Kepala Keluarga. Hanya wajib mengunggah KTP pribadi.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="rounded-2xl border border-slate-200 p-4 bg-slate-50">

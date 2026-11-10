@@ -128,6 +128,8 @@ class PendudukController extends Controller
         $validated = $request->validate([
             'foto_profil' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
             'dokumen' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+            'dokumen_ktp' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
+            'dokumen_kk' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:4096'],
             'latitude' => ['nullable', 'numeric', 'between:-90,90'],
             'longitude' => ['nullable', 'numeric', 'between:-180,180'],
         ]);
@@ -174,7 +176,28 @@ class PendudukController extends Controller
                 $data['foto_profil'] = $request->file('foto_profil')->store('foto-profil', 'public');
             }
 
-            if ($request->hasFile('dokumen')) {
+            $dokumenKtpPath = null;
+            $dokumenKkPath = null;
+
+            if ($request->hasFile('dokumen_ktp')) {
+                $file = $request->file('dokumen_ktp');
+                $fileName = $data['nik'] . '_KTP_' . time() . '.' . $file->getClientOriginalExtension();
+                $dokumenKtpPath = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+            }
+
+            if ($request->hasFile('dokumen_kk')) {
+                $file = $request->file('dokumen_kk');
+                $fileName = $data['nik'] . '_KK_' . time() . '.' . $file->getClientOriginalExtension();
+                $dokumenKkPath = $file->storeAs('dokumen-penduduk', $fileName, 'public');
+            }
+
+            if ($dokumenKtpPath && $dokumenKkPath) {
+                $data['dokumen_pendukung'] = json_encode(['ktp' => $dokumenKtpPath, 'kk' => $dokumenKkPath]);
+            } elseif ($dokumenKtpPath) {
+                $data['dokumen_pendukung'] = $dokumenKtpPath;
+            } elseif ($dokumenKkPath) {
+                $data['dokumen_pendukung'] = $dokumenKkPath;
+            } elseif ($request->hasFile('dokumen')) {
                 $data['dokumen_pendukung'] = $request->file('dokumen')->store('dokumen-penduduk', 'public');
             }
 

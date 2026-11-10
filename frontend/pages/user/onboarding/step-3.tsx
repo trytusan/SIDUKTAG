@@ -24,8 +24,10 @@ const FormMapPicker = dynamic(
 export default function OnboardingStep3() {
   const router = useRouter()
   const { user, refreshUser } = useAuth()
+  const [statusDalamKeluarga, setStatusDalamKeluarga] = useState<string>('Kepala Keluarga')
   const [fotoProfil, setFotoProfil] = useState<File | null>(null)
-  const [dokumen, setDokumen] = useState<File | null>(null)
+  const [dokumenKtp, setDokumenKtp] = useState<File | null>(null)
+  const [dokumenKk, setDokumenKk] = useState<File | null>(null)
   const [coords, setCoords] = useState<{ latitude: string; longitude: string }>({
     latitude: '-8.0781358',
     longitude: '115.1536173',
@@ -34,19 +36,64 @@ export default function OnboardingStep3() {
   const [error, setError] = useState<string | null>(null)
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({})
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const s1 = sessionStorage.getItem('onboarding_step1')
+      if (s1) {
+        try {
+          const parsed = JSON.parse(s1)
+          if (parsed.status_dalam_keluarga) {
+            setStatusDalamKeluarga(parsed.status_dalam_keluarga)
+          }
+        } catch (e) {}
+      }
+    }
+  }, [])
+
+  const isKepalaKeluarga = statusDalamKeluarga === 'Kepala Keluarga'
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
     setValidationErrors({})
 
+    // Validasi berkas berdasarkan peran dalam keluarga
+    if (isKepalaKeluarga) {
+      if (!dokumenKk) {
+        setError('Sebagai Kepala Keluarga, Anda wajib mengunggah dokumen Kartu Keluarga (KK).')
+        setLoading(false)
+        return
+      }
+      if (!dokumenKtp) {
+        setError('Sebagai Kepala Keluarga, Anda wajib mengunggah dokumen KTP.')
+        setLoading(false)
+        return
+      }
+    } else {
+      if (!dokumenKtp) {
+        setError('Anda wajib mengunggah dokumen KTP sebagai bukti identitas kependudukan.')
+        setLoading(false)
+        return
+      }
+    }
+
     try {
       const formData = new FormData()
       if (fotoProfil) {
         formData.append('foto_profil', fotoProfil)
       }
-      if (dokumen) {
-        formData.append('dokumen', dokumen)
+      if (dokumenKtp) {
+        formData.append('dokumen_ktp', dokumenKtp)
+      }
+      if (dokumenKk) {
+        formData.append('dokumen_kk', dokumenKk)
+      }
+      // Backward compatibility fallback
+      if (dokumenKk) {
+        formData.append('dokumen', dokumenKk)
+      } else if (dokumenKtp) {
+        formData.append('dokumen', dokumenKtp)
       }
       formData.append('latitude', coords.latitude)
       formData.append('longitude', coords.longitude)
@@ -147,15 +194,45 @@ export default function OnboardingStep3() {
 
               <div>
                 <FormFile
-                  label="Dokumen KK / KTP (Opsional)"
+                  label="Dokumen KTP (Wajib)"
                   accept="image/*,application/pdf"
+                  required
                   onChange={(e) => {
-                    if (e.target.files?.[0]) setDokumen(e.target.files[0])
+                    if (e.target.files?.[0]) setDokumenKtp(e.target.files[0])
                   }}
                   helperText="Format: JPG, PNG, PDF (Maksimal 4MB)"
-                  error={validationErrors.dokumen?.[0]}
+                  error={validationErrors.dokumen_ktp?.[0]}
                 />
               </div>
+
+              {isKepalaKeluarga ? (
+                <div className="sm:col-span-2">
+                  <FormFile
+                    label="Dokumen Kartu Keluarga / KK (Wajib untuk Kepala Keluarga)"
+                    accept="image/*,application/pdf"
+                    required
+                    onChange={(e) => {
+                      if (e.target.files?.[0]) setDokumenKk(e.target.files[0])
+                    }}
+                    helperText="Wajib diunggah oleh Kepala Keluarga sebagai dasar pendaftaran Kartu Keluarga di banjar."
+                    error={validationErrors.dokumen_kk?.[0]}
+                  />
+                </div>
+              ) : (
+                <div className="sm:col-span-2 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 flex items-start gap-3">
+                  <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-emerald-900">Dokumen Kartu Keluarga Terhubung</h4>
+                    <p className="text-xs text-emerald-700 mt-0.5">
+                      Sebagai <strong>{statusDalamKeluarga}</strong>, dokumen fisik Kartu Keluarga (KK) telah dikelola dan didaftarkan oleh Kepala Keluarga. Anda hanya diwajibkan mengunggah berkas KTP pribadi.
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Geotagging Map Picker */}
