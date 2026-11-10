@@ -86,6 +86,68 @@ export function getStorageUrl(path?: string | null): string {
   return `${API_BASE_URL}/storage/${path.replace(/^\/+/, '')}`
 }
 
+/**
+ * Mengunduh atau membuka file biner (PDF/Excel) dengan otorisasi sesi Axios yang valid
+ */
+export async function downloadAuthorizedFile(
+  pathOrUrl: string,
+  defaultFilename: string = 'dokumen.pdf',
+  openInTab: boolean = false
+) {
+  let url = pathOrUrl
+  if (url.startsWith(API_BASE_URL)) {
+    url = url.substring(API_BASE_URL.length)
+  }
+
+  let printWindow: Window | null = null
+  if (openInTab && typeof window !== 'undefined') {
+    printWindow = window.open('', '_blank')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+          <head><title>Memuat Dokumen...</title></head>
+          <body style="font-family: system-ui, -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f8fafc; color: #334155;">
+            <div style="text-align: center; max-width: 420px; padding: 28px; background: white; border-radius: 20px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); border: 1px solid #e2e8f0;">
+              <div style="width: 40px; height: 40px; border: 3px solid #10b981; border-top-color: transparent; border-radius: 50%; margin: 0 auto 16px; animation: spin 1s linear infinite;"></div>
+              <div style="font-size: 16px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">Menyiapkan Dokumen...</div>
+              <div style="font-size: 13px; color: #64748b; line-height: 1.5;">Sedang membuat berkas resmi dari server. Pratinjau akan segera tampil...</div>
+            </div>
+            <style>
+              @keyframes spin { to { transform: rotate(360deg); } }
+            </style>
+          </body>
+        </html>
+      `)
+    }
+  }
+
+  try {
+    const res = await api.get(url, { responseType: 'blob' })
+    const defaultType = defaultFilename.endsWith('.xlsx')
+      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      : 'application/pdf'
+    const contentType = typeof res.headers['content-type'] === 'string' ? res.headers['content-type'] : defaultType
+    const blob = new Blob([res.data], { type: contentType })
+    const blobUrl = window.URL.createObjectURL(blob)
+
+    if (openInTab && printWindow) {
+      printWindow.location.href = blobUrl
+    } else {
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = defaultFilename
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 2000)
+    }
+  } catch (error) {
+    if (printWindow) printWindow.close()
+    throw error
+  }
+}
+
 export const DEFAULT_BERITA_FALLBACK = 'https://images.unsplash.com/photo-1524813686514-a57563d77d46?w=1200&auto=format&fit=crop&q=80'
 
 export const BERITA_FALLBACK_IMAGES: Record<string, string> = {

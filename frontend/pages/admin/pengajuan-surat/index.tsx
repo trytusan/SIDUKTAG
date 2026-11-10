@@ -9,7 +9,7 @@ import LoadingSpinner from '../../../src/components/ui/loading'
 import ConfirmModal from '../../../src/components/modal/Confirm'
 import CardStat from '../../../src/components/ui/card-stat'
 import { useAlert } from '../../../src/context/AlertContext'
-import api from '../../../src/lib/api'
+import api, { downloadAuthorizedFile } from '../../../src/lib/api'
 import { PengajuanSurat, PaginatedResponse, JenisSurat } from '../../../src/types'
 
 export default function AdminPengajuanSuratIndex() {
@@ -23,6 +23,32 @@ export default function AdminPengajuanSuratIndex() {
   const [tanggal, setTanggal] = useState('')
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(true)
+  const [exportingType, setExportingType] = useState<'excel' | 'pdf' | null>(null)
+
+  const handleExport = async (type: 'excel' | 'pdf') => {
+    try {
+      setExportingType(type)
+      const params = new URLSearchParams()
+      params.append('export', type)
+      if (search) params.append('search', search)
+      if (status) params.append('status', status)
+      if (jenisSuratId) params.append('jenis_surat_id', jenisSuratId)
+      if (tanggal) params.append('tanggal', tanggal)
+
+      const endpoint = `/admin/pengajuan-surat?${params.toString()}`
+      const filename = type === 'excel' ? 'laporan-pengajuan-surat.xlsx' : 'laporan-pengajuan-surat.pdf'
+      await downloadAuthorizedFile(endpoint, filename, type === 'pdf')
+    } catch (err) {
+      console.error(err)
+      showAlert({
+        type: 'error',
+        title: 'Ekspor Gagal',
+        message: `Gagal mengekspor data ${type.toUpperCase()}. Silakan coba lagi.`,
+      })
+    } finally {
+      setExportingType(null)
+    }
+  }
   const [deleteId, setDeleteId] = useState<number | null>(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -200,30 +226,38 @@ export default function AdminPengajuanSuratIndex() {
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100">
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Export Excel */}
-            <a
-              href={getExportUrl('excel')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+            <button
+              type="button"
+              onClick={() => handleExport('excel')}
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              {exportingType === 'excel' ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
               <span>Export Excel</span>
-            </a>
+            </button>
 
             {/* Export PDF */}
-            <a
-              href={getExportUrl('pdf')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
+            <button
+              type="button"
+              onClick={() => handleExport('pdf')}
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-              </svg>
+              {exportingType === 'pdf' ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-600 border-t-transparent" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+              )}
               <span>Cetak PDF</span>
-            </a>
+            </button>
           </div>
 
           <div className="flex flex-wrap items-center gap-2.5">

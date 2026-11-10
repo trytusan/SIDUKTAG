@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic'
 import AdminLayout from '../../../../src/components/layouts/admin'
 import StatusBadge from '../../../../src/components/ui/status-badge'
 import LoadingSpinner from '../../../../src/components/ui/loading'
-import api, { getStorageUrl } from '../../../../src/lib/api'
+import api, { getStorageUrl, downloadAuthorizedFile } from '../../../../src/lib/api'
 import { Penduduk } from '../../../../src/types'
 
 const MapPreview = dynamic(
@@ -25,6 +25,24 @@ export default function AdminPendudukDetail() {
   const { id } = router.query
   const [penduduk, setPenduduk] = useState<Penduduk | null>(null)
   const [loading, setLoading] = useState(true)
+  const [downloadingPdf, setDownloadingPdf] = useState(false)
+
+  const handlePrintBiodataPdf = async () => {
+    if (!penduduk) return
+    try {
+      setDownloadingPdf(true)
+      await downloadAuthorizedFile(
+        `/admin/penduduk/export/pdf?id=${penduduk.id}`,
+        `Biodata-${penduduk.nama_lengkap.replace(/\s+/g, '_')}.pdf`,
+        true
+      )
+    } catch (err) {
+      console.error(err)
+      alert('Gagal membuat dokumen PDF biodata. Pastikan server aktif.')
+    } finally {
+      setDownloadingPdf(false)
+    }
+  }
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -217,17 +235,26 @@ export default function AdminPendudukDetail() {
             )}
 
             <div className="pt-2 border-t border-slate-100">
-              <a
-                href={pdfBiodataUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-4 py-3 text-xs font-bold text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition"
+              <button
+                type="button"
+                onClick={handlePrintBiodataPdf}
+                disabled={downloadingPdf}
+                className="w-full flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 px-4 py-3 text-xs font-bold text-slate-600 hover:border-emerald-300 hover:text-emerald-600 transition disabled:opacity-50"
               >
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                <span>Cetak Biodata Penduduk (PDF)</span>
-              </a>
+                {downloadingPdf ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-500 border-t-transparent" />
+                    <span>Menyiapkan PDF...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    <span>Cetak Biodata Penduduk (PDF)</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

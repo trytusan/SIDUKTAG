@@ -9,7 +9,7 @@ import LoadingSpinner from '../../../src/components/ui/loading'
 import ConfirmModal from '../../../src/components/modal/Confirm'
 import CardStat from '../../../src/components/ui/card-stat'
 import { useAlert } from '../../../src/context/AlertContext'
-import api from '../../../src/lib/api'
+import api, { downloadAuthorizedFile } from '../../../src/lib/api'
 import { Penduduk, PaginatedResponse } from '../../../src/types'
 import { getFamilyRoleBadgeClass } from '../../../src/utils/familyOrder'
 import { STATUS_KEPENDUDUKAN_LIST } from '../../../src/constants/dukcapil'
@@ -17,6 +17,33 @@ import { STATUS_KEPENDUDUKAN_LIST } from '../../../src/constants/dukcapil'
 export default function AdminPendudukIndex() {
   const { showAlert } = useAlert()
   const [data, setData] = useState<PaginatedResponse<Penduduk> | null>(null)
+  const [exportingType, setExportingType] = useState<'excel' | 'pdf' | null>(null)
+
+  const handleExport = async (type: 'excel' | 'pdf') => {
+    try {
+      setExportingType(type)
+      const params = new URLSearchParams()
+      if (search) params.append('search', search)
+      if (status) params.append('status_kependudukan', status)
+      if (gender) params.append('jenis_kelamin', gender)
+      if (kategoriUmur) params.append('kategori_umur', kategoriUmur)
+      if (statusKeluarga) params.append('status_dalam_keluarga', statusKeluarga)
+      if (statusMasaBerlaku) params.append('status_masa_berlaku', statusMasaBerlaku)
+
+      const endpoint = `/admin/penduduk/export/${type}?${params.toString()}`
+      const filename = type === 'excel' ? 'data-penduduk.xlsx' : 'laporan-penduduk.pdf'
+      await downloadAuthorizedFile(endpoint, filename, type === 'pdf')
+    } catch (err) {
+      console.error(err)
+      showAlert({
+        type: 'error',
+        title: 'Ekspor Gagal',
+        message: `Gagal mengekspor data ${type.toUpperCase()}. Silakan coba lagi.`,
+      })
+    } finally {
+      setExportingType(null)
+    }
+  }
   const [stats, setStats] = useState<{
     total?: number
     laki?: number
@@ -411,30 +438,38 @@ export default function AdminPendudukIndex() {
 
           <div className="flex flex-wrap items-center gap-2.5">
             {/* Export Excel */}
-            <a
-              href={getExportUrl('excel')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100"
+            <button
+              type="button"
+              onClick={() => handleExport('excel')}
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-700 transition hover:bg-emerald-100 disabled:opacity-50"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              {exportingType === 'excel' ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
               <span>Excel</span>
-            </a>
+            </button>
 
             {/* Export PDF */}
-            <a
-              href={getExportUrl('pdf')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100"
+            <button
+              type="button"
+              onClick={() => handleExport('pdf')}
+              disabled={exportingType !== null}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 transition hover:bg-rose-100 disabled:opacity-50"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-              </svg>
+              {exportingType === 'pdf' ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-rose-600 border-t-transparent" />
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+              )}
               <span>PDF</span>
-            </a>
+            </button>
 
             {/* Tambah Penduduk */}
             <Link

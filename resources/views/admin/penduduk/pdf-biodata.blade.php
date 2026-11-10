@@ -15,15 +15,27 @@
 </head>
 <body>
     <div class="kop">
-        <h2 style="margin:0">PEMERINTAH KABUPATEN BULELENG</h2>
-        <h3 style="margin:0">KECAMATAN DESA DIGITAL</h3>
-        <p style="margin:5px 0">Jl. Raya Utama No. 1, Kode Pos 81111</p>
+        <h2 style="margin:0">PEMERINTAH KOTA DENPASAR</h2>
+        <h3 style="margin:0">KECAMATAN DENPASAR TIMUR - DESA PENATIH</h3>
+        <h4 style="margin:0">BANJAR SABA PENATIH</h4>
+        <p style="margin:5px 0; font-size:11px;">Sistem Informasi Kependudukan & Geotagging (SIDUKTAG)</p>
     </div>
 
     <div class="title">BIODATA PENDUDUK</div>
 
-    @if($penduduk->foto_profil)
-        <img src="{{ public_path('storage/' . $penduduk->foto_profil) }}" class="foto">
+    @php
+        $fotoPath = null;
+        if ($penduduk->foto_profil) {
+            if (file_exists(storage_path('app/public/' . $penduduk->foto_profil))) {
+                $fotoPath = storage_path('app/public/' . $penduduk->foto_profil);
+            } elseif (file_exists(public_path('storage/' . $penduduk->foto_profil))) {
+                $fotoPath = public_path('storage/' . $penduduk->foto_profil);
+            }
+        }
+    @endphp
+
+    @if($fotoPath)
+        <img src="{{ $fotoPath }}" class="foto">
     @endif
 
     <table>
@@ -79,9 +91,9 @@
         </tr>
     </table>
 
-    <div style="margin-top: 50px; float: right; width: 200px; text-align: center;">
-        <p>Buleleng, {{ date('d F Y') }}</p>
-        <p>Petugas Registrasi,</p>
+    <div style="margin-top: 50px; float: right; width: 220px; text-align: center;">
+        <p>Penatih, {{ date('d F Y') }}</p>
+        <p>Kelian Banjar Saba,</p>
         <br><br><br>
         <p><strong>( ________________ )</strong></p>
     </div>
