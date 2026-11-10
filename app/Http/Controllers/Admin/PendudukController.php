@@ -593,17 +593,18 @@ class PendudukController extends Controller
         }
 
         $source = storage_path('app/public/' . $relativePath);
-        $dest = base_path('storage/' . $relativePath);
+        $destPublic = public_path('storage/' . $relativePath);
+        $destBase = base_path('storage/' . $relativePath);
 
-        if ($source === $dest) return;
-
-        $destDir = dirname($dest);
-        if (!file_exists($destDir)) {
-            @mkdir($destDir, 0775, true);
-        }
-
-        if (file_exists($source) && is_file($source)) {
-            @copy($source, $dest);
+        foreach ([$destPublic, $destBase] as $dest) {
+            if ($source === $dest) continue;
+            $destDir = dirname($dest);
+            if (!file_exists($destDir)) {
+                @mkdir($destDir, 0775, true);
+            }
+            if (file_exists($source) && is_file($source)) {
+                @copy($source, $dest);
+            }
         }
     }
 }
