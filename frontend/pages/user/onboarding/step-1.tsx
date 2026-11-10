@@ -349,7 +349,7 @@ export default function OnboardingStep1() {
                 name="status_perkawinan"
                 value={formData.status_perkawinan}
                 onChange={handleChange}
-                options={['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati']}
+                options={['Belum Kawin', 'Kawin', 'Cerai Hidup', 'Cerai Mati', 'Kawin Tercatat', 'Cerai Tercatat', 'Kawin Tidak Tercatat']}
               />
             </div>
 
