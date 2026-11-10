@@ -26,6 +26,20 @@ export default function AdminPendudukDetail() {
   const [penduduk, setPenduduk] = useState<Penduduk | null>(null)
   const [loading, setLoading] = useState(true)
   const [downloadingPdf, setDownloadingPdf] = useState(false)
+  const [viewingDoc, setViewingDoc] = useState<string | null>(null)
+
+  const handleViewDocument = async (url: string | null, defaultName: string) => {
+    if (!url) return
+    try {
+      setViewingDoc(defaultName)
+      await downloadAuthorizedFile(url, defaultName, true)
+    } catch (err) {
+      console.error(err)
+      alert('Gagal memuat berkas dokumen. Pastikan file tersedia di server.')
+    } finally {
+      setViewingDoc(null)
+    }
+  }
 
   const handlePrintBiodataPdf = async () => {
     if (!penduduk) return
@@ -218,44 +232,44 @@ export default function AdminPendudukDetail() {
               {ktpUrl || kkUrl ? (
                 <div className="space-y-2">
                   {ktpUrl && (
-                    <a
-                      href={ktpUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-slate-100 w-full justify-center transition"
+                    <button
+                      type="button"
+                      disabled={viewingDoc === 'KTP.jpg'}
+                      onClick={() => handleViewDocument(ktpUrl, 'KTP.jpg')}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-slate-100 w-full justify-center transition disabled:opacity-50"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
                       </svg>
-                      <span>Lihat Berkas KTP &rarr;</span>
-                    </a>
+                      <span>{viewingDoc === 'KTP.jpg' ? 'Membuka Berkas...' : 'Lihat Berkas KTP →'}</span>
+                    </button>
                   )}
                   {kkUrl && (
-                    <a
-                      href={kkUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-bold text-sky-700 hover:bg-sky-100 w-full justify-center transition"
+                    <button
+                      type="button"
+                      disabled={viewingDoc === 'KK.jpg'}
+                      onClick={() => handleViewDocument(kkUrl, 'KK.jpg')}
+                      className="inline-flex items-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-4 py-2.5 text-xs font-bold text-sky-700 hover:bg-sky-100 w-full justify-center transition disabled:opacity-50"
                     >
                       <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
-                      <span>Lihat Kartu Keluarga (KK) &rarr;</span>
-                    </a>
+                      <span>{viewingDoc === 'KK.jpg' ? 'Membuka Berkas...' : 'Lihat Kartu Keluarga (KK) →'}</span>
+                    </button>
                   )}
                 </div>
               ) : singleDokumenUrl ? (
-                <a
-                  href={singleDokumenUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-slate-100 w-full justify-center transition"
+                <button
+                  type="button"
+                  disabled={viewingDoc === 'dokumen-pendukung.jpg'}
+                  onClick={() => handleViewDocument(singleDokumenUrl, 'dokumen-pendukung.jpg')}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-xs font-bold text-emerald-600 hover:bg-slate-100 w-full justify-center transition disabled:opacity-50"
                 >
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                   </svg>
-                  <span>Lihat Dokumen Pendukung &rarr;</span>
-                </a>
+                  <span>{viewingDoc === 'dokumen-pendukung.jpg' ? 'Membuka Berkas...' : 'Lihat Dokumen Pendukung →'}</span>
+                </button>
               ) : (
                 <p className="text-xs text-slate-400 italic">Tidak ada file yang diunggah</p>
               )}
@@ -265,17 +279,17 @@ export default function AdminPendudukDetail() {
               <div className="pt-2 border-t border-slate-100">
                 <span className="text-xs text-slate-500 block mb-1.5 font-medium">Bukti Akta Kematian</span>
                 {aktaKematianUrl ? (
-                  <a
-                    href={aktaKematianUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 w-full justify-center transition"
+                  <button
+                    type="button"
+                    disabled={viewingDoc === 'akta-kematian.pdf'}
+                    onClick={() => handleViewDocument(aktaKematianUrl, 'akta-kematian.pdf')}
+                    className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-xs font-bold text-rose-700 hover:bg-rose-100 w-full justify-center transition disabled:opacity-50"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span>Lihat Akta Kematian &rarr;</span>
-                  </a>
+                    <span>{viewingDoc === 'akta-kematian.pdf' ? 'Membuka Berkas...' : 'Lihat Akta Kematian →'}</span>
+                  </button>
                 ) : (
                   <p className="text-xs text-slate-400 italic">Belum ada akta kematian yang diunggah</p>
                 )}

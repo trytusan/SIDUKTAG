@@ -36,6 +36,23 @@ Route::get('/storage/{path}', function ($path) {
     return response()->file($filePath);
 })->where('path', '.*');
 
+// Helper Artisan storage:link untuk shared hosting cPanel / Hostinger tanpa akses SSH terminal
+Route::get('/artisan/storage-link', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('storage:link');
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return response()->json([
+            'status' => 'success',
+            'message' => $output ?: 'Symlink storage berhasil dibuat / terhubung.',
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set', 'csrf_token' => csrf_token()]);
 });

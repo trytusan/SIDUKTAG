@@ -25,6 +25,17 @@ Homestead.yaml
 Thumbs.db
 *.sql
 
+# Skripsi, Naskah & Pengujian Lokal (Tidak perlu di hosting)
+BAB_*.md
+locustfile.py
+CLAUDE.md
+boost.json
+.mcp.json
+.claude/
+install.cmd
+*.docx
+*.pdf
+
 # Frontend Next.js rules
 /frontend/node_modules
 /frontend/.next

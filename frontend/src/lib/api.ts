@@ -124,10 +124,21 @@ export async function downloadAuthorizedFile(
 
   try {
     const res = await api.get(url, { responseType: 'blob' })
-    const defaultType = defaultFilename.endsWith('.xlsx')
-      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      : 'application/pdf'
-    const contentType = typeof res.headers['content-type'] === 'string' ? res.headers['content-type'] : defaultType
+    const ext = defaultFilename.split('.').pop()?.toLowerCase() || ''
+    const fallbackMime: Record<string, string> = {
+      pdf: 'application/pdf',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      xls: 'application/vnd.ms-excel',
+      jpg: 'image/jpeg',
+      jpeg: 'image/jpeg',
+      png: 'image/png',
+      webp: 'image/webp',
+    }
+    const defaultType = fallbackMime[ext] || 'application/pdf'
+    const headerContentType = res.headers['content-type']
+    const contentType = (typeof headerContentType === 'string' && headerContentType !== 'application/octet-stream')
+      ? headerContentType
+      : defaultType
     const blob = new Blob([res.data], { type: contentType })
     const blobUrl = window.URL.createObjectURL(blob)
 
