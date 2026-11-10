@@ -73,6 +73,43 @@ Route::get('/storage/{path}', function ($path) {
     abort(404, 'Berkas dokumen tidak ditemukan di server.');
 })->where('path', '.*');
 
+// Auto-sync storage: otomatis menyalin semua berkas dari storage/app/public ke public_html/storage (agar web server bisa menyajikannya tanpa symlink)
+Route::get('/sync-storage', function () {
+    $srcRoot = storage_path('app/public');
+    $destRoot = base_path('storage');
+
+    $sync = function ($src, $dest) use (&$sync) {
+        if (!file_exists($dest)) {
+            @mkdir($dest, 0775, true);
+        }
+        $items = @scandir($src) ?: [];
+        $count = 0;
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..' || $item === '.gitignore') continue;
+            $srcPath = $src . DIRECTORY_SEPARATOR . $item;
+            $destPath = $dest . DIRECTORY_SEPARATOR . $item;
+            if (is_dir($srcPath)) {
+                if ($item !== 'app' && $item !== 'framework' && $item !== 'logs') {
+                    $count += $sync($srcPath, $destPath);
+                }
+            } elseif (is_file($srcPath)) {
+                @copy($srcPath, $destPath);
+                $count++;
+            }
+        }
+        return $count;
+    };
+
+    $copied = $sync($srcRoot, $destRoot);
+
+    return response()->json([
+        'status' => 'success',
+        'message' => "Berhasil menyinkronkan {$copied} berkas ke public storage secara otomatis.",
+        'source' => $srcRoot,
+        'destination' => $destRoot,
+    ]);
+});
+
 // Helper pengecekan dan perbaikan direktori storage di hosting
 Route::get('/debug-storage', function () {
     $storagePublic = storage_path('app/public');

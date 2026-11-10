@@ -229,6 +229,9 @@ class PendudukController extends Controller
                 $penduduk = Penduduk::create($data);
             }
 
+            $this->mirrorFile($data['foto_profil'] ?? null);
+            $this->mirrorFile($data['dokumen_pendukung'] ?? null);
+
             // 3. Update info KK jika dia adalah Kepala Keluarga
             if ($isKepalaKeluarga) {
                 $kartuKeluarga->update([
@@ -347,6 +350,7 @@ class PendudukController extends Controller
         }
 
         $penduduk->update($validated);
+        $this->mirrorFile($validated['foto_profil'] ?? null);
 
         // Update info di tabel KK jika dia adalah kepala keluarga
         if ($penduduk->nomor_kk && $penduduk->status_dalam_keluarga === 'Kepala Keluarga') {
@@ -364,5 +368,36 @@ class PendudukController extends Controller
         }
 
         return back()->with('status', 'Profil berhasil diperbarui.');
+    }
+
+    /**
+     * Otomatis salin berkas dari storage/app/public ke public storage folder (kompatibilitas shared hosting tanpa symlink)
+     */
+    private function mirrorFile(?string $relativePath): void
+    {
+        if (!$relativePath) return;
+
+        if (str_starts_with(trim($relativePath), '{')) {
+            $parsed = json_decode($relativePath, true);
+            if (is_array($parsed)) {
+                if (!empty($parsed['ktp'])) $this->mirrorFile($parsed['ktp']);
+                if (!empty($parsed['kk'])) $this->mirrorFile($parsed['kk']);
+                return;
+            }
+        }
+
+        $source = storage_path('app/public/' . $relativePath);
+        $dest = base_path('storage/' . $relativePath);
+
+        if ($source === $dest) return;
+
+        $destDir = dirname($dest);
+        if (!file_exists($destDir)) {
+            @mkdir($destDir, 0775, true);
+        }
+
+        if (file_exists($source) && is_file($source)) {
+            @copy($source, $dest);
+        }
     }
 }

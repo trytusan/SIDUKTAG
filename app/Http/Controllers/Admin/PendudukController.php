@@ -164,6 +164,9 @@ class PendudukController extends Controller
 
         // 6. Simpan Penduduk
         $penduduk = Penduduk::create($validated);
+        $this->mirrorFile($validated['foto_profil'] ?? null);
+        $this->mirrorFile($validated['dokumen_pendukung'] ?? null);
+        $this->mirrorFile($validated['akta_kematian'] ?? null);
 
         // 7. Sinkronisasi Jumlah Anggota
         $this->sinkronkanJumlahAnggota($request->nomor_kk);
@@ -312,6 +315,9 @@ class PendudukController extends Controller
         }
 
         $penduduk->update($validated);
+        $this->mirrorFile($validated['foto_profil'] ?? null);
+        $this->mirrorFile($validated['dokumen_pendukung'] ?? null);
+        $this->mirrorFile($validated['akta_kematian'] ?? null);
 
         if ($request->status_dalam_keluarga === 'Kepala Keluarga') {
             KartuKeluarga::where('nomor_kk', $request->nomor_kk)->update([
@@ -567,5 +573,37 @@ class PendudukController extends Controller
         }
 
         return redirect()->route('admin.penduduk.index')->with('status', 'Data penduduk berhasil dihapus.');
+    }
+
+    /**
+     * Otomatis salin berkas dari storage/app/public ke public storage folder (kompatibilitas shared hosting tanpa symlink)
+     */
+    private function mirrorFile(?string $relativePath): void
+    {
+        if (!$relativePath) return;
+
+        // Jika path berformat JSON {ktp, kk}
+        if (str_starts_with(trim($relativePath), '{')) {
+            $parsed = json_decode($relativePath, true);
+            if (is_array($parsed)) {
+                if (!empty($parsed['ktp'])) $this->mirrorFile($parsed['ktp']);
+                if (!empty($parsed['kk'])) $this->mirrorFile($parsed['kk']);
+                return;
+            }
+        }
+
+        $source = storage_path('app/public/' . $relativePath);
+        $dest = base_path('storage/' . $relativePath);
+
+        if ($source === $dest) return;
+
+        $destDir = dirname($dest);
+        if (!file_exists($destDir)) {
+            @mkdir($destDir, 0775, true);
+        }
+
+        if (file_exists($source) && is_file($source)) {
+            @copy($source, $dest);
+        }
     }
 }
