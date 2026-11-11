@@ -158,6 +158,37 @@ class PendudukController extends Controller
         }
 
         $user = $request->user();
+        $statusDalamKeluarga = $step1['status_dalam_keluarga'] ?? $step2['status_dalam_keluarga'] ?? 'Kepala Keluarga';
+        $nik = $step1['nik'] ?? null;
+        $existingPenduduk = $nik ? Penduduk::where('nik', $nik)->orWhere('user_id', $user?->id)->first() : null;
+        $hasExistingDoc = $existingPenduduk && !empty($existingPenduduk->dokumen_pendukung);
+
+        if (!$hasExistingDoc) {
+            if ($statusDalamKeluarga === 'Kepala Keluarga') {
+                if (!$request->hasFile('dokumen_ktp') && !$request->hasFile('dokumen')) {
+                    $msg = 'Sebagai Kepala Keluarga, Anda wajib mengunggah dokumen KTP.';
+                    if ($request->wantsJson() || $request->is('api/*')) {
+                        return response()->json(['message' => $msg, 'errors' => ['dokumen_ktp' => [$msg]]], 422);
+                    }
+                    return back()->withErrors(['dokumen_ktp' => $msg])->withInput();
+                }
+                if (!$request->hasFile('dokumen_kk') && !$request->hasFile('dokumen')) {
+                    $msg = 'Sebagai Kepala Keluarga, Anda wajib mengunggah dokumen Kartu Keluarga (KK).';
+                    if ($request->wantsJson() || $request->is('api/*')) {
+                        return response()->json(['message' => $msg, 'errors' => ['dokumen_kk' => [$msg]]], 422);
+                    }
+                    return back()->withErrors(['dokumen_kk' => $msg])->withInput();
+                }
+            } else {
+                if (!$request->hasFile('dokumen_ktp') && !$request->hasFile('dokumen')) {
+                    $msg = 'Anda wajib mengunggah dokumen KTP.';
+                    if ($request->wantsJson() || $request->is('api/*')) {
+                        return response()->json(['message' => $msg, 'errors' => ['dokumen_ktp' => [$msg]]], 422);
+                    }
+                    return back()->withErrors(['dokumen_ktp' => $msg])->withInput();
+                }
+            }
+        }
 
         DB::transaction(function () use ($request, $validated, $step1, $step2, $user) {
             $data = array_merge($step1, $step2);

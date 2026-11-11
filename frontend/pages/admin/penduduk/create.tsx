@@ -109,25 +109,8 @@ export default function AdminPendudukCreate() {
     setError(null)
     setValidationErrors({})
 
-    const isKepalaKeluarga = formData.status_dalam_keluarga === 'Kepala Keluarga'
-    if (isKepalaKeluarga) {
-      if (!dokumenKk) {
-        setError('Sebagai Kepala Keluarga, wajib mengunggah dokumen Kartu Keluarga (KK).')
-        setSubmitting(false)
-        return
-      }
-      if (!dokumenKtp) {
-        setError('Sebagai Kepala Keluarga, wajib mengunggah dokumen KTP.')
-        setSubmitting(false)
-        return
-      }
-    } else {
-      if (!dokumenKtp) {
-        setError('Wajib mengunggah dokumen KTP untuk penduduk.')
-        setSubmitting(false)
-        return
-      }
-    }
+    // Catatan: Pada pendaftaran oleh operator admin, berkas KTP dan KK dibuat opsional
+    // agar pendataan sensus kependudukan tidak tertahan jika warga belum menyerahkan berkas fisik.
 
     try {
       const payload = new FormData()
@@ -606,27 +589,25 @@ export default function AdminPendudukCreate() {
               />
 
               <FormFile
-                label="Dokumen KTP (Wajib)"
+                label="Dokumen KTP (Opsional)"
                 accept="image/*,application/pdf"
-                required
                 onChange={(e) => {
                   if (e.target.files?.[0]) setDokumenKtp(e.target.files[0])
                 }}
                 error={validationErrors.dokumen_ktp?.[0]}
-                helperText="Format: JPG, PNG, PDF (Maksimal 4MB)"
+                helperText="Format: JPG, PNG, PDF (Maksimal 4MB). Dapat dikosongkan jika berkas belum ada."
               />
 
               {isKepalaKeluarga ? (
                 <div className="sm:col-span-2">
                   <FormFile
-                    label="Dokumen Kartu Keluarga / KK (Wajib untuk Kepala Keluarga)"
+                    label="Dokumen Kartu Keluarga / KK (Opsional untuk Operator)"
                     accept="image/*,application/pdf"
-                    required
                     onChange={(e) => {
                       if (e.target.files?.[0]) setDokumenKk(e.target.files[0])
                     }}
                     error={validationErrors.dokumen_kk?.[0]}
-                    helperText="Wajib diunggah saat mendaftarkan Kepala Keluarga."
+                    helperText="Format: JPG, PNG, PDF (Maksimal 4MB). Dapat dikosongkan jika berkas belum ada."
                   />
                 </div>
               ) : (
@@ -639,7 +620,7 @@ export default function AdminPendudukCreate() {
                   <div>
                     <h4 className="text-xs font-bold text-emerald-900">Dokumen Kartu Keluarga Terhubung</h4>
                     <p className="text-xs text-emerald-700 mt-0.5">
-                      Sebagai <strong>{formData.status_dalam_keluarga}</strong>, berkas KK mengikuti dokumen yang diunggah oleh Kepala Keluarga. Hanya wajib mengunggah KTP pribadi.
+                      Sebagai <strong>{formData.status_dalam_keluarga}</strong>, berkas KK mengikuti dokumen yang diunggah oleh Kepala Keluarga. Berkas KTP bersifat opsional bagi operator.
                     </p>
                   </div>
                 </div>
