@@ -201,9 +201,9 @@ export default function AdminBeritaEdit() {
                   onChange={handleChange}
                   options={[
                     'Pengumuman',
-                    'Agenda Kegiatan',
+                    'Kegiatan Lingkungan Saba',
                     'Bantuan Sosial',
-                    'Pembangunan Desa',
+                    'Pembangunan Lingkungan',
                     'Layanan Warga',
                     'Kesehatan & Posyandu',
                   ]}
@@ -268,7 +268,7 @@ export default function AdminBeritaEdit() {
                   onChange={handleChange}
                   placeholder="https://..."
                 />
-                <div className="text-xs text-slate-500 font-medium">Atau pilih dari galeri tema desa:</div>
+                <div className="text-xs text-slate-500 font-medium">Atau pilih dari galeri tema:</div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
                   {SAMPLE_IMAGES.map((img, i) => (
                     <div

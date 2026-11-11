@@ -158,7 +158,7 @@ export default function AdminBeritaCreate() {
                 onChange={handleChange}
                 options={[
                   { value: 'Pengumuman', label: 'Pengumuman' },
-                  { value: 'Kegiatan Desa', label: 'Kegiatan Desa' },
+                  { value: 'Kegiatan Lingkungan Saba', label: 'Kegiatan Lingkungan Saba' },
                   { value: 'Bantuan Sosial', label: 'Bantuan Sosial' },
                   { value: 'Kesehatan', label: 'Kesehatan' },
                   { value: 'Pembangunan', label: 'Pembangunan' },

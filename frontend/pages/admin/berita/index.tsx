@@ -76,7 +76,7 @@ export default function AdminBeritaIndex() {
     <AdminLayout
       title="Data Berita & Informasi — SIDULISA"
       pageTitle="Berita & Informasi"
-      subtitle="Kelola publikasi pengumuman, agenda kegiatan desa, dan informasi kependudukan"
+      subtitle="Kelola publikasi pengumuman, agenda kegiatan Lingkungan Saba, dan informasi kependudukan"
     >
       {/* Breadcrumb */}
       <nav className="flex mb-4" aria-label="Breadcrumb">
@@ -173,7 +173,7 @@ export default function AdminBeritaIndex() {
               >
                 <option value="Semua">Semua Kategori</option>
                 <option value="Pengumuman">Pengumuman</option>
-                <option value="Kegiatan Desa">Kegiatan Desa</option>
+                <option value="Kegiatan Lingkungan Saba">Kegiatan Lingkungan Saba</option>
                 <option value="Bantuan Sosial">Bantuan Sosial</option>
                 <option value="Kesehatan">Kesehatan</option>
                 <option value="Pembangunan">Pembangunan</option>

@@ -181,7 +181,7 @@ export interface Berita {
   id: number
   judul: string
   slug: string
-  kategori: 'Pengumuman' | 'Kegiatan Desa' | 'Bantuan Sosial' | 'Kesehatan' | 'Pembangunan' | string
+  kategori: 'Pengumuman' | 'Kegiatan Lingkungan Saba' | 'Bantuan Sosial' | 'Kesehatan' | 'Pembangunan' | string
   ringkasan: string
   konten: string
   gambar?: string | null

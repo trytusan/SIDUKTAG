@@ -8,7 +8,7 @@ import Navbar from '../../src/components/landing/Navbar'
 const KATEGORI_OPTIONS = [
   'Semua',
   'Pengumuman',
-  'Kegiatan Desa',
+  'Kegiatan Lingkungan Saba',
   'Bantuan Sosial',
   'Kesehatan',
   'Pembangunan',
@@ -53,7 +53,7 @@ export default function PublicBeritaIndex() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
-        <title>Berita & Informasi Desa — SIDULISA</title>
+        <title>Berita & Informasi SIDULISA</title>
         <meta
           name="description"
           content="Pusat informasi, pengumuman kependudukan, dan agenda kegiatan resmi masyarakat desa."
@@ -90,7 +90,7 @@ export default function PublicBeritaIndex() {
               Pusat Informasi & Pengumuman Warga
             </span>
             <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Kabar & Pengumuman Desa
+              Kabar & Pengumuman Lingkungan Saba
             </h1>
             <p className="mt-3 text-sm sm:text-base text-slate-600 leading-relaxed">
               Dapatkan update informasi resmi seputar kegiatan kemasyarakatan, agenda pemerintahan, layanan kependudukan, dan transparansi bantuan sosial.
