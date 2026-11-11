@@ -63,7 +63,7 @@ export default function AdminPetaWilayahIndex() {
 
   return (
     <AdminLayout
-      title="Peta Sebaran KK & Wilayah — SIDUKTAG"
+      title="Peta Sebaran KK & Wilayah — SIDULISA"
       pageTitle="Peta Sebaran KK & Wilayah"
       subtitle="Pemetaan geospasial hunian Kartu Keluarga dan fasilitas desa berbasis Geotagging"
     >

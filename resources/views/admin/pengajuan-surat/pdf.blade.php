@@ -108,7 +108,7 @@
 <body>
     <div class="header">
         <h2>Rekap Pengajuan Surat</h2>
-        <p class="meta">Laporan Sistem Informasi Kependudukan Digital</p>
+        <p class="meta">Laporan Sistem Informasi Penduduk Lingkungan Saba (SIDULISA)</p>
         <p class="meta">Dicetak pada: {{ now()->translatedFormat('d F Y H:i') }} WIB</p>
     </div>
 

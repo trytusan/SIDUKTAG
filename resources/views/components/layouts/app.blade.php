@@ -1,5 +1,5 @@
 @props([
-    'title' => 'SIDUKTAG',
+    'title' => 'SIDULISA',
 ])
 
 

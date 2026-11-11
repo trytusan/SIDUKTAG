@@ -66,7 +66,7 @@ export default function PublicPetaPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
-        <title>Peta Wilayah &amp; Fasilitas Desa — SIDUKTAG</title>
+        <title>Peta Wilayah &amp; Fasilitas Desa — SIDULISA</title>
         <meta
           name="description"
           content="Visualisasi pemetaan geospasial sebaran pemukiman warga desa dan lokasi sarana fasilitas umum secara interaktif dan transparan."

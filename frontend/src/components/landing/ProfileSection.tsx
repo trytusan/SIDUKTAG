@@ -104,7 +104,7 @@ export default function ProfileSection() {
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Pusat Layanan Warga</span>
             <h4 className="text-lg sm:text-xl font-bold">Kantor Pelayanan Administrasi Desa / Kelurahan</h4>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Buka setiap hari kerja: <strong>Senin s.d. Jumat (08:00 - 15:30 WIB)</strong>. Pelayanan daring SIDUKTAG beroperasi <strong>24 jam</strong> dan permohonan akan diverifikasi pada jam kerja operasional.
+              Buka setiap hari kerja: <strong>Senin s.d. Jumat (08:00 - 15:30 WIB)</strong>. Pelayanan daring SIDULISA beroperasi <strong>24 jam</strong> dan permohonan akan diverifikasi pada jam kerja operasional.
             </p>
           </div>
           <div className="flex flex-col sm:flex-row md:flex-col gap-2.5 justify-end">

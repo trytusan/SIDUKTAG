@@ -41,7 +41,7 @@ export default function AdminBeritaDetail() {
 
   return (
     <AdminLayout
-      title={`Detail: ${berita.judul} — SIDUKTAG`}
+      title={`Detail: ${berita.judul} — SIDULISA`}
       pageTitle="Detail Berita & Informasi"
       subtitle={`${berita.kategori} • Oleh ${berita.penulis || 'Admin'}`}
     >

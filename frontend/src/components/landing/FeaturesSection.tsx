@@ -18,7 +18,7 @@ export default function FeaturesSection() {
 
           <div className="space-y-3.5 text-justify text-sm sm:text-base text-slate-600 leading-relaxed">
             <p>
-              Sistem Informasi Kependudukan dan Geotagging (SIDUKTAG) dikembangkan untuk mewujudkan tata kelola administrasi desa yang modern, cepat, dan transparan. Melalui platform ini, pendataan warga tidak hanya mencakup identitas pokok keluarga, melainkan juga terintegrasi langsung dengan pemetaan koordinat geospasial lokasi tempat tinggal secara presisi.
+              Sistem Informasi Penduduk Lingkungan Saba (SIDULISA) dikembangkan untuk mewujudkan tata kelola administrasi kependudukan yang modern, cepat, dan transparan. Melalui platform ini, pendataan warga tidak hanya mencakup identitas pokok keluarga, melainkan juga terintegrasi langsung dengan pemetaan koordinat geospasial lokasi tempat tinggal secara presisi.
             </p>
             <p>
               Masyarakat dapat mengajukan beragam surat permohonan dan kebutuhan administrasi kependudukan secara mandiri kapan saja tanpa antre. Selain itu, pemerintah desa dapat mengelola penyaluran bantuan sosial secara adil, memantau perubahan demografi penduduk secara berkala, dan mempercepat respons penanganan kebutuhan warga di lapangan.
@@ -115,7 +115,7 @@ export default function FeaturesSection() {
                 </h4>
               </div>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed text-justify">
-                Potret lingkungan permukiman desa yang asri, rukun, dan dinamis. Melalui pemanfaatan sistem informasi kependudukan dan pemetaan lokasi, keterhubungan antar warga dan percepatan pelayanan publik desa dapat terwujud secara berkesinambungan.
+                Potret lingkungan permukiman yang asri, rukun, dan dinamis. Melalui pemanfaatan Sistem Informasi Penduduk Lingkungan Saba (SIDULISA) dan pemetaan lokasi, keterhubungan antar warga dan percepatan pelayanan publik dapat terwujud secara berkesinambungan.
               </p>
             </div>
           </div>

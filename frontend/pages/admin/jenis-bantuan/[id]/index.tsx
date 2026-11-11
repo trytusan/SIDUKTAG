@@ -39,7 +39,7 @@ export default function AdminJenisBantuanDetail() {
 
   return (
     <AdminLayout
-      title={`Detail: ${program.nama_program} — SIDUKTAG`}
+      title={`Detail: ${program.nama_program} — SIDULISA`}
       pageTitle="Detail Program Bantuan"
       subtitle={`${program.jenis_bantuan} • Status: ${program.status_bantuan}`}
     >

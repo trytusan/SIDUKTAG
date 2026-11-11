@@ -30,7 +30,7 @@ class SendOtpMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Kode OTP Verifikasi Anda - SIDUKTAG',
+            subject: 'Kode OTP Verifikasi Anda - SIDULISA',
         );
     }
 

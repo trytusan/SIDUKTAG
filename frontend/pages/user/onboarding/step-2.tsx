@@ -81,7 +81,7 @@ export default function OnboardingStep2() {
   return (
     <div className="min-h-screen bg-slate-100/90 py-10 px-4 sm:px-6 lg:px-8 text-slate-800">
       <Head>
-        <title>Langkah 2: Alamat & Kontak — SIDUKTAG</title>
+        <title>Langkah 2: Alamat & Kontak — SIDULISA</title>
       </Head>
 
       <div className="mx-auto max-w-2xl">

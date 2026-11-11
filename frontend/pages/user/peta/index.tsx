@@ -64,7 +64,7 @@ export default function UserPetaPage() {
 
   return (
     <UserLayout
-      title="Peta Wilayah & Fasilitas — SIDUKTAG"
+      title="Peta Wilayah & Fasilitas — SIDULISA"
       pageTitle="Peta Wilayah & Fasilitas"
       subtitle="Visualisasi sebaran pemukiman warga dan lokasi fasilitas umum desa"
     >

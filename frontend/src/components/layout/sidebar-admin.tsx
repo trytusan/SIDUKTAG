@@ -181,7 +181,7 @@ export default function SidebarAdmin({ isOpen = false, onClose }: SidebarAdminPr
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
           <Link href="/" className="group block" title="Lihat Landing Page">
             <h2 className="text-2xl font-black tracking-tight text-slate-900 group-hover:text-emerald-700 transition">
-              SIDUKTAG
+              SIDULISA
             </h2>
             <p className="mt-0.5 text-[11px] font-bold tracking-wider uppercase text-emerald-700">
               Panel Administrator

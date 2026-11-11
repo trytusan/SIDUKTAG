@@ -21,7 +21,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       if (window.innerWidth < 1024) {
         setIsOpen(false)
       } else {
-        const saved = localStorage.getItem('siduktag_sidebar_open')
+        const saved = localStorage.getItem('sidulisa_sidebar_open') ?? localStorage.getItem('siduktag_sidebar_open')
         if (saved !== null) {
           setIsOpen(saved === 'true')
         }
@@ -51,7 +51,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       if (currentWidth < 1024 && prevWidth >= 1024) {
         setIsOpen(false)
       } else if (currentWidth >= 1024 && prevWidth < 1024) {
-        const saved = localStorage.getItem('siduktag_sidebar_open')
+        const saved = localStorage.getItem('sidulisa_sidebar_open') ?? localStorage.getItem('siduktag_sidebar_open')
         setIsOpen(saved !== null ? saved === 'true' : true)
       }
       prevWidth = currentWidth
@@ -74,7 +74,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       const next = !prev
       if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
         try {
-          localStorage.setItem('siduktag_sidebar_open', String(next))
+          localStorage.setItem('sidulisa_sidebar_open', String(next))
         } catch (e) {}
       }
       triggerResizeEvent()
@@ -86,7 +86,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     setIsOpen(true)
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
       try {
-        localStorage.setItem('siduktag_sidebar_open', 'true')
+        localStorage.setItem('sidulisa_sidebar_open', 'true')
       } catch (e) {}
     }
     triggerResizeEvent()
@@ -96,7 +96,7 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
     setIsOpen(false)
     if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
       try {
-        localStorage.setItem('siduktag_sidebar_open', 'false')
+        localStorage.setItem('sidulisa_sidebar_open', 'false')
       } catch (e) {}
     }
     triggerResizeEvent()

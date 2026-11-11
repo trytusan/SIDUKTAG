@@ -6,7 +6,7 @@ interface AppLayoutProps {
   title?: string
 }
 
-export default function AppLayout({ children, title = 'SIDUKTAG' }: AppLayoutProps) {
+export default function AppLayout({ children, title = 'SIDULISA' }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-slate-100 text-slate-800 antialiased">
       <Head>

@@ -231,7 +231,7 @@ export default function VerifyOtpPage() {
   }
 
   return (
-    <AuthLayout title="Verifikasi Kode OTP — SIDUKTAG">
+    <AuthLayout title="Verifikasi Kode OTP — SIDULISA">
       <div className="rounded-3xl border border-slate-200 bg-white p-6 sm:p-10 shadow-sm max-w-md mx-auto">
         {/* Header Icon */}
         <div className="mb-6 text-center">

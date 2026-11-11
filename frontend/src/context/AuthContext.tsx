@@ -27,7 +27,8 @@ const AuthContext = createContext<AuthContextType>({
   register: async () => {},
 })
 
-const AUTH_STORAGE_KEY = 'siduktag_auth_cache'
+const AUTH_STORAGE_KEY = 'sidulisa_auth_cache'
+const LEGACY_STORAGE_KEY = 'siduktag_auth_cache'
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -79,7 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Hydrate immediately from cache on client mount
   useEffect(() => {
     try {
-      const cached = localStorage.getItem(AUTH_STORAGE_KEY)
+      const cached = localStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY)
       if (cached) {
         const parsed = JSON.parse(cached)
         if (parsed.user) {

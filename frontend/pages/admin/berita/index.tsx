@@ -74,7 +74,7 @@ export default function AdminBeritaIndex() {
 
   return (
     <AdminLayout
-      title="Data Berita & Informasi — SIDUKTAG"
+      title="Data Berita & Informasi — SIDULISA"
       pageTitle="Berita & Informasi"
       subtitle="Kelola publikasi pengumuman, agenda kegiatan desa, dan informasi kependudukan"
     >

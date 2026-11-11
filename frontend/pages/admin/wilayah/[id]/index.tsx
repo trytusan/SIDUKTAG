@@ -60,7 +60,7 @@ export default function AdminWilayahDetail() {
 
   return (
     <AdminLayout
-      title={`Detail ${wilayah.nama_wilayah} — SIDUKTAG`}
+      title={`Detail ${wilayah.nama_wilayah} — SIDULISA`}
       pageTitle="Detail Tempat Umum / Wilayah"
       subtitle={`${wilayah.jenis_wilayah} • Kode: ${wilayah.kode_wilayah}`}
     >

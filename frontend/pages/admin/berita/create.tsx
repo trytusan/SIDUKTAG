@@ -87,7 +87,7 @@ export default function AdminBeritaCreate() {
 
   return (
     <AdminLayout
-      title="Tambah Berita & Informasi — SIDUKTAG"
+      title="Tambah Berita & Informasi — SIDULISA"
       pageTitle="Tambah Berita"
       subtitle="Publikasikan pengumuman penting, rilis informasi bantuan, atau dokumentasi kegiatan"
     >

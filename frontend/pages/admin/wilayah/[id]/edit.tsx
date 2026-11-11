@@ -188,7 +188,7 @@ export default function AdminWilayahEdit() {
 
   return (
     <AdminLayout
-      title="Edit Tempat Umum — SIDUKTAG"
+      title="Edit Tempat Umum — SIDULISA"
       pageTitle="Edit Tempat Umum & Fasilitas Wilayah"
       subtitle={'Mengubah data: ' + formData.nama_wilayah}
     >

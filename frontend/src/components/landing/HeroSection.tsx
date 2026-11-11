@@ -19,8 +19,8 @@ export default function HeroSection() {
         Pelayanan Digital Cepat, Akurat & Transparan
       </div>
 
-      <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl max-w-3xl leading-tight">
-        Sistem Informasi Kependudukan & Geotagging
+      <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-6xl max-w-4xl leading-tight">
+        Sistem Informasi Penduduk Lingkungan Saba
       </h1>
 
       <p className="mt-6 max-w-2xl text-base text-slate-600 sm:text-lg leading-relaxed">

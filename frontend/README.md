@@ -1,4 +1,4 @@
-# Siduktag Frontend (Next.js + TypeScript)
+# Sidulisa Frontend (Next.js + TypeScript)
 
 Minimal Next.js (TypeScript) frontend scaffold to connect to the existing Laravel backend.
 

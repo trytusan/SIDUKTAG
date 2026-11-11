@@ -1,8 +1,8 @@
-# SIDUKTAG
+# SIDULISA
 
-**Sistem Informasi Kependudukan Berbasis Geotagging**
+**Sistem Informasi Penduduk Lingkungan Saba (SIDULISA) Berbasis Geotagging**
 
-Aplikasi pengelolaan data kependudukan, pemetaan lokasi tempat tinggal warga (geotagging GPS), pengajuan surat administrasi online, dan penyaluran bantuan sosial.
+Aplikasi pengelolaan data kependudukan, pemetaan lokasi tempat tinggal warga (geotagging GPS), pengajuan surat administrasi online, dan penyaluran bantuan sosial Lingkungan Saba.
 
 ---
 

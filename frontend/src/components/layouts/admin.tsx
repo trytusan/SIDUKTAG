@@ -16,7 +16,7 @@ interface AdminLayoutProps {
 
 export default function AdminLayout({
   children,
-  title = 'Admin Dashboard — SIDUKTAG',
+  title = 'Admin Dashboard — SIDULISA',
   pageTitle = 'Dashboard Admin',
   subtitle = 'Kelola data kependudukan dan layanan warga',
 }: AdminLayoutProps) {

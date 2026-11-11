@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kode OTP Verifikasi - SIDUKTAG</title>
+    <title>Kode OTP Verifikasi - SIDULISA</title>
     <style>
         body {
             font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
@@ -120,7 +120,7 @@
         <!-- Header -->
         <div class="header">
             <div class="logo-badge">S</div>
-            <h1>SIDUKTAG</h1>
+            <h1>SIDULISA</h1>
             <p>Sistem Terintegrasi Kependudukan Desa</p>
         </div>
 
@@ -128,7 +128,7 @@
         <div class="content">
             <div class="greeting">Halo, {{ $userName ?? 'Warga' }}!</div>
             <div class="desc">
-                Kami menerima permintaan verifikasi untuk akun SIDUKTAG Anda. Gunakan kode OTP (One-Time Password) di bawah ini untuk melanjutkan:
+                Kami menerima permintaan verifikasi untuk akun SIDULISA Anda. Gunakan kode OTP (One-Time Password) di bawah ini untuk melanjutkan:
             </div>
 
             <!-- OTP Code Card -->
@@ -139,7 +139,7 @@
 
             <!-- Warning Box -->
             <div class="warning-card">
-                <strong>Penting:</strong> Jangan berikan kode OTP ini kepada siapapun, termasuk pihak yang mengaku sebagai petugas desa atau admin sistem. Demi keamanan akun Anda, pastikan Anda hanya memasukkan kode ini pada halaman resmi portal SIDUKTAG.
+                <strong>Penting:</strong> Jangan berikan kode OTP ini kepada siapapun, termasuk pihak yang mengaku sebagai petugas desa atau admin sistem. Demi keamanan akun Anda, pastikan Anda hanya memasukkan kode ini pada halaman resmi portal SIDULISA.
             </div>
 
             <div style="margin-top: 24px; font-size: 13px; color: #64748b; line-height: 1.5;">
@@ -149,9 +149,9 @@
 
         <!-- Footer -->
         <div class="footer">
-            Email ini dikirim secara otomatis oleh <strong>SIDUKTAG</strong><br>
+            Email ini dikirim secara otomatis oleh <strong>SIDULISA</strong><br>
             Banjar Dinas Dauh Munduk, Desa Bungkulan, Kec. Sawan, Kab. Buleleng, Bali.<br>
-            &copy; {{ date('Y') }} SIDUKTAG. Seluruh Hak Cipta Dilindungi.
+            &copy; {{ date('Y') }} SIDULISA. Seluruh Hak Cipta Dilindungi.
         </div>
     </div>
 </body>

@@ -44,7 +44,7 @@ class OtpController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email tidak terdaftar dalam sistem SIDUKTAG.',
+                'message' => 'Email tidak terdaftar dalam sistem SIDULISA.',
             ], 404);
         }
 
@@ -134,7 +134,7 @@ class OtpController extends Controller
         if (!$user) {
             return response()->json([
                 'status' => 'error',
-                'message' => 'Email tidak terdaftar dalam sistem SIDUKTAG.',
+                'message' => 'Email tidak terdaftar dalam sistem SIDULISA.',
             ], 404);
         }
 

@@ -16,7 +16,7 @@ interface UserLayoutProps {
 
 export default function UserLayout({
   children,
-  title = 'Portal Warga — SIDUKTAG',
+  title = 'Portal Warga — SIDULISA',
   pageTitle = 'Dashboard Saya',
   subtitle = 'Layanan informasi dan pengajuan surat online',
 }: UserLayoutProps) {

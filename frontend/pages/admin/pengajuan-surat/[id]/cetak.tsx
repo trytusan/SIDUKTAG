@@ -70,10 +70,10 @@ export default function AdminPengajuanSuratCetak() {
 
       <div className="mx-auto max-w-3xl rounded-none bg-white p-12 text-slate-900 shadow-lg print:shadow-none print:p-0 print:m-0 border border-slate-200 print:border-none my-6">
         <div className="border-b-4 border-double border-slate-900 pb-4 text-center">
-          <h2 className="text-base font-bold uppercase tracking-wider">Pemerintah Kabupaten / Kota</h2>
-          <h1 className="text-xl font-black uppercase tracking-tight">Kecamatan / Kelurahan SIDUKTAG</h1>
+          <h2 className="text-base font-bold uppercase tracking-wider">Pemerintah Kota Denpasar</h2>
+          <h1 className="text-xl font-black uppercase tracking-tight">Kecamatan Denpasar Timur — Lingkungan Saba Penatih</h1>
           <p className="text-xs text-slate-600 mt-0.5">
-            Jl. Pelayanan Publik No. 01, Telp: (021) 12345678, Kode Pos: 12345
+            Sistem Informasi Penduduk Lingkungan Saba (SIDULISA)
           </p>
         </div>
 
@@ -85,7 +85,7 @@ export default function AdminPengajuanSuratCetak() {
         </div>
 
         <p className="text-xs sm:text-sm text-slate-800 leading-relaxed indent-8">
-          Yang bertanda tangan di bawah ini Kepala Desa / Lurah SIDUKTAG, dengan ini menerangkan bahwa:
+          Yang bertanda tangan di bawah ini Kepala Lingkungan Saba / Kelian Banjar Saba Penatih, dengan ini menerangkan bahwa:
         </p>
 
         <div className="my-5 ml-8 space-y-2 text-xs sm:text-sm">
@@ -133,7 +133,7 @@ export default function AdminPengajuanSuratCetak() {
 
         <div className="mt-14 flex justify-end text-xs sm:text-sm text-center">
           <div className="w-56 space-y-1">
-            <p>Dikeluarkan di: SIDUKTAG</p>
+            <p>Dikeluarkan di: SIDULISA</p>
             <p className="pb-16">Pada tanggal: {surat.tanggal_pengesahan || surat.tanggal_pengajuan}</p>
             <p className="font-bold underline text-slate-950">KEPALA DESA / LURAH</p>
             <p className="text-[10px] text-slate-500">NIP. 19850101 201001 1 001</p>

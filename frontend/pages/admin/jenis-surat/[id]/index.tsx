@@ -41,7 +41,7 @@ export default function AdminJenisSuratDetail() {
 
   return (
     <AdminLayout
-      title={`Detail: ${jenisSurat.nama} — SIDUKTAG`}
+      title={`Detail: ${jenisSurat.nama} — SIDULISA`}
       pageTitle="Detail Jenis Surat"
       subtitle={`Master Template Layanan Surat Desa`}
     >

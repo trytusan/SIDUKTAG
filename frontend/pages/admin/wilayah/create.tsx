@@ -139,7 +139,7 @@ export default function AdminWilayahCreate() {
 
   return (
     <AdminLayout
-      title="Tambah Tempat Umum — SIDUKTAG"
+      title="Tambah Tempat Umum — SIDULISA"
       pageTitle="Tambah Tempat Umum & Fasilitas Wilayah"
       subtitle="Pendaftaran titik koordinat lokasi fasilitas publik, balai banjar, tempat ibadah, kantor pelayanan, dan sarana umum desa"
     >

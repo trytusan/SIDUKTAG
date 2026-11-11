@@ -119,7 +119,7 @@ export default function AdminWilayahIndex() {
 
   return (
     <AdminLayout
-      title="Data Wilayah & Persebaran Hunian — SIDUKTAG"
+      title="Data Wilayah & Persebaran Hunian — SIDULISA"
       pageTitle="Data Wilayah & Persebaran Hunian"
       subtitle="Manajemen data pembagian wilayah, batas dusun, serta pengelompokan persebaran hunian KK"
     >

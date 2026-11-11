@@ -139,7 +139,7 @@ export default function AdminBeritaEdit() {
 
   return (
     <AdminLayout
-      title="Edit Berita — SIDUKTAG"
+      title="Edit Berita — SIDULISA"
       pageTitle="Edit Berita & Informasi"
       subtitle={'Mengubah artikel: ' + formData.judul}
     >

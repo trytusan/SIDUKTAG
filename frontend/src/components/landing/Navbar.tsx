@@ -96,7 +96,7 @@ export default function Navbar() {
             S
           </div>
           <div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">SIDUKTAG</span>
+            <span className="text-xl font-bold tracking-tight text-slate-900">SIDULISA</span>
             <p className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">Sistem Terintegrasi</p>
           </div>
         </Link>

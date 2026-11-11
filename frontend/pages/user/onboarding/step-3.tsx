@@ -134,7 +134,7 @@ export default function OnboardingStep3() {
   return (
     <div className="min-h-screen bg-slate-100/90 py-10 px-4 sm:px-6 lg:px-8 text-slate-800">
       <Head>
-        <title>Langkah 3: Dokumen & Geotagging — SIDUKTAG</title>
+        <title>Langkah 3: Dokumen & Geotagging — SIDULISA</title>
       </Head>
 
       <div className="mx-auto max-w-3xl">

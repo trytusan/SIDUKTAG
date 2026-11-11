@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <AuthLayout title="Lupa Password — SIDUKTAG">
+    <AuthLayout title="Lupa Password — SIDULISA">
       <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 shadow-sm max-w-md mx-auto">
         <div className="mb-6 text-center">
           <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-700 shadow-xs">

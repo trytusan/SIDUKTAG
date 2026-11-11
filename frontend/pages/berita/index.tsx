@@ -53,7 +53,7 @@ export default function PublicBeritaIndex() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
-        <title>Berita & Informasi Desa — SIDUKTAG</title>
+        <title>Berita & Informasi Desa — SIDULISA</title>
         <meta
           name="description"
           content="Pusat informasi, pengumuman kependudukan, dan agenda kegiatan resmi masyarakat desa."
@@ -241,7 +241,7 @@ export default function PublicBeritaIndex() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 font-medium">
-        &copy; {new Date().getFullYear()} SIDUKTAG. Sistem Informasi Kependudukan & Geotagging.
+        &copy; {new Date().getFullYear()} SIDULISA. Sistem Informasi Penduduk Lingkungan Saba.
       </footer>
     </div>
   )

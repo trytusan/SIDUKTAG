@@ -53,7 +53,7 @@ export default function PublicBeritaDetail() {
 
   const shareWhatsApp = () => {
     if (typeof window !== 'undefined' && berita) {
-      const text = encodeURIComponent(`*${berita.judul}*\n\nBaca selengkapnya di SIDUKTAG:\n${window.location.href}`)
+      const text = encodeURIComponent(`*${berita.judul}*\n\nBaca selengkapnya di SIDULISA:\n${window.location.href}`)
       window.open(`https://api.whatsapp.com/send?text=${text}`, '_blank')
     }
   }
@@ -61,7 +61,7 @@ export default function PublicBeritaDetail() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
-        <title>{berita ? `${berita.judul} — SIDUKTAG` : 'Detail Berita — SIDUKTAG'}</title>
+        <title>{berita ? `${berita.judul} — SIDULISA` : 'Detail Berita — SIDULISA'}</title>
         {berita && <meta name="description" content={berita.ringkasan} />}
       </Head>
 
@@ -263,7 +263,7 @@ export default function PublicBeritaDetail() {
 
       {/* Footer */}
       <footer className="border-t border-slate-200 bg-white py-6 text-center text-xs text-slate-500 font-medium">
-        &copy; {new Date().getFullYear()} SIDUKTAG. Sistem Informasi Kependudukan & Geotagging.
+        &copy; {new Date().getFullYear()} SIDULISA. Sistem Informasi Penduduk Lingkungan Saba.
       </footer>
     </div>
   )

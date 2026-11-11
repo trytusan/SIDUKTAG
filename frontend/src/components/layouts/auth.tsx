@@ -7,7 +7,7 @@ interface AuthLayoutProps {
   title?: string
 }
 
-export default function AuthLayout({ children, title = 'Autentikasi — SIDUKTAG' }: AuthLayoutProps) {
+export default function AuthLayout({ children, title = 'Autentikasi — SIDULISA' }: AuthLayoutProps) {
   return (
     <div className="relative min-h-screen bg-slate-50 text-slate-800 flex items-center justify-center p-4 selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
