@@ -32,7 +32,7 @@ export default function Navbar() {
         setActiveNav('panduan')
         return
       }
-      if (hash === '#profil-desa') {
+      if (hash === '#profil-wilayah') {
         setActiveNav('profil')
         return
       }
@@ -40,7 +40,7 @@ export default function Navbar() {
       // Scroll spy on homepage
       if (router.pathname === '/' || router.pathname === '/landing') {
         const panduanEl = document.getElementById('panduan-layanan')
-        const profilEl = document.getElementById('profil-desa')
+        const profilEl = document.getElementById('profil-wilayah')
 
         if (panduanEl && profilEl) {
           const scrollY = window.scrollY + 180
@@ -118,7 +118,7 @@ export default function Navbar() {
             Panduan Alur
           </Link>
           <Link
-            href="/#profil-desa"
+            href="/#profil-wilayah"
             onClick={() => setActiveNav('profil')}
             className={getDesktopClass('profil')}
           >
@@ -217,7 +217,7 @@ export default function Navbar() {
               Panduan Alur
             </Link>
             <Link
-              href="/#profil-desa"
+              href="/#profil-wilayah"
               onClick={() => {
                 setActiveNav('profil')
                 setMobileMenuOpen(false)

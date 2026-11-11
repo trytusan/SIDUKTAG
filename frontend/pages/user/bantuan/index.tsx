@@ -36,7 +36,7 @@ export default function UserBantuanIndex() {
     <UserLayout pageTitle="Bantuan Sosial" subtitle="Status penerimaan program bantuan sosial">
       <PageHeader
         title="Daftar Bantuan Sosial"
-        description="Daftar program bantuan sosial yang Anda terima atau terdaftar melalui Pemerintah Desa"
+        description="Daftar program bantuan sosial yang Anda terima atau terdaftar melalui Pengurus Lingkungan Saba"
       />
 
       <div className="mb-5 rounded-2xl border border-emerald-200/80 bg-emerald-50/60 p-4 text-xs text-emerald-900 flex items-start gap-3 shadow-xs">
@@ -46,7 +46,7 @@ export default function UserBantuanIndex() {
         <div className="space-y-0.5">
           <p className="font-bold text-emerald-950">Informasi Penerima Bantuan</p>
           <p className="text-emerald-800/90 leading-relaxed">
-            Penetapan dan penyaluran bantuan sosial ditentukan langsung oleh Pemerintah Desa berdasarkan hasil musyawarah dan verifikasi data terpadu. Warga dapat memantau status keikutsertaan bantuan yang terdaftar pada tabel di bawah.
+            Penetapan dan penyaluran bantuan sosial ditentukan langsung oleh Pengurus Lingkungan Saba berdasarkan hasil musyawarah dan verifikasi data terpadu. Warga dapat memantau status keikutsertaan bantuan yang terdaftar pada tabel di bawah.
           </p>
         </div>
       </div>
@@ -98,7 +98,7 @@ export default function UserBantuanIndex() {
               },
             ]}
             data={data?.data || []}
-            emptyMessage="Anda belum terdaftar dalam program bantuan sosial desa."
+            emptyMessage="Anda belum terdaftar dalam program bantuan sosial Lingkungan Saba."
           />
 
           {data && (

@@ -16,7 +16,7 @@ const PetaWargaView = dynamic(
       <div className="flex h-[620px] w-full items-center justify-center rounded-3xl bg-slate-100 border border-slate-200">
         <div className="flex flex-col items-center gap-3 text-slate-500">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent"></div>
-          <span className="text-xs font-semibold">Memuat Peta Spasial Desa...</span>
+          <span className="text-xs font-semibold">Memuat Peta Spasial Lingkungan Saba...</span>
         </div>
       </div>
     ),
@@ -66,10 +66,10 @@ export default function PublicPetaPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-col justify-between selection:bg-emerald-100 selection:text-emerald-900">
       <Head>
-        <title>Peta Wilayah &amp; Fasilitas Desa — SIDULISA</title>
+        <title>Peta Wilayah &amp; Fasilitas Lingkungan Saba — SIDULISA</title>
         <meta
           name="description"
-          content="Visualisasi pemetaan geospasial sebaran pemukiman warga desa dan lokasi sarana fasilitas umum secara interaktif dan transparan."
+          content="Visualisasi pemetaan geospasial sebaran pemukiman warga dan lokasi sarana fasilitas umum Lingkungan Saba secara interaktif dan transparan."
         />
       </Head>
 
@@ -103,13 +103,13 @@ export default function PublicPetaPage() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
-              Pemetaan Geospasial Wilayah Desa
+              Pemetaan Geospasial Wilayah Lingkungan Saba
             </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Peta Wilayah &amp; Fasilitas Desa
+              Peta Wilayah &amp; Fasilitas Lingkungan Saba
             </h1>
             <p className="mt-2 text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
-              Visualisasi persebaran pemukiman penduduk desa serta lokasi fasilitas umum secara interaktif, transparan, dan akurat.
+              Visualisasi persebaran pemukiman penduduk serta lokasi fasilitas umum Lingkungan Saba secara interaktif, transparan, dan akurat.
             </p>
           </div>
 
@@ -190,7 +190,7 @@ export default function PublicPetaPage() {
           <div className="w-full lg:w-96 flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-xs space-y-4">
             <div>
               <div className="flex items-center justify-between">
-                <h3 className="text-base font-bold text-slate-900">Tempat Umum Desa</h3>
+                <h3 className="text-base font-bold text-slate-900">Tempat Umum Lingkungan Saba</h3>
                 <span className="rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold">
                   {filteredTempat.length} Fasilitas
                 </span>

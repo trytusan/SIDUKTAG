@@ -24,7 +24,7 @@ export default function HeroSection() {
       </h1>
 
       <p className="mt-6 max-w-2xl text-base text-slate-600 sm:text-lg leading-relaxed">
-        Platform terpadu untuk pendataan warga desa, pemetaan lokasi rumah (geotagging), pengajuan surat keterangan daring, serta transparansi penyaluran bantuan sosial.
+        Platform terpadu untuk pendataan warga Lingkungan Saba, pemetaan lokasi rumah (geotagging), pengajuan surat keterangan daring, serta transparansi penyaluran bantuan sosial.
       </p>
 
       <div className="mt-10 flex flex-wrap items-center justify-center gap-4">

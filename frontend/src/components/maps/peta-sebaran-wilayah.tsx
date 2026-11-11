@@ -28,8 +28,8 @@ export default function PetaSebaranWilayah({
   const [showFamilyLines, setShowFamilyLines] = useState<boolean>(true)
   const [activeKkId, setActiveKkId] = useState<string | null>(null)
 
-  // Center around Desa Bungkulan, Sawan, Buleleng, Bali
-  const defaultCenter: [number, number] = [-8.0781358, 115.1536173]
+  // Center around Lingkungan Saba, Penatih, Denpasar Timur, Bali
+  const defaultCenter: [number, number] = [-8.623347, 115.240787]
 
   // Initialize Map
   useEffect(() => {
@@ -416,7 +416,7 @@ export default function PetaSebaranWilayah({
             ${item.nama_wilayah}
           </h4>
           <p style="font-size: 11px; color: #475569; margin: 0 0 8px 0; line-height: 1.4;">
-            ${item.deskripsi || 'Fasilitas / Wilayah Administrasi Desa.'}
+            ${item.deskripsi || 'Fasilitas / Wilayah Lingkungan Saba.'}
           </p>
           <div style="background: #f8fafc; border-radius: 8px; padding: 6px 8px; font-size: 10px; color: #334155; margin-bottom: 8px; border: 1px solid #e2e8f0;">
             <div><strong>Kepala / Penanggung Jawab:</strong> ${item.kepala_wilayah}</div>

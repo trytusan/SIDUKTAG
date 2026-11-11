@@ -49,7 +49,7 @@ class BantuanController extends Controller
     {
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'message' => 'Warga tidak dapat mengajukan atau menambahkan bantuan sosial secara mandiri. Penetapan penerima dilakukan oleh Pemerintah Desa.'
+                'message' => 'Warga tidak dapat mengajukan atau menambahkan bantuan sosial secara mandiri. Penetapan penerima dilakukan oleh Pengurus Lingkungan Saba.'
             ], 403);
         }
 

@@ -49,8 +49,8 @@ export default function PetaWargaView({
   const [showWarga, setShowWarga] = useState(true)
   const [showTempatUmum, setShowTempatUmum] = useState(true)
 
-  // Default coordinate center (Desa Bungkulan, Sawan, Buleleng, Bali)
-  const defaultCenter: [number, number] = [-8.0781358, 115.1536173]
+  // Default coordinate center (Lingkungan Saba, Penatih, Denpasar Timur, Bali)
+  const defaultCenter: [number, number] = [-8.623347, 115.240787]
 
   // Initialize Leaflet Map
   useEffect(() => {

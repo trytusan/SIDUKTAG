@@ -287,7 +287,7 @@ export default function AdminPendudukEdit() {
                   </svg>
                   <div>
                     <span className="font-semibold text-sky-950">Ketentuan Kartu Keluarga Induk: </span>
-                    Untuk status <span className="font-bold text-sky-900">&quot;{formData.status_dalam_keluarga}&quot;</span>, nomor KK wajib menginduk ke Kartu Keluarga yang sudah terdaftar di Desa Bungkulan.
+                    Untuk status <span className="font-bold text-sky-900">&quot;{formData.status_dalam_keluarga}&quot;</span>, nomor KK wajib menginduk ke Kartu Keluarga yang sudah terdaftar di Lingkungan Saba.
                   </div>
                 </div>
 
@@ -300,7 +300,7 @@ export default function AdminPendudukEdit() {
                     onClick={() => setInputModeKk(inputModeKk === 'select' ? 'manual' : 'select')}
                     className="text-xs text-emerald-600 hover:text-emerald-700 underline font-medium transition"
                   >
-                    {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Dropdown KK Desa'}
+                    {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Dropdown KK Lingkungan Saba'}
                   </button>
                 </div>
 
@@ -310,10 +310,10 @@ export default function AdminPendudukEdit() {
                       name="nomor_kk"
                       value={formData.nomor_kk}
                       onChange={handleChange}
-                      placeholder={loadingKk ? 'Memuat daftar KK desa...' : '-- Pilih Nomor KK & Kepala Keluarga --'}
+                      placeholder={loadingKk ? 'Memuat daftar KK Lingkungan Saba...' : '-- Pilih Nomor KK & Kepala Keluarga --'}
                       options={kkOptions.map((kk) => ({
                         value: kk.nomor_kk,
-                        label: `${kk.nomor_kk} — Kel. ${kk.nama_kepala_keluarga || 'Belum Diatur'} (${kk.alamat_keluarga || 'Desa Bungkulan'})`,
+                        label: `${kk.nomor_kk} — Kel. ${kk.nama_kepala_keluarga || 'Belum Diatur'} (${kk.alamat_keluarga || 'Lingkungan Saba'})`,
                       }))}
                       required
                       error={validationErrors.nomor_kk?.[0]}
@@ -568,7 +568,7 @@ export default function AdminPendudukEdit() {
                     name="nomor_surat_tanda_lapor"
                     value={formData.nomor_surat_tanda_lapor}
                     onChange={handleChange}
-                    placeholder="Contoh: 470/123/Desa/2026"
+                    placeholder="Contoh: 470/123/Saba/2026"
                     error={validationErrors.nomor_surat_tanda_lapor?.[0]}
                   />
                 </div>

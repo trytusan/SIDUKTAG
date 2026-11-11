@@ -133,10 +133,10 @@ export default function AdminPengajuanSuratCetak() {
 
         <div className="mt-14 flex justify-end text-xs sm:text-sm text-center">
           <div className="w-56 space-y-1">
-            <p>Dikeluarkan di: SIDULISA</p>
+            <p>Dikeluarkan di: Saba Penatih</p>
             <p className="pb-16">Pada tanggal: {surat.tanggal_pengesahan || surat.tanggal_pengajuan}</p>
-            <p className="font-bold underline text-slate-950">KEPALA DESA / LURAH</p>
-            <p className="text-[10px] text-slate-500">NIP. 19850101 201001 1 001</p>
+            <p className="font-bold underline text-slate-950">KEPALA LINGKUNGAN SABA</p>
+            <p className="text-[11px] text-slate-600 font-medium">Kelian Banjar Saba Penatih</p>
           </div>
         </div>
       </div>

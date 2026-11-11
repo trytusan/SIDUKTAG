@@ -244,7 +244,7 @@ export default function OnboardingStep2() {
                     name="nomor_surat_tanda_lapor"
                     value={formData.nomor_surat_tanda_lapor}
                     onChange={handleChange}
-                    placeholder="Contoh: 470/123/Desa/2026"
+                    placeholder="Contoh: 470/123/Saba/2026"
                     error={validationErrors.nomor_surat_tanda_lapor?.[0]}
                   />
                 </div>

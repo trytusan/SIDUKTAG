@@ -13,7 +13,7 @@ export default function FeaturesSection() {
           </div>
 
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl lg:text-4xl leading-snug">
-            Transformasi Digital Pelayanan &amp; Pendataan Desa
+            Transformasi Digital Pelayanan &amp; Pendataan Lingkungan Saba
           </h2>
 
           <div className="space-y-3.5 text-justify text-sm sm:text-base text-slate-600 leading-relaxed">
@@ -21,7 +21,7 @@ export default function FeaturesSection() {
               Sistem Informasi Penduduk Lingkungan Saba (SIDULISA) dikembangkan untuk mewujudkan tata kelola administrasi kependudukan yang modern, cepat, dan transparan. Melalui platform ini, pendataan warga tidak hanya mencakup identitas pokok keluarga, melainkan juga terintegrasi langsung dengan pemetaan koordinat geospasial lokasi tempat tinggal secara presisi.
             </p>
             <p>
-              Masyarakat dapat mengajukan beragam surat permohonan dan kebutuhan administrasi kependudukan secara mandiri kapan saja tanpa antre. Selain itu, pemerintah desa dapat mengelola penyaluran bantuan sosial secara adil, memantau perubahan demografi penduduk secara berkala, dan mempercepat respons penanganan kebutuhan warga di lapangan.
+              Masyarakat dapat mengajukan beragam surat permohonan dan kebutuhan administrasi kependudukan secara mandiri kapan saja tanpa antre. Selain itu, pengurus Lingkungan Saba dapat mengelola penyaluran bantuan sosial secara adil, memantau perubahan demografi penduduk secara berkala, dan mempercepat respons penanganan kebutuhan warga di lapangan.
             </p>
           </div>
 
@@ -87,7 +87,7 @@ export default function FeaturesSection() {
             <div className="group relative overflow-hidden rounded-2xl aspect-[4/3] w-full bg-slate-100 border border-slate-100">
               <img
                 src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1200&auto=format&fit=crop&q=80"
-                alt="Pemandangan Lingkungan Wilayah Desa"
+                alt="Pemandangan Lingkungan Saba"
                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
@@ -98,7 +98,7 @@ export default function FeaturesSection() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   </svg>
-                  Kawasan Wilayah Desa
+                  Kawasan Lingkungan Saba
                 </span>
                 <span className="text-[11px] font-semibold text-white bg-slate-950/70 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/10">
                   Harmoni &amp; Asri

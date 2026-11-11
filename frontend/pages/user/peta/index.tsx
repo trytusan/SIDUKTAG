@@ -15,7 +15,7 @@ const PetaWargaView = dynamic(
       <div className="flex h-[560px] w-full items-center justify-center rounded-3xl bg-slate-100 border border-slate-200">
         <div className="flex flex-col items-center gap-3 text-slate-400">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-500 border-t-transparent"></div>
-          <span className="text-xs font-semibold">Memuat Peta Spasial Desa...</span>
+          <span className="text-xs font-semibold">Memuat Peta Spasial Lingkungan Saba...</span>
         </div>
       </div>
     ),
@@ -66,7 +66,7 @@ export default function UserPetaPage() {
     <UserLayout
       title="Peta Wilayah & Fasilitas — SIDULISA"
       pageTitle="Peta Wilayah & Fasilitas"
-      subtitle="Visualisasi sebaran pemukiman warga dan lokasi fasilitas umum desa"
+      subtitle="Visualisasi sebaran pemukiman warga dan lokasi fasilitas umum Lingkungan Saba"
     >
       {/* Breadcrumb */}
       <nav className="flex mb-4" aria-label="Breadcrumb">
@@ -137,7 +137,7 @@ export default function UserPetaPage() {
         <div className="w-full lg:w-84 flex flex-col rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-4">
           <div>
             <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-slate-800">Tempat Umum Desa</h3>
+              <h3 className="text-base font-bold text-slate-800">Tempat Umum Lingkungan Saba</h3>
               <span className="rounded-full bg-emerald-100 text-emerald-800 px-2.5 py-0.5 text-[10px] font-bold">
                 {filteredTempat.length} Tempat
               </span>

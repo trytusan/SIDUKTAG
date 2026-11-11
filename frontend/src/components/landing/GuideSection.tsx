@@ -43,7 +43,7 @@ export default function GuideSection() {
     {
       step: '04',
       title: 'Pantau Status & Unduh Surat',
-      desc: 'Pantau verifikasi operator secara real-time. Jika selesai, unduh berkas digital resmi atau ambil dokumen fisik bertanda tangan di kantor desa.',
+      desc: 'Pantau verifikasi operator secara real-time. Jika selesai, unduh berkas digital resmi atau ambil dokumen fisik bertanda tangan di kantor / Balai Banjar Saba.',
       badge: 'Transparan & Resmi',
       badgeColor: 'bg-violet-100 text-violet-800 border-violet-200',
       icon: (
@@ -68,7 +68,7 @@ export default function GuideSection() {
           4 Langkah Mudah Pelayanan Mandiri Warga
         </h2>
         <p className="text-sm sm:text-base text-slate-600 leading-relaxed text-center">
-          Proses birokrasi kini lebih ringkas dan dapat diakses dari rumah melalui gawai smartphone maupun komputer tanpa harus mengantre panjang di kantor desa.
+          Proses birokrasi kini lebih ringkas dan dapat diakses dari rumah melalui gawai smartphone maupun komputer tanpa harus mengantre panjang di loket pelayanan.
         </p>
       </div>
 
@@ -124,7 +124,7 @@ export default function GuideSection() {
               Layanan Pendampingan untuk Warga Lansia &amp; Kebutuhan Khusus
             </h4>
             <p className="text-xs sm:text-sm text-amber-900/90 leading-relaxed text-justify">
-              Bagi warga lanjut usia, penyandang disabilitas, atau masyarakat yang mengalami kesulitan mengoperasikan ponsel secara mandiri, <strong>Operator Desa dan Perangkat RT</strong> siap membantu penginputan berkas dan pengajuan surat secara langsung di loket pelayanan kantor desa.
+              Bagi warga lanjut usia, penyandang disabilitas, atau masyarakat yang mengalami kesulitan mengoperasikan ponsel secara mandiri, <strong>Operator Lingkungan Saba dan Kelian Banjar</strong> siap membantu penginputan berkas dan pengajuan surat secara langsung di loket pelayanan Balai Banjar Saba.
             </p>
           </div>
           <Link

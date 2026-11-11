@@ -150,7 +150,7 @@
     </table>
 
     <div class="footer">
-        Dokumen ini dihasilkan secara otomatis oleh Sistem Desa Digital - &copy; {{ date('Y') }}
+        Dokumen ini dihasilkan secara otomatis oleh Sistem Informasi Penduduk Lingkungan Saba (SIDULISA) - &copy; {{ date('Y') }}
     </div>
 </body>
 

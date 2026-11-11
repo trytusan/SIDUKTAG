@@ -3,9 +3,10 @@
     <div class="mx-auto max-w-4xl bg-white p-10 shadow-sm print:shadow-none">
         {{-- Kop Surat (Opsional) --}}
         <div class="mb-8 border-b-4 border-double border-slate-900 pb-4 text-center">
-            <h2 class="text-xl font-bold uppercase tracking-widest text-slate-900">Pemerintah Kabupaten Garut</h2>
-            <h3 class="text-lg font-bold uppercase text-slate-800">Kecamatan Tarogong Kidul</h3>
-            <p class="text-sm italic text-slate-600">Alamat: Jl. Merdeka No. 10, Garut, Jawa Barat</p>
+            <h2 class="text-xl font-bold uppercase tracking-widest text-slate-900">Pemerintah Kota Denpasar</h2>
+            <h3 class="text-lg font-bold uppercase text-slate-800">Kecamatan Denpasar Timur — Kelurahan Penatih</h3>
+            <h4 class="text-base font-bold uppercase text-slate-700">Lingkungan Saba Penatih</h4>
+            <p class="text-sm italic text-slate-600">Sistem Informasi Penduduk Lingkungan Saba (SIDULISA)</p>
         </div>
 
         {{-- Judul & Nomor Surat --}}
@@ -29,7 +30,7 @@
                 </div>
                 <div class="flex">
                     <span class="inline-block w-48 font-medium">Alamat</span>
-                    <span>: {{ $surat->penduduk->alamat ?? 'Garut, Jawa Barat' }}</span>
+                    <span>: {{ $surat->penduduk->alamat_lengkap ?? ($surat->penduduk->alamat ?? 'Lingkungan Saba, Penatih') }}</span>
                 </div>
                 <div class="flex">
                     <span class="inline-block w-48 font-medium">Jenis Surat</span>
@@ -50,8 +51,8 @@
         {{-- Tanda Tangan --}}
         <div class="mt-20 flex justify-end">
             <div class="text-center">
-                <p class="text-sm text-slate-700">Garut, {{ $surat->tanggal_pengesahan ? \Carbon\Carbon::parse($surat->tanggal_pengesahan)->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</p>
-                <p class="mt-1 text-sm font-bold text-slate-800">An. Kepala Desa / Ketua Lingkungan</p>
+                <p class="text-sm text-slate-700">Denpasar, {{ $surat->tanggal_pengesahan ? \Carbon\Carbon::parse($surat->tanggal_pengesahan)->translatedFormat('d F Y') : now()->translatedFormat('d F Y') }}</p>
+                <p class="mt-1 text-sm font-bold text-slate-800">Kepala Lingkungan Saba / Kelian Banjar Saba Penatih</p>
                 
                 {{-- Area Tanda Tangan --}}
                 <div class="my-4 flex justify-center">
@@ -60,8 +61,8 @@
                     <div class="h-24 w-40 border-b border-dashed border-slate-200"></div>
                 </div>
 
-                <p class="font-bold text-slate-900 underline">Administrator Sistem</p>
-                <p class="text-xs text-slate-500 italic">NIP: 19880212 201212 1 002</p>
+                <p class="font-bold text-slate-900 underline">Kepala Lingkungan Saba</p>
+                <p class="text-xs text-slate-500 italic">Kelian Banjar Saba Penatih</p>
             </div>
         </div>
 

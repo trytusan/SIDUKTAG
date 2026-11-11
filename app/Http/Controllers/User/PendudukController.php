@@ -57,7 +57,7 @@ class PendudukController extends Controller
         }
 
         $messages = [
-            'nomor_kk.exists' => 'Nomor Kartu Keluarga (KK) belum terdaftar di sistem desa. Untuk status anggota keluarga, Nomor KK harus sudah didaftarkan terlebih dahulu oleh Kepala Keluarga.',
+            'nomor_kk.exists' => 'Nomor Kartu Keluarga (KK) belum terdaftar di sistem Lingkungan Saba. Untuk status anggota keluarga, Nomor KK harus sudah didaftarkan terlebih dahulu oleh Kepala Keluarga.',
             'status_dalam_keluarga.required' => 'Status hubungan dalam keluarga wajib dipilih.',
         ];
 

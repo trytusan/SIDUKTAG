@@ -3,7 +3,7 @@ import Link from 'next/link'
 
 export default function ProfileSection() {
   return (
-    <section id="profil-desa" className="mt-24 w-full text-left scroll-mt-24">
+    <section id="profil-wilayah" className="mt-24 w-full text-left scroll-mt-24">
       {/* Header Seksi */}
       <div className="flex flex-col items-center text-center max-w-3xl mx-auto space-y-3 mb-12">
         <div className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-1.5 text-xs font-bold text-emerald-800 shadow-xs">
@@ -14,7 +14,7 @@ export default function ProfileSection() {
           Mengenal Profil Wilayah &amp; Visi Pemerintahan Digital
         </h2>
         <p className="text-sm sm:text-base text-slate-600 leading-relaxed text-center">
-          Pemerintah desa berkomitmen mewujudkan transparansi data, kecepatan birokrasi, serta pemerataan kesejahteraan masyarakat melalui tata kelola kependudukan terintegrasi berbasis spasial georeferensi.
+          Pengurus Lingkungan Saba berkomitmen mewujudkan transparansi data, kecepatan birokrasi, serta pemerataan kesejahteraan masyarakat melalui tata kelola kependudukan terintegrasi berbasis spasial georeferensi.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export default function ProfileSection() {
             </p>
           </div>
           <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-emerald-700">
-            <span>Kecamatan &amp; Desa Terdata</span>
+            <span>Kecamatan &amp; Lingkungan Terdata</span>
             <span>Aktif</span>
           </div>
         </div>
@@ -49,7 +49,7 @@ export default function ProfileSection() {
             </div>
             <h3 className="text-base font-bold text-slate-900">Pemetaan Presisi</h3>
             <p className="text-xs text-slate-600 text-justify leading-relaxed">
-              Integrasi titik koordinat rumah warga pada peta spasial interaktif memudahkan verifikasi alamat faktual, zonasi bantuan sosial, serta perencanaan sarana prasarana desa.
+              Integrasi titik koordinat rumah warga pada peta spasial interaktif memudahkan verifikasi alamat faktual, zonasi bantuan sosial, serta perencanaan sarana prasarana Lingkungan Saba.
             </p>
           </div>
           <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-[11px] font-semibold text-sky-700">
@@ -102,7 +102,7 @@ export default function ProfileSection() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
           <div className="md:col-span-2 space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">Pusat Layanan Warga</span>
-            <h4 className="text-lg sm:text-xl font-bold">Kantor Pelayanan Administrasi Desa / Kelurahan</h4>
+            <h4 className="text-lg sm:text-xl font-bold">Kantor Pelayanan Administrasi Lingkungan Saba</h4>
             <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               Buka setiap hari kerja: <strong>Senin s.d. Jumat (08:00 - 15:30 WIB)</strong>. Pelayanan daring SIDULISA beroperasi <strong>24 jam</strong> dan permohonan akan diverifikasi pada jam kerja operasional.
             </p>

@@ -16,8 +16,8 @@
 <body>
     <div class="kop">
         <h2 style="margin:0">PEMERINTAH KOTA DENPASAR</h2>
-        <h3 style="margin:0">KECAMATAN DENPASAR TIMUR - DESA PENATIH</h3>
-        <h4 style="margin:0">BANJAR SABA PENATIH</h4>
+        <h3 style="margin:0">KECAMATAN DENPASAR TIMUR - KELURAHAN PENATIH</h3>
+        <h4 style="margin:0">LINGKUNGAN SABA / BANJAR SABA PENATIH</h4>
         <p style="margin:5px 0; font-size:11px;">Sistem Informasi Penduduk Lingkungan Saba (SIDULISA)</p>
     </div>
 

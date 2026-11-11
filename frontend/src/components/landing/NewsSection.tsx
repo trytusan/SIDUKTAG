@@ -38,10 +38,10 @@ export default function NewsSection({ isAdmin = false }: NewsSectionProps) {
             Publikasi Informasi Warga
           </div>
           <h2 className="text-2xl font-extrabold tracking-tight text-slate-900 sm:text-3xl">
-            Kabar & Pengumuman Desa Terkini
+            Kabar & Pengumuman Lingkungan Saba Terkini
           </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Informasi agenda kegiatan, pengumuman kependudukan, dan bansos langsung dari sistem desa.
+            Informasi agenda kegiatan, pengumuman kependudukan, dan bansos langsung dari sistem Lingkungan Saba.
           </p>
         </div>
 
@@ -80,7 +80,7 @@ export default function NewsSection({ isAdmin = false }: NewsSectionProps) {
           </div>
           <h4 className="text-base font-bold text-slate-900">Belum Ada Pengumuman Terbaru</h4>
           <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
-            Pengumuman dan publikasi informasi desa akan ditampilkan di sini setelah dipublikasikan oleh administrator.
+            Pengumuman dan publikasi informasi Lingkungan Saba akan ditampilkan di sini setelah dipublikasikan oleh administrator.
           </p>
         </div>
       ) : (

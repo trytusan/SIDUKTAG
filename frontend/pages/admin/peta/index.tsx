@@ -65,7 +65,7 @@ export default function AdminPetaWilayahIndex() {
     <AdminLayout
       title="Peta Sebaran KK & Wilayah — SIDULISA"
       pageTitle="Peta Sebaran KK & Wilayah"
-      subtitle="Pemetaan geospasial hunian Kartu Keluarga dan fasilitas desa berbasis Geotagging"
+      subtitle="Pemetaan geospasial hunian Kartu Keluarga dan fasilitas Lingkungan Saba berbasis Geotagging"
     >
       {/* Breadcrumb */}
       <nav className="flex mb-4" aria-label="Breadcrumb">

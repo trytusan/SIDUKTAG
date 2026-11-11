@@ -239,7 +239,7 @@ export default function OnboardingStep1() {
                     <div>
                       <span className="font-bold text-sky-950">Wajib Menginduk ke KK Terdaftar:</span>
                       <p className="mt-0.5 text-sky-800 text-xs">
-                        Sebagai anggota keluarga (<span className="font-semibold">{formData.status_dalam_keluarga}</span>), Nomor KK Anda harus sudah didaftarkan terlebih dahulu di Desa Bungkulan oleh Kepala Keluarga.
+                        Sebagai anggota keluarga (<span className="font-semibold">{formData.status_dalam_keluarga}</span>), Nomor KK Anda harus sudah didaftarkan terlebih dahulu di Lingkungan Saba oleh Kepala Keluarga.
                       </p>
                     </div>
                   </div>
@@ -253,7 +253,7 @@ export default function OnboardingStep1() {
                       onClick={() => setInputModeKk(inputModeKk === 'select' ? 'manual' : 'select')}
                       className="text-xs text-emerald-700 hover:text-emerald-800 underline font-semibold transition"
                     >
-                      {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Dropdown KK Desa'}
+                      {inputModeKk === 'select' ? 'Ketik Manual No. KK' : 'Pilih dari Dropdown KK Lingkungan Saba'}
                     </button>
                   </div>
 
@@ -263,17 +263,17 @@ export default function OnboardingStep1() {
                         name="nomor_kk"
                         value={formData.nomor_kk}
                         onChange={handleChange}
-                        placeholder={loadingKk ? 'Memuat daftar KK desa...' : '-- Pilih Nomor KK & Kepala Keluarga --'}
+                        placeholder={loadingKk ? 'Memuat daftar KK Lingkungan Saba...' : '-- Pilih Nomor KK & Kepala Keluarga --'}
                         options={kkOptions.map((kk) => ({
                           value: kk.nomor_kk,
-                          label: `${kk.nomor_kk} — Kel. ${kk.nama_kepala_keluarga || 'Belum Diatur'} (${kk.alamat_keluarga || 'Desa Bungkulan'})`,
+                          label: `${kk.nomor_kk} — Kel. ${kk.nama_kepala_keluarga || 'Belum Diatur'} (${kk.alamat_keluarga || 'Lingkungan Saba'})`,
                         }))}
                         required
                         error={validationErrors.nomor_kk?.[0]}
                       />
                       {kkOptions.length === 0 && !loadingKk && (
                         <div className="mt-2 flex items-center justify-between rounded-xl border border-amber-200 bg-amber-50/80 p-2.5 text-xs text-amber-800">
-                          <span>Belum ada KK yang terdaftar di database desa atau belum termuat.</span>
+                          <span>Belum ada KK yang terdaftar di database Lingkungan Saba atau belum termuat.</span>
                           <button
                             type="button"
                             onClick={() => fetchKkOptions()}
@@ -290,7 +290,7 @@ export default function OnboardingStep1() {
                         name="nomor_kk"
                         value={formData.nomor_kk}
                         onChange={handleChange}
-                        placeholder="Ketik 16 digit Nomor KK yang sudah terdaftar di desa"
+                        placeholder="Ketik 16 digit Nomor KK yang sudah terdaftar di Lingkungan Saba"
                         maxLength={16}
                         required
                         error={validationErrors.nomor_kk?.[0]}

@@ -8,8 +8,8 @@ interface MapPickerProps {
   height?: number
 }
 
-const DEFAULT_VILLAGE_LAT = -8.0781358
-const DEFAULT_VILLAGE_LNG = 115.1536173
+const DEFAULT_VILLAGE_LAT = -8.623347
+const DEFAULT_VILLAGE_LNG = 115.240787
 
 export default function FormMapPicker({
   latitude,
@@ -167,7 +167,7 @@ export default function FormMapPicker({
       latitude: DEFAULT_VILLAGE_LAT.toFixed(7),
       longitude: DEFAULT_VILLAGE_LNG.toFixed(7),
     })
-    setGpsMessage({ text: 'Marker dikembalikan ke pusat Banjar Dinas Dauh Munduk, Desa Bungkulan.', isError: false })
+    setGpsMessage({ text: 'Marker dikembalikan ke pusat Lingkungan Saba (Banjar Saba Penatih).', isError: false })
     setTimeout(() => setGpsMessage(null), 4000)
   }
 
@@ -180,12 +180,12 @@ export default function FormMapPicker({
             type="button"
             onClick={handleResetToVillageCenter}
             className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 hover:bg-slate-50 hover:text-slate-800 transition"
-            title="Arahkan kembali ke pusat wilayah desa"
+            title="Arahkan kembali ke pusat wilayah Lingkungan Saba"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
-            <span>Pusat Desa</span>
+            <span>Pusat Lingkungan</span>
           </button>
           <button
             type="button"

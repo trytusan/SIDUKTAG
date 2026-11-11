@@ -121,7 +121,7 @@
         <div class="header">
             <div class="logo-badge">S</div>
             <h1>SIDULISA</h1>
-            <p>Sistem Terintegrasi Kependudukan Desa</p>
+            <p>Sistem Informasi Penduduk Lingkungan Saba</p>
         </div>
 
         <!-- Body Content -->
@@ -139,7 +139,7 @@
 
             <!-- Warning Box -->
             <div class="warning-card">
-                <strong>Penting:</strong> Jangan berikan kode OTP ini kepada siapapun, termasuk pihak yang mengaku sebagai petugas desa atau admin sistem. Demi keamanan akun Anda, pastikan Anda hanya memasukkan kode ini pada halaman resmi portal SIDULISA.
+                <strong>Penting:</strong> Jangan berikan kode OTP ini kepada siapapun, termasuk pihak yang mengaku sebagai petugas Lingkungan Saba atau admin sistem. Demi keamanan akun Anda, pastikan Anda hanya memasukkan kode ini pada halaman resmi portal SIDULISA.
             </div>
 
             <div style="margin-top: 24px; font-size: 13px; color: #64748b; line-height: 1.5;">
@@ -150,7 +150,7 @@
         <!-- Footer -->
         <div class="footer">
             Email ini dikirim secara otomatis oleh <strong>SIDULISA</strong><br>
-            Banjar Dinas Dauh Munduk, Desa Bungkulan, Kec. Sawan, Kab. Buleleng, Bali.<br>
+            Banjar Saba, Kelurahan Penatih, Kec. Denpasar Timur, Kota Denpasar, Bali.<br>
             &copy; {{ date('Y') }} SIDULISA. Seluruh Hak Cipta Dilindungi.
         </div>
     </div>
