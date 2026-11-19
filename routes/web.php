@@ -31,57 +31,77 @@ Route::post('/api/otp/verify', [OtpController::class, 'verifyOtp'])->name('otp.v
 Route::post('/api/otp/reset-password', [OtpController::class, 'resetPassword'])->name('otp.reset');
 
 // Storage Fallback Route untuk Shared Hosting (Menangani akses file foto/dokumen jika symlink storage belum terpasang)
-Route::get('/storage/{path}', function ($path) {
+$serveStorageFile = function ($path) {
+    $filename = basename($path);
     $candidates = [
         storage_path('app/public/' . $path),
-        storage_path('app/' . $path),
-        storage_path('app/private/' . $path),
+        storage_path('app/public/dokumen-penduduk/' . $filename),
+        storage_path('app/public/foto-profil/' . $filename),
+        storage_path('app/public/akta-kematian/' . $filename),
         public_path('storage/' . $path),
+        public_path('storage/dokumen-penduduk/' . $filename),
+        public_path('storage/foto-profil/' . $filename),
+        base_path('storage/' . $path),
+        base_path('storage/dokumen-penduduk/' . $filename),
         base_path('storage/app/public/' . $path),
-        base_path('../storage/app/public/' . $path),
+        base_path('storage/app/public/dokumen-penduduk/' . $filename),
+        storage_path('app/' . $path),
+        storage_path('app/dokumen-penduduk/' . $filename),
+        storage_path('app/private/' . $path),
+        base_path('public_html/storage/' . $path),
+        base_path('public_html/storage/dokumen-penduduk/' . $filename),
+        base_path('../public_html/storage/' . $path),
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $path) : null,
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/dokumen-penduduk/' . $filename) : null,
     ];
 
     foreach ($candidates as $filePath) {
-        if (file_exists($filePath) && is_file($filePath)) {
+        if ($filePath && file_exists($filePath) && is_file($filePath)) {
             $mime = @mime_content_type($filePath) ?: 'application/octet-stream';
             return response()->file($filePath, [
                 'Content-Type' => $mime,
                 'Access-Control-Allow-Origin' => '*',
+                'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+                'Access-Control-Allow-Headers' => '*',
             ]);
         }
     }
 
-    // Pencarian cadangan berdasarkan nama file (basename)
-    $filename = basename($path);
-    $searchDirs = [
-        storage_path('app/public/dokumen-penduduk'),
-        storage_path('app/public/foto-profil'),
-        storage_path('app/public/akta-kematian'),
-        storage_path('app/public'),
-        storage_path('app/dokumen-penduduk'),
-        storage_path('app/private/dokumen-penduduk'),
-    ];
-
-    foreach ($searchDirs as $dir) {
-        $candidate = $dir . DIRECTORY_SEPARATOR . $filename;
-        if (file_exists($candidate) && is_file($candidate)) {
-            $mime = @mime_content_type($candidate) ?: 'application/octet-stream';
-            return response()->file($candidate, [
-                'Content-Type' => $mime,
-                'Access-Control-Allow-Origin' => '*',
-            ]);
-        }
+    // Pencarian rekursif jika belum ditemukan
+    $publicDir = storage_path('app/public');
+    if (file_exists($publicDir) && is_dir($publicDir)) {
+        try {
+            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($publicDir));
+            foreach ($iterator as $file) {
+                if ($file->isFile() && $file->getFilename() === $filename) {
+                    $candidate = $file->getPathname();
+                    $mime = @mime_content_type($candidate) ?: 'application/octet-stream';
+                    return response()->file($candidate, [
+                        'Content-Type' => $mime,
+                        'Access-Control-Allow-Origin' => '*',
+                    ]);
+                }
+            }
+        } catch (\Throwable $e) {}
     }
 
     abort(404, 'Berkas dokumen tidak ditemukan di server.');
-})->where('path', '.*');
+};
 
-// Auto-sync storage: otomatis menyalin semua berkas dari storage/app/public ke public_html/storage (agar web server bisa menyajikannya tanpa symlink)
+Route::get('/storage/{path}', $serveStorageFile)->where('path', '.*');
+Route::get('/api/storage-file/{path}', $serveStorageFile)->where('path', '.*');
+
+// Auto-sync storage: otomatis menyalin semua berkas dari storage/app/public ke folder publik
 Route::get('/sync-storage', function () {
     $srcRoot = storage_path('app/public');
-    $destRoot = base_path('storage');
+    $destTargets = [
+        public_path('storage'),
+        base_path('storage'),
+        base_path('public_html/storage'),
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage') : null,
+    ];
 
-    $sync = function ($src, $dest) use (&$sync) {
+    $syncDir = function ($src, $dest) use (&$syncDir) {
         if (!file_exists($dest)) {
             @mkdir($dest, 0775, true);
         }
@@ -93,7 +113,7 @@ Route::get('/sync-storage', function () {
             $destPath = $dest . DIRECTORY_SEPARATOR . $item;
             if (is_dir($srcPath)) {
                 if ($item !== 'app' && $item !== 'framework' && $item !== 'logs') {
-                    $count += $sync($srcPath, $destPath);
+                    $count += $syncDir($srcPath, $destPath);
                 }
             } elseif (is_file($srcPath)) {
                 @copy($srcPath, $destPath);
@@ -103,13 +123,21 @@ Route::get('/sync-storage', function () {
         return $count;
     };
 
-    $copied = $sync($srcRoot, $destRoot);
+    $totalCopied = 0;
+    $syncedTo = [];
+    foreach ($destTargets as $destRoot) {
+        if ($destRoot && $destRoot !== $srcRoot) {
+            $copied = $syncDir($srcRoot, $destRoot);
+            $totalCopied += $copied;
+            $syncedTo[] = $destRoot;
+        }
+    }
 
     return response()->json([
         'status' => 'success',
-        'message' => "Berhasil menyinkronkan {$copied} berkas ke public storage secara otomatis.",
+        'message' => "Berhasil menyinkronkan {$totalCopied} berkas ke folder storage publik.",
         'source' => $srcRoot,
-        'destination' => $destRoot,
+        'destinations' => $syncedTo,
     ]);
 });
 

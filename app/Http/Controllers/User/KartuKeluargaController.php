@@ -28,19 +28,38 @@ class KartuKeluargaController extends Controller
     {
         if (!$relativePath) return;
 
-        $source = storage_path('app/public/' . $relativePath);
-        $destPublic = public_path('storage/' . $relativePath);
-        $destBase = base_path('storage/' . $relativePath);
+        $sourceCandidates = [
+            storage_path('app/public/' . $relativePath),
+            public_path('storage/' . $relativePath),
+            storage_path('app/' . $relativePath),
+            base_path('storage/' . $relativePath),
+        ];
 
-        foreach ([$destPublic, $destBase] as $dest) {
-            if ($source === $dest) continue;
+        $source = null;
+        foreach ($sourceCandidates as $cand) {
+            if (file_exists($cand) && is_file($cand)) {
+                $source = $cand;
+                break;
+            }
+        }
+
+        if (!$source) return;
+
+        $destinations = [
+            public_path('storage/' . $relativePath),
+            base_path('storage/' . $relativePath),
+            storage_path('app/public/' . $relativePath),
+            base_path('public_html/storage/' . $relativePath),
+            isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $relativePath) : null,
+        ];
+
+        foreach ($destinations as $dest) {
+            if (!$dest || $source === $dest) continue;
             $destDir = dirname($dest);
             if (!file_exists($destDir)) {
                 @mkdir($destDir, 0775, true);
             }
-            if (file_exists($source) && is_file($source)) {
-                @copy($source, $dest);
-            }
+            @copy($source, $dest);
         }
     }
 
