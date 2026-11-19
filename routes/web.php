@@ -163,6 +163,23 @@ Route::get('/artisan/storage-link', function () {
     }
 });
 
+// Helper Artisan migrate untuk shared hosting cPanel / Hostinger / browser
+Route::get('/artisan/migrate', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        $output = \Illuminate\Support\Facades\Artisan::output();
+        return response()->json([
+            'status' => 'success',
+            'message' => $output ?: 'Migrasi database berhasil dijalankan.',
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ], 500);
+    }
+});
+
 Route::get('/sanctum/csrf-cookie', function () {
     return response()->json(['message' => 'CSRF cookie set', 'csrf_token' => csrf_token()]);
 });
