@@ -92,7 +92,7 @@ Route::get('/storage/{path}', $serveStorageFile)->where('path', '.*');
 Route::get('/api/storage-file/{path}', $serveStorageFile)->where('path', '.*');
 
 // Auto-sync storage: otomatis menyalin semua berkas dari storage/app/public ke folder publik
-Route::get('/sync-storage', function () {
+$syncStorageHandler = function () {
     $srcRoot = storage_path('app/public');
     $destTargets = [
         public_path('storage'),
@@ -137,12 +137,14 @@ Route::get('/sync-storage', function () {
         'status' => 'success',
         'message' => "Berhasil menyinkronkan {$totalCopied} berkas ke folder storage publik.",
         'source' => $srcRoot,
-        'destinations' => $syncedTo,
+        'destinations' => array_values(array_unique(array_filter($syncedTo))),
     ]);
-});
+};
+Route::get('/sync-storage', $syncStorageHandler);
+Route::get('/sync_storage', $syncStorageHandler);
 
 // Helper pengecekan dan perbaikan direktori storage di hosting
-Route::get('/debug-storage', function () {
+$debugStorageHandler = function () {
     $storagePublic = storage_path('app/public');
     $dokumenDir = storage_path('app/public/dokumen-penduduk');
     $fotoDir = storage_path('app/public/foto-profil');
@@ -168,14 +170,19 @@ Route::get('/debug-storage', function () {
         'dokumen_dir_writable' => is_writable($dokumenDir),
         'files_in_dokumen_penduduk' => array_values(array_diff($filesInDokumen, ['.', '..'])),
         'folders_in_storage_public' => array_values(array_diff($storageDirs, ['.', '..'])),
+        'public_path' => public_path(),
+        'base_path' => base_path(),
+        'document_root' => $_SERVER['DOCUMENT_ROOT'] ?? null,
         'public_storage_exists' => file_exists($publicStorageSymlink),
         'public_storage_is_link' => is_link($publicStorageSymlink),
         'public_storage_is_dir' => is_dir($publicStorageSymlink),
     ]);
-});
+};
+Route::get('/debug-storage', $debugStorageHandler);
+Route::get('/debug_storage', $debugStorageHandler);
 
 // Helper Artisan storage:link untuk shared hosting cPanel / Hostinger tanpa akses SSH terminal
-Route::get('/artisan/storage-link', function () {
+$storageLinkHandler = function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('storage:link');
         $output = \Illuminate\Support\Facades\Artisan::output();
@@ -189,7 +196,9 @@ Route::get('/artisan/storage-link', function () {
             'message' => $e->getMessage(),
         ], 500);
     }
-});
+};
+Route::get('/artisan/storage-link', $storageLinkHandler);
+Route::get('/artisan/storage_link', $storageLinkHandler);
 
 // Helper Artisan migrate untuk shared hosting cPanel / Hostinger / browser
 Route::get('/artisan/migrate', function () {
