@@ -108,6 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsProfileCompleted(completedVal)
       setLoading(false)
       saveCache(userObj, roleVal, completedVal)
+    } else if (res?.status === 'NEEDS_PASSWORD_SETUP') {
+      return res
     } else {
       await refreshUser()
     }

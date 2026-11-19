@@ -203,6 +203,15 @@ class PendudukController extends Controller
             $data['longitude'] = $validated['longitude'] ?? null;
             $data['is_profile_completed'] = true;
 
+            // Audit Trail (Pendaftaran Mandiri oleh Warga)
+            $userName = $user->name ?? ($data['nama_lengkap'] ?? 'User Mandiri');
+            $data['created_by_name'] = $userName . ' (User Mandiri)';
+            $data['created_by_role'] = 'user';
+            $data['updated_by_name'] = $userName . ' (User Mandiri)';
+            $data['updated_by_role'] = 'user';
+            $data['last_modified_source'] = 'User Mandiri (Registrasi Onboarding)';
+            $data['last_modified_at'] = now();
+
             if ($request->hasFile('foto_profil')) {
                 $data['foto_profil'] = $request->file('foto_profil')->store('foto-profil', 'public');
             }
@@ -379,6 +388,14 @@ class PendudukController extends Controller
         if (isset($validated['tanggal_lahir'])) {
             $validated['kategori_umur'] = $this->hitungKategoriUmur($validated['tanggal_lahir']);
         }
+
+        // Audit Trail (Pembaruan Profil oleh Warga Mandiri)
+        $userName = $user?->name ?? $penduduk->nama_lengkap;
+        $roleLabel = ($penduduk->status_dalam_keluarga === 'Kepala Keluarga') ? 'Kepala Keluarga' : 'User Mandiri';
+        $validated['updated_by_name'] = $userName . ' (' . $roleLabel . ')';
+        $validated['updated_by_role'] = 'user';
+        $validated['last_modified_source'] = 'User Mandiri (' . $userName . ')';
+        $validated['last_modified_at'] = now();
 
         $penduduk->update($validated);
         $this->mirrorFile($validated['foto_profil'] ?? null);

@@ -20,6 +20,9 @@ Route::middleware('guest')->group(function () {
 
     Route::get('/reset-password/{token}', [PasswordController::class, 'showResetForm'])->name('password.reset');
     Route::post('/reset-password', [PasswordController::class, 'reset'])->name('password.update');
+
+    // Aktivasi Akun Warga Baru (Set Password Awal yang Dibuat Admin)
+    Route::post('/api/auth/aktivasi-akun', [LoginController::class, 'aktivasiAkun'])->name('auth.aktivasi-akun');
 });
 
 // Autentikasi Kode OTP via Gmail SMTP (Dapat diakses Tamu maupun Pengguna yang sedang login)

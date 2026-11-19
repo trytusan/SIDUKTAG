@@ -14,6 +14,14 @@ export type RegisterPayload = {
   password_confirmation: string
 }
 
+export type AktivasiAkunPayload = {
+  nik: string
+  tanggal_lahir: string
+  nomor_kk: string
+  password: string
+  password_confirmation: string
+}
+
 export async function csrf(force = false) {
   const currentToken = getCsrfToken()
   if (currentToken && !force) {
@@ -51,6 +59,15 @@ export async function register(payload: RegisterPayload) {
   const token = await csrf()
   const body = token ? { ...payload, _token: token } : payload
   const res = await api.post('/register', body, {
+    headers: token ? { 'X-CSRF-TOKEN': token } : {},
+  })
+  return res.data
+}
+
+export async function aktivasiAkun(payload: AktivasiAkunPayload) {
+  const token = await csrf()
+  const body = token ? { ...payload, _token: token } : payload
+  const res = await api.post('/api/auth/aktivasi-akun', body, {
     headers: token ? { 'X-CSRF-TOKEN': token } : {},
   })
   return res.data

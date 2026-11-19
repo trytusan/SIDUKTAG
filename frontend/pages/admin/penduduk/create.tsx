@@ -75,6 +75,7 @@ export default function AdminPendudukCreate() {
     masa_berlaku: '',
     nomor_surat_tanda_lapor: '',
     nomor_telepon: '',
+    email: '',
     alamat_lengkap: '',
   })
   const [coords, setCoords] = useState({
@@ -557,12 +558,38 @@ export default function AdminPendudukCreate() {
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormInput
-                label="Nomor Telepon / HP"
+                label="Nomor Telepon / HP (Opsional)"
                 name="nomor_telepon"
                 value={formData.nomor_telepon}
                 onChange={handleChange}
                 placeholder="08xxxxxxxxxx"
+                error={validationErrors.nomor_telepon?.[0]}
               />
+
+              <FormInput
+                label="Email Warga (Opsional)"
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                placeholder="warga@email.com (opsional)"
+                helperText="Akun login dibuat otomatis. Jika kosong, sistem menggunakan NIK@sidulisa.id"
+                error={validationErrors.email?.[0]}
+              />
+            </div>
+
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 flex items-start gap-3">
+              <div className="rounded-xl bg-emerald-100 p-2 text-emerald-700 shrink-0">
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="text-xs">
+                <h4 className="font-bold text-emerald-900">Pembuatan Akun Pengguna Warga Otomatis</h4>
+                <p className="text-emerald-700 mt-0.5 leading-relaxed">
+                  Data warga yang ditambahkan akan otomatis dibuatkan akun pengguna tanpa kata sandi awal. Warga dapat mengaktifkan akun dan membuat kata sandi secara mandiri menggunakan NIK di halaman <strong>Aktivasi Akun</strong> saat pertama kali masuk sistem.
+                </p>
+              </div>
             </div>
 
             <FormTextarea

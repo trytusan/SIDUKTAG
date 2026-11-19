@@ -51,6 +51,12 @@ export interface Penduduk {
   kartuKeluarga?: KartuKeluarga | null
   bantuan_penerima?: BantuanPenerima[]
   bantuanPenerima?: BantuanPenerima[]
+  created_by_name?: string | null
+  created_by_role?: 'admin' | 'user' | 'kepala_keluarga' | string | null
+  updated_by_name?: string | null
+  updated_by_role?: 'admin' | 'user' | 'kepala_keluarga' | string | null
+  last_modified_source?: string | null
+  last_modified_at?: string | null
   created_at?: string
   updated_at?: string
 }

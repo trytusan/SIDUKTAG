@@ -121,7 +121,7 @@ export default function AdminDashboard() {
   return (
     <AdminLayout
       pageTitle="Dashboard Administrator"
-      subtitle="Ringkasan kependudukan dan aktivitas layanan desa/kelurahan"
+      subtitle="Ringkasan kependudukan dan aktivitas layanan Lingkungan Saba"
     >
       {/* Quick Action / Landing Page Return Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-2xl bg-white p-4 border border-slate-200 shadow-sm">
@@ -535,7 +535,7 @@ export default function AdminDashboard() {
                 </svg>
                 Jenis & Program Bantuan
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">Ragam jenis program bantuan yang aktif di desa</p>
+              <p className="text-xs text-slate-400 mt-0.5">Ragam jenis program bantuan yang aktif di Lingkungan Saba</p>
             </div>
             <Link
               href="/admin/jenis-bantuan"

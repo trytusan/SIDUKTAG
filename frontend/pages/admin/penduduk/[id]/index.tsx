@@ -60,6 +60,57 @@ export default function AdminPendudukDetail() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
+  const formatDateTime = (dateStr?: string | null) => {
+    if (!dateStr) return '-'
+    try {
+      const d = new Date(dateStr)
+      if (isNaN(d.getTime())) return dateStr
+      return (
+        d.toLocaleDateString('id-ID', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        }) + ' WITA'
+      )
+    } catch {
+      return dateStr
+    }
+  }
+
+  const getRoleBadge = (role?: string | null) => {
+    if (role === 'admin') {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-sky-200 bg-sky-50 px-2.5 py-0.5 text-xs font-bold text-sky-700">
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          Admin
+        </span>
+      )
+    }
+    if (role === 'kepala_keluarga') {
+      return (
+        <span className="inline-flex items-center gap-1 rounded-full border border-purple-200 bg-purple-50 px-2.5 py-0.5 text-xs font-bold text-purple-700">
+          <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          Kepala Keluarga
+        </span>
+      )
+    }
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs font-bold text-emerald-700">
+        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+        User Mandiri
+      </span>
+    )
+  }
+
   useEffect(() => {
     if (!id) return
     async function fetchDetail() {
@@ -218,6 +269,17 @@ export default function AdminPendudukDetail() {
                 </svg>
                 Terdaftar
               </div>
+            </div>
+
+            <div className="border-t border-slate-100 bg-slate-50/50 px-6 py-3.5 flex justify-between items-center text-xs">
+              <span className="text-slate-500 font-medium">Terakhir Diubah</span>
+              <span className="font-semibold text-slate-700 truncate max-w-[150px]" title={penduduk.updated_by_name || '-'}>
+                {penduduk.updated_by_role === 'admin'
+                  ? '🛡️ Admin'
+                  : penduduk.updated_by_role === 'kepala_keluarga'
+                  ? '👨‍👩‍👦 Kepala KK'
+                  : '👤 User Mandiri'}
+              </span>
             </div>
           </div>
 
@@ -640,6 +702,97 @@ export default function AdminPendudukDetail() {
                   />
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Card Audit Trail & Jejak Riwayat Perubahan Data */}
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 px-7 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <div className="rounded-2xl bg-emerald-50 p-2.5 text-emerald-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <h4 className="text-base font-bold text-slate-900">Riwayat & Jejak Perubahan Data</h4>
+                  <p className="text-xs text-slate-500">Transparansi sumber pembuat dan pengubah data warga</p>
+                </div>
+              </div>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600 self-start sm:self-auto">
+                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                Audit Trail Aktif
+              </span>
+            </div>
+
+            <div className="p-7 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* 1. Pembuat Data Pertama Kali */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Entri Data Awal
+                    </span>
+                    {getRoleBadge(penduduk.created_by_role || (penduduk.user_id ? 'user' : 'admin'))}
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-slate-500">Didaftarkan Oleh:</span>
+                    <p className="font-bold text-slate-800 text-sm mt-0.5">
+                      {penduduk.created_by_name || (penduduk.user_id ? 'User Mandiri (Registrasi Warga)' : 'Operator / Admin Lingkungan Saba')}
+                    </p>
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-slate-500">Waktu Pendaftaran:</span>
+                    <p className="font-medium text-slate-700 text-xs mt-0.5">
+                      {formatDateTime(penduduk.created_at)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* 2. Pengubah Data Terakhir */}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-5 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Pembaruan Terakhir
+                    </span>
+                    {getRoleBadge(penduduk.updated_by_role || (penduduk.last_modified_source?.includes('Admin') ? 'admin' : (penduduk.user_id ? 'user' : 'admin')))}
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-slate-500">Terakhir Diubah Oleh:</span>
+                    <p className="font-bold text-slate-800 text-sm mt-0.5">
+                      {penduduk.updated_by_name || penduduk.created_by_name || (penduduk.user_id ? 'User Mandiri (Warga)' : 'Operator / Admin Lingkungan Saba')}
+                    </p>
+                  </div>
+
+                  <div>
+                    <span className="text-xs text-slate-500">Sumber & Waktu Modifikasi:</span>
+                    <p className="font-semibold text-slate-800 text-xs mt-0.5">
+                      {penduduk.last_modified_source || (penduduk.updated_by_role === 'admin' ? 'Admin / Operator Lingkungan Saba' : 'User Mandiri')}
+                    </p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      {formatDateTime(penduduk.last_modified_at || penduduk.updated_at)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Penjelasan Status Perubahan */}
+              <div className="rounded-2xl border border-sky-100 bg-sky-50/70 p-4 flex items-start gap-3 text-xs text-sky-800">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-sky-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="leading-relaxed">
+                  <span className="font-bold text-sky-950">Informasi Verifikasi Data: </span>
+                  {penduduk.updated_by_role === 'admin'
+                    ? 'Data penduduk ini terakhir kali disunting atau diverifikasi oleh Administrator / Operator Lingkungan Saba melalui Dashboard Admin.'
+                    : penduduk.updated_by_role === 'kepala_keluarga'
+                    ? 'Data penduduk ini ditambahkan atau diperbarui oleh Kepala Keluarga yang menaungi susunan Kartu Keluarga warga ini.'
+                    : 'Data penduduk ini terakhir kali diperbarui secara mandiri langsung oleh warga yang bersangkutan melalui Portal Layanan Warga.'}
+                </div>
+              </div>
             </div>
           </div>
         </div>

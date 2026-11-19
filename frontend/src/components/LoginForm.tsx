@@ -23,6 +23,7 @@ export default function LoginForm() {
     router.prefetch('/admin/dashboard')
     router.prefetch('/user/dashboard')
     router.prefetch('/user/onboarding/step-1')
+    router.prefetch('/aktivasi-akun')
   }, [router])
 
   async function handleSubmit(e: React.FormEvent) {
@@ -32,6 +33,12 @@ export default function LoginForm() {
 
     try {
       const res = await login({ email, password, remember: remember ? 1 : 0 })
+      if (res?.status === 'NEEDS_PASSWORD_SETUP') {
+        const dest = res.redirect || `/aktivasi-akun?nik=${encodeURIComponent(res.nik || email)}`
+        router.push(dest)
+        return
+      }
+
       if (res?.role === 'admin' || res?.redirect === '/admin/dashboard') {
         router.replace('/admin/dashboard')
       } else if (res?.redirect) {
@@ -48,10 +55,11 @@ export default function LoginForm() {
       }
     } catch (err: any) {
       setError(
-        err?.response?.data?.message ||
+        err?.response?.data?.errors?.password?.[0] ||
         err?.response?.data?.errors?.email?.[0] ||
+        err?.response?.data?.message ||
         err?.message ||
-        'Login gagal. Periksa kembali email dan password Anda.'
+        'Login gagal. Periksa kembali NIK/email dan password Anda.'
       )
     } finally {
       setLoading(false)
@@ -66,9 +74,24 @@ export default function LoginForm() {
         </div>
       )}
 
+      <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-3.5 text-xs text-emerald-800 flex items-start gap-2.5">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-600 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div>
+          <span className="font-semibold text-emerald-900">Didaftarkan oleh Operator Lingkungan?</span>
+          <p className="mt-0.5 text-emerald-700">
+            Akun Anda belum memiliki kata sandi.{' '}
+            <Link href="/aktivasi-akun" className="font-bold underline hover:text-emerald-950">
+              Aktivasi Akun &amp; Buat Password di Sini &rarr;
+            </Link>
+          </p>
+        </div>
+      </div>
+
       <div>
         <label htmlFor="email" className="mb-2 block text-xs font-bold uppercase tracking-wider text-slate-700">
-          Email
+          NIK atau Email
         </label>
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
@@ -77,12 +100,12 @@ export default function LoginForm() {
             </svg>
           </span>
           <input
-            type="email"
+            type="text"
             id="email"
             name="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="nama@email.com"
+            placeholder="16 digit NIK atau nama@email.com"
             required
             className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 py-3 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
           />
@@ -106,7 +129,6 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            required
             className="w-full rounded-2xl border border-slate-300 bg-slate-50/60 py-3 pl-12 pr-4 text-sm text-slate-800 placeholder:text-slate-400 outline-none transition duration-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
           />
         </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Penduduk;
 use App\Models\KartuKeluarga;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -13,6 +14,8 @@ use App\Exports\PendudukExport;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class PendudukController extends Controller
 {
@@ -162,13 +165,46 @@ class PendudukController extends Controller
         }
         $validated['is_profile_completed'] = true;
 
-        // 6. Simpan Penduduk
+        // 6. Buat Akun User Otomatis untuk Warga (Tanpa Password Awal)
+        $nik = $validated['nik'];
+        $userEmail = !empty($request->email) ? trim(strtolower($request->email)) : ($nik . '@sidulisa.id');
+
+        $user = User::where('email', $userEmail)->first();
+        if (!$user) {
+            $user = User::create([
+                'name' => $validated['nama_lengkap'],
+                'email' => $userEmail,
+                'password' => Hash::make(Str::random(32)),
+                'telepon' => $validated['nomor_telepon'] ?? null,
+                'role' => 'user',
+                'is_active' => true,
+                'must_set_password' => true,
+            ]);
+        } else {
+            // Jika user sudah ada tapi belum punya password
+            if (!empty($validated['nomor_telepon']) && empty($user->telepon)) {
+                $user->update(['telepon' => $validated['nomor_telepon']]);
+            }
+        }
+        $validated['user_id'] = $user->id;
+
+        // 7. Audit Trail (Pencatatan Riwayat Pembuat Data)
+        $adminUser = $request->user();
+        $adminLabel = $adminUser ? ($adminUser->name . ' (' . ($adminUser->jabatan ?? 'Operator/Admin') . ')') : 'Admin Lingkungan Saba';
+        $validated['created_by_name'] = $adminLabel;
+        $validated['created_by_role'] = 'admin';
+        $validated['updated_by_name'] = $adminLabel;
+        $validated['updated_by_role'] = 'admin';
+        $validated['last_modified_source'] = 'Admin / Operator Lingkungan Saba';
+        $validated['last_modified_at'] = now();
+
+        // 8. Simpan Penduduk
         $penduduk = Penduduk::create($validated);
         $this->mirrorFile($validated['foto_profil'] ?? null);
         $this->mirrorFile($validated['dokumen_pendukung'] ?? null);
         $this->mirrorFile($validated['akta_kematian'] ?? null);
 
-        // 7. Sinkronisasi Jumlah Anggota
+        // 9. Sinkronisasi Jumlah Anggota
         $this->sinkronkanJumlahAnggota($request->nomor_kk);
 
         if ($request->wantsJson() || $request->is('api/*')) {
@@ -314,6 +350,14 @@ class PendudukController extends Controller
             $validated['kategori_umur'] = $this->hitungKategoriUmur($request->tanggal_lahir);
         }
 
+        // Audit Trail (Pencatatan Riwayat Pengubah Data oleh Admin)
+        $adminUser = $request->user();
+        $adminLabel = $adminUser ? ($adminUser->name . ' (' . ($adminUser->jabatan ?? 'Operator/Admin') . ')') : 'Admin Lingkungan Saba';
+        $validated['updated_by_name'] = $adminLabel;
+        $validated['updated_by_role'] = 'admin';
+        $validated['last_modified_source'] = 'Admin / Operator Lingkungan Saba';
+        $validated['last_modified_at'] = now();
+
         $penduduk->update($validated);
         $this->mirrorFile($validated['foto_profil'] ?? null);
         $this->mirrorFile($validated['dokumen_pendukung'] ?? null);
@@ -357,6 +401,7 @@ class PendudukController extends Controller
             'pekerjaan' => ['nullable', 'string', 'max:100'],
             'pendidikan_terakhir' => ['nullable', 'string', 'max:50'],
             'nomor_telepon' => ['nullable', 'string', 'max:20'],
+            'email' => ['nullable', 'email', 'max:255'],
             'alamat_lengkap' => ['nullable', 'string'],
             'status_kependudukan' => ['required', 'in:Tetap,Pendatang,Pendatang Sementara,Pindah,Meninggal'],
             'foto_profil' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -526,8 +571,7 @@ class PendudukController extends Controller
     }
     public function show(Request $request, int $id)
     {
-        $penduduk = Penduduk::with('kartuKeluarga')->findOrFail($id);
-        $penduduk = Penduduk::with(['kartuKeluarga', 'bantuanPenerima.bantuan'])->findOrFail($id);
+        $penduduk = Penduduk::with(['kartuKeluarga', 'bantuanPenerima.bantuan', 'user'])->findOrFail($id);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([

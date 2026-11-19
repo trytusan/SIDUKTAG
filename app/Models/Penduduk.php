@@ -48,6 +48,12 @@ class Penduduk extends Model
         'latitude',
         'longitude',
         'is_profile_completed',
+        'created_by_name',
+        'created_by_role',
+        'updated_by_name',
+        'updated_by_role',
+        'last_modified_source',
+        'last_modified_at',
     ];
 
     protected $casts = [
@@ -59,6 +65,7 @@ class Penduduk extends Model
         'latitude' => 'decimal:7',
         'longitude' => 'decimal:7',
         'is_profile_completed' => 'boolean',
+        'last_modified_at' => 'datetime',
     ];
 
     public function user(): BelongsTo

@@ -53,6 +53,8 @@ Route::prefix('user')->name('user.')->middleware(['auth', 'user'])->group(functi
 
         Route::prefix('kartu-keluarga')->name('kartu-keluarga.')->group(function () {
             Route::get('/', [KartuKeluargaController::class, 'index'])->name('index');
+                        Route::post('/anggota', [KartuKeluargaController::class, 'storeAnggota'])->name('store-anggota');
+            Route::delete('/anggota/{id}', [KartuKeluargaController::class, 'destroyAnggota'])->name('destroy-anggota');
             Route::get('/{id}', [KartuKeluargaController::class, 'show'])->name('show');
         });
 
