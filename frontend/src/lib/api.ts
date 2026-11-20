@@ -83,7 +83,8 @@ api.interceptors.response.use(
 export function getStorageUrl(path?: string | null): string {
   if (!path) return ''
   if (path.startsWith('http://') || path.startsWith('https://')) return path
-  return `${API_BASE_URL}/storage/${path.replace(/^\/+/, '')}`
+  const clean = path.replace(/^\/+/, '').replace(/^storage\//, '')
+  return `${API_BASE_URL}/storage/${clean}`
 }
 
 /**

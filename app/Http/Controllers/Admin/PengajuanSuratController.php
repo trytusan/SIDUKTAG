@@ -106,6 +106,7 @@ class PengajuanSuratController extends Controller
 
         if ($request->hasFile('dokumen_pendukung')) {
             $validated['dokumen_pendukung'] = $request->file('dokumen_pendukung')->store('dokumen-surat', 'public');
+            $this->mirrorFile($validated['dokumen_pendukung']);
         }
 
         $surat = PengajuanSurat::create($validated);
@@ -155,6 +156,7 @@ class PengajuanSuratController extends Controller
 
         if ($request->hasFile('file_hasil_surat')) {
             $validated['file_hasil_surat'] = $request->file('file_hasil_surat')->store('hasil-surat', 'public');
+            $this->mirrorFile($validated['file_hasil_surat']);
         }
 
         if ($validated['status'] === 'Selesai') {
@@ -204,5 +206,49 @@ class PengajuanSuratController extends Controller
 
         return redirect()->route('admin.pengajuan-surat.index')
             ->with('status', 'Pengajuan surat berhasil dihapus.');
+    }
+
+    /**
+     * Otomatis salin berkas dari storage/app/public ke public storage folder (kompatibilitas shared hosting)
+     */
+    private function mirrorFile(?string $relativePath): void
+    {
+        if (!$relativePath) return;
+
+        $sourceCandidates = [
+            storage_path('app/public/' . $relativePath),
+            public_path('storage/' . $relativePath),
+            storage_path('app/' . $relativePath),
+            base_path('storage/' . $relativePath),
+        ];
+
+        $source = null;
+        foreach ($sourceCandidates as $cand) {
+            if ($cand && file_exists($cand) && is_file($cand)) {
+                $source = $cand;
+                break;
+            }
+        }
+
+        if (!$source) return;
+
+        $destCandidates = [
+            public_path('storage/' . $relativePath),
+            base_path('storage/' . $relativePath),
+            base_path('public_html/storage/' . $relativePath),
+            base_path('../public_html/storage/' . $relativePath),
+            isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $relativePath) : null,
+        ];
+
+        foreach ($destCandidates as $dest) {
+            if (!$dest || $dest === $source) continue;
+            try {
+                $parent = dirname($dest);
+                if (!file_exists($parent)) {
+                    @mkdir($parent, 0775, true);
+                }
+                @copy($source, $dest);
+            } catch (\Throwable $e) {}
+        }
     }
 }

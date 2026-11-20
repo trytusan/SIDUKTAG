@@ -102,6 +102,7 @@ class PengajuanSuratController extends Controller
         if ($request->hasFile('dokumen_pendukung')) {
             $data['dokumen_pendukung'] = $request->file('dokumen_pendukung')
                 ->store('dokumen-surat', 'public');
+            $this->mirrorFile($data['dokumen_pendukung']);
         }
 
         $pengajuan = PengajuanSurat::create($data);
@@ -146,13 +147,75 @@ class PengajuanSuratController extends Controller
             return back()->with('error', 'File hasil surat belum tersedia.');
         }
 
-        if (!Storage::disk('public')->exists($surat->file_hasil_surat)) {
-            if ($request->wantsJson() || $request->is('api/*')) {
-                return response()->json(['message' => 'File tidak ditemukan di penyimpanan.'], 404);
+        $relativePath = ltrim($surat->file_hasil_surat, '/');
+        $filename = basename($relativePath);
+        $candidates = [
+            storage_path('app/public/' . $relativePath),
+            public_path('storage/' . $relativePath),
+            storage_path('app/public/hasil-surat/' . $filename),
+            public_path('storage/hasil-surat/' . $filename),
+            base_path('storage/' . $relativePath),
+            base_path('public_html/storage/' . $relativePath),
+            storage_path('app/' . $relativePath),
+        ];
+
+        foreach ($candidates as $cand) {
+            if ($cand && file_exists($cand) && is_file($cand)) {
+                return response()->download($cand, $filename);
             }
-            return back()->with('error', 'File hasil surat tidak ditemukan di penyimpanan.');
         }
 
-        return Storage::disk('public')->download($surat->file_hasil_surat);
+        if (Storage::disk('public')->exists($relativePath)) {
+            return Storage::disk('public')->download($relativePath);
+        }
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json(['message' => 'File tidak ditemukan di penyimpanan server.'], 404);
+        }
+        return back()->with('error', 'File hasil surat tidak ditemukan di penyimpanan server.');
+    }
+
+    /**
+     * Otomatis salin berkas dari storage/app/public ke public storage folder (kompatibilitas shared hosting)
+     */
+    private function mirrorFile(?string $relativePath): void
+    {
+        if (!$relativePath) return;
+
+        $sourceCandidates = [
+            storage_path('app/public/' . $relativePath),
+            public_path('storage/' . $relativePath),
+            storage_path('app/' . $relativePath),
+            base_path('storage/' . $relativePath),
+        ];
+
+        $source = null;
+        foreach ($sourceCandidates as $cand) {
+            if ($cand && file_exists($cand) && is_file($cand)) {
+                $source = $cand;
+                break;
+            }
+        }
+
+        if (!$source) return;
+
+        $destCandidates = [
+            public_path('storage/' . $relativePath),
+            base_path('storage/' . $relativePath),
+            base_path('public_html/storage/' . $relativePath),
+            base_path('../public_html/storage/' . $relativePath),
+            isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $relativePath) : null,
+        ];
+
+        foreach ($destCandidates as $dest) {
+            if (!$dest || $dest === $source) continue;
+            try {
+                $parent = dirname($dest);
+                if (!file_exists($parent)) {
+                    @mkdir($parent, 0775, true);
+                }
+                @copy($source, $dest);
+            } catch (\Throwable $e) {}
+        }
     }
 }

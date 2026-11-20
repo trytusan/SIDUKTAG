@@ -10,7 +10,7 @@ import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
 import ConfirmModal from '../../../../src/components/modal/Confirm'
 import { useAlert } from '../../../../src/context/AlertContext'
-import api from '../../../../src/lib/api'
+import api, { getStorageUrl } from '../../../../src/lib/api'
 import { PengajuanSurat } from '../../../../src/types'
 
 export default function AdminPengajuanSuratVerifikasi() {
@@ -126,6 +126,22 @@ export default function AdminPengajuanSuratVerifikasi() {
           <p>
             <span className="font-semibold text-slate-700">Keperluan:</span> {surat.keperluan}
           </p>
+          {surat.dokumen_pendukung && (
+            <div className="pt-2 border-t border-slate-200 mt-2">
+              <span className="font-semibold text-slate-700 block mb-1.5">Dokumen Lampiran Pemohon:</span>
+              <a
+                href={getStorageUrl(surat.dokumen_pendukung)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200 hover:bg-emerald-100 transition"
+              >
+                <svg className="h-3.5 w-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                </svg>
+                <span>Lihat Dokumen Pendukung Pemohon (Tab Baru)</span>
+              </a>
+            </div>
+          )}
         </div>
 
         <AlertError message={error} errors={validationErrors} />

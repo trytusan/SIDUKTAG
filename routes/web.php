@@ -32,57 +32,109 @@ Route::post('/api/otp/reset-password', [OtpController::class, 'resetPassword'])-
 
 // Storage Fallback Route untuk Shared Hosting (Menangani akses file foto/dokumen jika symlink storage belum terpasang)
 $serveStorageFile = function ($path) {
+    $path = preg_replace('#^storage/#', '', ltrim($path, '/'));
     $filename = basename($path);
     $candidates = [
         storage_path('app/public/' . $path),
+        public_path('storage/' . $path),
+        base_path('storage/' . $path),
+        base_path('public_html/storage/' . $path),
+        base_path('../public_html/storage/' . $path),
+        storage_path('app/' . $path),
+        storage_path('app/private/' . $path),
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $path) : null,
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/' . $path) : null,
+
+        // Folder spesifik berdasarkan nama file
+        storage_path('app/public/dokumen-surat/' . $filename),
+        storage_path('app/public/hasil-surat/' . $filename),
+        storage_path('app/public/surat/' . $filename),
         storage_path('app/public/dokumen-penduduk/' . $filename),
         storage_path('app/public/foto-profil/' . $filename),
         storage_path('app/public/akta-kematian/' . $filename),
-        public_path('storage/' . $path),
+        storage_path('app/public/formulir/' . $filename),
+        storage_path('app/public/lapor-diri/' . $filename),
+
+        public_path('storage/dokumen-surat/' . $filename),
+        public_path('storage/hasil-surat/' . $filename),
+        public_path('storage/surat/' . $filename),
         public_path('storage/dokumen-penduduk/' . $filename),
         public_path('storage/foto-profil/' . $filename),
-        base_path('storage/' . $path),
+        public_path('storage/akta-kematian/' . $filename),
+
+        base_path('storage/dokumen-surat/' . $filename),
+        base_path('storage/hasil-surat/' . $filename),
+        base_path('storage/surat/' . $filename),
         base_path('storage/dokumen-penduduk/' . $filename),
-        base_path('storage/app/public/' . $path),
-        base_path('storage/app/public/dokumen-penduduk/' . $filename),
-        storage_path('app/' . $path),
-        storage_path('app/dokumen-penduduk/' . $filename),
-        storage_path('app/private/' . $path),
-        base_path('public_html/storage/' . $path),
+
+        base_path('public_html/storage/dokumen-surat/' . $filename),
+        base_path('public_html/storage/hasil-surat/' . $filename),
+        base_path('public_html/storage/surat/' . $filename),
         base_path('public_html/storage/dokumen-penduduk/' . $filename),
-        base_path('../public_html/storage/' . $path),
-        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $path) : null,
+
+        storage_path('app/dokumen-surat/' . $filename),
+        storage_path('app/hasil-surat/' . $filename),
+        storage_path('app/surat/' . $filename),
+        storage_path('app/dokumen-penduduk/' . $filename),
+        storage_path('app/foto-profil/' . $filename),
+
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/dokumen-surat/' . $filename) : null,
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/hasil-surat/' . $filename) : null,
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/surat/' . $filename) : null,
         isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/dokumen-penduduk/' . $filename) : null,
     ];
 
+    $resolveMimeAndRespond = function ($filePath) {
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        $mimeMap = [
+            'pdf' => 'application/pdf',
+            'jpg' => 'image/jpeg',
+            'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'webp' => 'image/webp',
+            'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'doc' => 'application/msword',
+        ];
+        $mime = $mimeMap[$ext] ?? (@mime_content_type($filePath) ?: 'application/octet-stream');
+        $disposition = in_array($ext, ['pdf', 'jpg', 'jpeg', 'png', 'webp']) ? 'inline' : 'attachment';
+
+        return response()->file($filePath, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => $disposition . '; filename="' . basename($filePath) . '"',
+            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
+            'Access-Control-Allow-Headers' => '*',
+        ]);
+    };
+
     foreach ($candidates as $filePath) {
         if ($filePath && file_exists($filePath) && is_file($filePath)) {
-            $mime = @mime_content_type($filePath) ?: 'application/octet-stream';
-            return response()->file($filePath, [
-                'Content-Type' => $mime,
-                'Access-Control-Allow-Origin' => '*',
-                'Access-Control-Allow-Methods' => 'GET, HEAD, OPTIONS',
-                'Access-Control-Allow-Headers' => '*',
-            ]);
+            return $resolveMimeAndRespond($filePath);
         }
     }
 
     // Pencarian rekursif jika belum ditemukan
-    $publicDir = storage_path('app/public');
-    if (file_exists($publicDir) && is_dir($publicDir)) {
-        try {
-            $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($publicDir));
-            foreach ($iterator as $file) {
-                if ($file->isFile() && $file->getFilename() === $filename) {
-                    $candidate = $file->getPathname();
-                    $mime = @mime_content_type($candidate) ?: 'application/octet-stream';
-                    return response()->file($candidate, [
-                        'Content-Type' => $mime,
-                        'Access-Control-Allow-Origin' => '*',
-                    ]);
+    $searchRoots = [
+        storage_path('app/public'),
+        storage_path('app'),
+        public_path('storage'),
+        base_path('storage'),
+    ];
+
+    foreach ($searchRoots as $searchDir) {
+        if ($searchDir && file_exists($searchDir) && is_dir($searchDir)) {
+            try {
+                $iterator = new RecursiveIteratorIterator(
+                    new RecursiveDirectoryIterator($searchDir, RecursiveDirectoryIterator::SKIP_DOTS),
+                    RecursiveIteratorIterator::SELF_FIRST
+                );
+                foreach ($iterator as $file) {
+                    if ($file->isFile() && $file->getFilename() === $filename) {
+                        return $resolveMimeAndRespond($file->getPathname());
+                    }
                 }
-            }
-        } catch (\Throwable $e) {}
+            } catch (\Throwable $e) {}
+        }
     }
 
     abort(404, 'Berkas dokumen tidak ditemukan di server.');

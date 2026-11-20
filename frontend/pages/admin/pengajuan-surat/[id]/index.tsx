@@ -167,19 +167,30 @@ export default function AdminPengajuanSuratDetail() {
             <h3 className="text-base font-bold text-slate-900">Dokumen Lampiran Pemohon</h3>
             <p className="text-xs text-slate-500">Berkas pendukung yang diunggah oleh warga saat mengajukan surat</p>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-3">
               {dokumenPendukungUrl ? (
-                <a
-                  href={dokumenPendukungUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-100 w-full justify-center transition"
-                >
-                  <svg className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                  </svg>
-                  <span>Lihat Dokumen Pendukung (PDF/Foto)</span>
-                </a>
+                <>
+                  {/\.(jpg|jpeg|png|webp)($|\?)/i.test(dokumenPendukungUrl) && (
+                    <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 max-h-48 flex items-center justify-center p-2 group">
+                      <img
+                        src={dokumenPendukungUrl}
+                        alt="Dokumen Pendukung"
+                        className="max-h-44 object-contain rounded-xl transition duration-200 group-hover:scale-105"
+                      />
+                    </div>
+                  )}
+                  <a
+                    href={dokumenPendukungUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-xs font-bold text-slate-700 hover:bg-slate-100 w-full justify-center transition shadow-sm"
+                  >
+                    <svg className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                    </svg>
+                    <span>Buka Dokumen Pendukung (Tab Baru)</span>
+                  </a>
+                </>
               ) : (
                 <div className="rounded-2xl bg-slate-50 p-4 text-center text-xs text-slate-400 italic">
                   Tidak ada dokumen pendukung yang dilampirkan.
