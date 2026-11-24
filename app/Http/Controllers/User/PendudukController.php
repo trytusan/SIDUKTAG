@@ -338,7 +338,7 @@ class PendudukController extends Controller
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'penduduk' => $penduduk ? $penduduk->load('kartuKeluarga') : null,
+                'penduduk' => $penduduk ? $penduduk->load(['kartuKeluarga', 'dasawisma']) : null,
                 'user' => $user,
             ]);
         }

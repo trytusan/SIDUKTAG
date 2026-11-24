@@ -7,6 +7,7 @@ use App\Models\BantuanPenerima;
 use App\Models\Bantuan;
 use App\Models\Penduduk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Barryvdh\DomPDF\Facade\Pdf;
 
@@ -149,6 +150,8 @@ class BantuanController extends Controller
             'status_verifikasi' => ['nullable', 'string'],
             'tanggal_verifikasi' => ['nullable', 'date'],
             'tanggal_menerima' => ['nullable', 'date'],
+            'nomor_undangan' => ['nullable', 'string', 'max:100'],
+            'barcode_pengambilan' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
             'catatan' => ['nullable', 'string'],
             'catatan_operator' => ['nullable', 'string'],
         ]);
@@ -162,6 +165,11 @@ class BantuanController extends Controller
         }
         if ($validated['status_penerima'] === 'Selesai' && empty($validated['tanggal_menerima'])) {
             $validated['tanggal_menerima'] = now()->toDateString();
+        }
+
+        if ($request->hasFile('barcode_pengambilan')) {
+            $validated['barcode_pengambilan'] = $request->file('barcode_pengambilan')->store('bantuan', 'public');
+            $this->mirrorFile($validated['barcode_pengambilan']);
         }
 
         $penerima = BantuanPenerima::create($validated);
@@ -203,6 +211,12 @@ class BantuanController extends Controller
         $allPrograms = Bantuan::where('status_bantuan', 'Aktif')
             ->get(['id', 'nama_program', 'jenis_bantuan']);
 
+        $listProgramTerpilih = $bantuan->bantuan?->jenis_bantuan
+            ? Bantuan::where('jenis_bantuan', $bantuan->bantuan->jenis_bantuan)
+                ->where('status_bantuan', 'Aktif')
+                ->get(['id', 'nama_program', 'jenis_bantuan'])
+            : $allPrograms;
+
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'bantuan' => $bantuan,
@@ -243,6 +257,8 @@ class BantuanController extends Controller
             'status_verifikasi' => ['nullable', 'string'],
             'tanggal_verifikasi' => ['nullable', 'date'],
             'tanggal_menerima' => ['nullable', 'date'],
+            'nomor_undangan' => ['nullable', 'string', 'max:100'],
+            'barcode_pengambilan' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:4096'],
             'catatan' => ['nullable', 'string'],
             'catatan_operator' => ['nullable', 'string'],
         ]);
@@ -256,6 +272,14 @@ class BantuanController extends Controller
         }
         if ($validated['status_penerima'] === 'Selesai' && empty($validated['tanggal_menerima'])) {
             $validated['tanggal_menerima'] = now()->toDateString();
+        }
+
+        if ($request->hasFile('barcode_pengambilan')) {
+            if ($bantuan->barcode_pengambilan) {
+                Storage::disk('public')->delete($bantuan->barcode_pengambilan);
+            }
+            $validated['barcode_pengambilan'] = $request->file('barcode_pengambilan')->store('bantuan', 'public');
+            $this->mirrorFile($validated['barcode_pengambilan']);
         }
 
         $bantuan->update($validated);
@@ -275,6 +299,9 @@ class BantuanController extends Controller
     {
         // HAPUS DARI MODEL BantuanPenerima (BUKAN Bantuan)
         $penerima = BantuanPenerima::findOrFail($id);
+        if ($penerima->barcode_pengambilan) {
+            Storage::disk('public')->delete($penerima->barcode_pengambilan);
+        }
         $penerima->delete();
 
         if ($request->wantsJson() || $request->is('api/*')) {
@@ -284,5 +311,47 @@ class BantuanController extends Controller
         }
 
         return redirect()->route('admin.bantuan.index')->with('status', 'Data penerima bantuan berhasil dihapus.');
+    }
+
+    /**
+     * Otomatis salin berkas dari storage/app/public ke public storage folder (kompatibilitas shared hosting tanpa symlink)
+     */
+    private function mirrorFile(?string $relativePath): void
+    {
+        if (!$relativePath) return;
+
+        $sourceCandidates = [
+            storage_path('app/public/' . $relativePath),
+            public_path('storage/' . $relativePath),
+            storage_path('app/' . $relativePath),
+            base_path('storage/' . $relativePath),
+        ];
+
+        $source = null;
+        foreach ($sourceCandidates as $cand) {
+            if (file_exists($cand) && is_file($cand)) {
+                $source = $cand;
+                break;
+            }
+        }
+
+        if (!$source) return;
+
+        $destinations = [
+            public_path('storage/' . $relativePath),
+            base_path('storage/' . $relativePath),
+            storage_path('app/public/' . $relativePath),
+            base_path('public_html/storage/' . $relativePath),
+            isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/' . $relativePath) : null,
+        ];
+
+        foreach ($destinations as $dest) {
+            if (!$dest || $source === $dest) continue;
+            $destDir = dirname($dest);
+            if (!file_exists($destDir)) {
+                @mkdir($destDir, 0775, true);
+            }
+            @copy($source, $dest);
+        }
     }
 }

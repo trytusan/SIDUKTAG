@@ -72,9 +72,16 @@ export default function UserDashboard() {
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 p-6 sm:p-8 text-white shadow-lg">
         <div className="relative z-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
-              Nomor KK: {penduduk?.nomor_kk || '-'}
-            </span>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-block rounded-full bg-white/20 px-3 py-1 text-xs font-semibold backdrop-blur-sm">
+                Nomor KK: {penduduk?.nomor_kk || '-'}
+              </span>
+              {penduduk?.dasawisma && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-300 text-slate-900 font-bold px-3 py-1 text-xs shadow-xs">
+                  🌸 {penduduk.dasawisma.nama_dasawisma}
+                </span>
+              )}
+            </div>
             <h2 className="mt-2 text-2xl font-bold sm:text-3xl">
               Halo, {penduduk?.nama_lengkap || 'Warga'}!
             </h2>

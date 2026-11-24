@@ -34,6 +34,7 @@ interface KartuKeluargaOption {
 export default function AdminPendudukCreate() {
   const router = useRouter()
   const [kkOptions, setKkOptions] = useState<KartuKeluargaOption[]>([])
+  const [dasawismaList, setDasawismaList] = useState<{ id: number; nama_dasawisma: string }[]>([])
   const [loadingKk, setLoadingKk] = useState(false)
   const [inputModeKk, setInputModeKk] = useState<'select' | 'manual'>('select')
 
@@ -51,6 +52,11 @@ export default function AdminPendudukCreate() {
       }
     }
     fetchKk()
+
+    // Ambil daftar Dasawisma
+    api.get('/admin/dasawisma/list').then((res) => {
+      setDasawismaList(res.data || [])
+    }).catch((err) => console.error('Gagal mengambil daftar Dasawisma:', err))
   }, [])
   const [formData, setFormData] = useState({
     nama_lengkap: '',
@@ -76,6 +82,7 @@ export default function AdminPendudukCreate() {
     nomor_surat_tanda_lapor: '',
     nomor_telepon: '',
     email: '',
+    dasawisma_id: '',
     alamat_lengkap: '',
   })
   const [coords, setCoords] = useState({
@@ -566,6 +573,22 @@ export default function AdminPendudukCreate() {
                 error={validationErrors.nomor_telepon?.[0]}
               />
 
+              <FormSelect
+                label="Kelompok Dasawisma (Binaan PKK)"
+                name="dasawisma_id"
+                value={formData.dasawisma_id}
+                onChange={handleChange}
+                options={dasawismaList.map((d) => ({
+                  value: String(d.id),
+                  label: d.nama_dasawisma,
+                }))}
+                placeholder="-- Pilih Kelompok Dasawisma (Opsional) --"
+                helperText="Kelompok Dasawisma PKK binaan untuk warga/keluarga ini."
+                error={validationErrors.dasawisma_id?.[0]}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormInput
                 label="Email Warga (Opsional)"
                 type="email"

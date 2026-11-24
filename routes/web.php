@@ -46,6 +46,7 @@ $serveStorageFile = function ($path) {
         isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/' . $path) : null,
 
         // Folder spesifik berdasarkan nama file
+        storage_path('app/public/bantuan/' . $filename),
         storage_path('app/public/dokumen-surat/' . $filename),
         storage_path('app/public/hasil-surat/' . $filename),
         storage_path('app/public/surat/' . $filename),
@@ -55,6 +56,7 @@ $serveStorageFile = function ($path) {
         storage_path('app/public/formulir/' . $filename),
         storage_path('app/public/lapor-diri/' . $filename),
 
+        public_path('storage/bantuan/' . $filename),
         public_path('storage/dokumen-surat/' . $filename),
         public_path('storage/hasil-surat/' . $filename),
         public_path('storage/surat/' . $filename),
@@ -62,22 +64,26 @@ $serveStorageFile = function ($path) {
         public_path('storage/foto-profil/' . $filename),
         public_path('storage/akta-kematian/' . $filename),
 
+        base_path('storage/bantuan/' . $filename),
         base_path('storage/dokumen-surat/' . $filename),
         base_path('storage/hasil-surat/' . $filename),
         base_path('storage/surat/' . $filename),
         base_path('storage/dokumen-penduduk/' . $filename),
 
+        base_path('public_html/storage/bantuan/' . $filename),
         base_path('public_html/storage/dokumen-surat/' . $filename),
         base_path('public_html/storage/hasil-surat/' . $filename),
         base_path('public_html/storage/surat/' . $filename),
         base_path('public_html/storage/dokumen-penduduk/' . $filename),
 
+        storage_path('app/bantuan/' . $filename),
         storage_path('app/dokumen-surat/' . $filename),
         storage_path('app/hasil-surat/' . $filename),
         storage_path('app/surat/' . $filename),
         storage_path('app/dokumen-penduduk/' . $filename),
         storage_path('app/foto-profil/' . $filename),
 
+        isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/bantuan/' . $filename) : null,
         isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/dokumen-surat/' . $filename) : null,
         isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/hasil-surat/' . $filename) : null,
         isset($_SERVER['DOCUMENT_ROOT']) ? ($_SERVER['DOCUMENT_ROOT'] . '/storage/surat/' . $filename) : null,

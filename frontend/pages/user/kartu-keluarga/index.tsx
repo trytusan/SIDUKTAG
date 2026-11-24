@@ -189,6 +189,23 @@ export default function UserKartuKeluargaPage() {
               </p>
             </div>
             <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
+              <span className="text-xs text-slate-500">Kelompok Dasawisma (PKK)</span>
+              <div className="mt-1">
+                {penduduk?.dasawisma ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-200 px-3 py-1 text-xs font-bold text-indigo-700">
+                    🌸 {penduduk.dasawisma.nama_dasawisma}
+                    {penduduk.dasawisma.ketua_dasawisma && (
+                      <span className="font-normal text-slate-500">
+                        • Ketua: {penduduk.dasawisma.ketua_dasawisma}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-xs text-slate-400 italic">Belum dikelompokkan oleh pengurus lingkungan</span>
+                )}
+              </div>
+            </div>
+            <div className="rounded-2xl bg-slate-50 p-4 sm:col-span-2">
               <span className="text-xs text-slate-500">Alamat Tempat Tinggal</span>
               <p className="mt-1 font-semibold text-slate-800">
                 {kartuKeluarga?.alamat_keluarga || penduduk?.alamat_lengkap || '-'}

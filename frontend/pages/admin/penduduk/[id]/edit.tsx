@@ -43,6 +43,7 @@ export default function AdminPendudukEdit() {
   const [loadingInitial, setLoadingInitial] = useState(true)
 
   const [kkOptions, setKkOptions] = useState<KartuKeluargaOption[]>([])
+  const [dasawismaList, setDasawismaList] = useState<{ id: number; nama_dasawisma: string }[]>([])
   const [loadingKk, setLoadingKk] = useState(false)
   const [inputModeKk, setInputModeKk] = useState<'select' | 'manual'>('select')
 
@@ -69,6 +70,7 @@ export default function AdminPendudukEdit() {
     masa_berlaku: '',
     nomor_surat_tanda_lapor: '',
     nomor_telepon: '',
+    dasawisma_id: '',
     alamat_lengkap: '',
   })
   const [coords, setCoords] = useState({
@@ -106,6 +108,11 @@ export default function AdminPendudukEdit() {
         const res = await api.get('/admin/penduduk/' + id + '/edit')
         const p: Penduduk = res.data.penduduk
         setPenduduk(p)
+        if (res.data.listDasawisma) {
+          setDasawismaList(res.data.listDasawisma)
+        } else {
+          api.get('/admin/dasawisma/list').then((r) => setDasawismaList(r.data || []))
+        }
         if (p) {
           setFormData({
             nama_lengkap: p.nama_lengkap || '',
@@ -130,6 +137,7 @@ export default function AdminPendudukEdit() {
             masa_berlaku: p.masa_berlaku ? p.masa_berlaku.substring(0, 10) : '',
             nomor_surat_tanda_lapor: p.nomor_surat_tanda_lapor || '',
             nomor_telepon: p.nomor_telepon || '',
+            dasawisma_id: p.dasawisma_id ? String(p.dasawisma_id) : '',
             alamat_lengkap: p.alamat_lengkap || '',
           })
           if (p.latitude && p.longitude) {
@@ -629,6 +637,20 @@ export default function AdminPendudukEdit() {
                 name="nomor_telepon"
                 value={formData.nomor_telepon}
                 onChange={handleChange}
+              />
+
+              <FormSelect
+                label="Kelompok Dasawisma (Binaan PKK)"
+                name="dasawisma_id"
+                value={formData.dasawisma_id}
+                onChange={handleChange}
+                options={dasawismaList.map((d) => ({
+                  value: String(d.id),
+                  label: d.nama_dasawisma,
+                }))}
+                placeholder="-- Pilih Kelompok Dasawisma (Opsional) --"
+                helperText="Kelompok Dasawisma PKK binaan untuk warga/keluarga ini."
+                error={validationErrors.dasawisma_id?.[0]}
               />
             </div>
 

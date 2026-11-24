@@ -535,6 +535,16 @@ export default function AdminPendudukDetail() {
                   <p className="mt-1 font-semibold text-slate-800">{penduduk.nomor_kk}</p>
                 </div>
                 <div>
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Kelompok Dasawisma (PKK)</p>
+                  {penduduk.dasawisma ? (
+                    <span className="mt-1 inline-flex items-center gap-1.5 font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 px-2.5 py-1 rounded-xl text-xs">
+                      {penduduk.dasawisma.nama_dasawisma}
+                    </span>
+                  ) : (
+                    <p className="mt-1 text-slate-400 text-xs italic">Belum Dikelompokkan</p>
+                  )}
+                </div>
+                <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Jenis Kelamin</p>
                   <p className="mt-1 font-semibold text-slate-800">{penduduk.jenis_kelamin || '-'}</p>
                 </div>

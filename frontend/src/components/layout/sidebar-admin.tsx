@@ -65,6 +65,7 @@ export default function SidebarAdmin({ isOpen = false, onClose }: SidebarAdminPr
       children: [
         { label: 'Data Penduduk', href: '/admin/penduduk' },
         { label: 'Kartu Keluarga', href: '/admin/kartu-keluarga' },
+        { label: 'Kelola Dasawisma', href: '/admin/dasawisma' },
       ],
     },
     {

@@ -170,7 +170,7 @@ export default function UserPengaturanProfil() {
         )}
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-5">
-          <div className="rounded-2xl bg-slate-50 p-4 grid grid-cols-2 gap-4 text-xs">
+          <div className="rounded-2xl bg-slate-50 p-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
             <div>
               <span className="text-slate-400">NIK (Permanen)</span>
               <p className="font-bold text-slate-800 text-sm mt-0.5">{penduduk?.nik || '-'}</p>
@@ -178,6 +178,12 @@ export default function UserPengaturanProfil() {
             <div>
               <span className="text-slate-400">Nomor KK (Permanen)</span>
               <p className="font-bold text-slate-800 text-sm mt-0.5">{penduduk?.nomor_kk || '-'}</p>
+            </div>
+            <div>
+              <span className="text-slate-400">Kelompok Dasawisma (PKK)</span>
+              <p className="font-bold text-indigo-700 text-sm mt-0.5">
+                {penduduk?.dasawisma?.nama_dasawisma || 'Belum Dikelompokkan'}
+              </p>
             </div>
           </div>
 

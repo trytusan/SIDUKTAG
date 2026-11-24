@@ -1,3 +1,14 @@
+export interface Dasawisma {
+  id: number
+  nama_dasawisma: string
+  ketua_dasawisma?: string | null
+  nomor_telepon_ketua?: string | null
+  keterangan?: string | null
+  anggota_count?: number
+  created_at?: string
+  updated_at?: string
+}
+
 export interface User {
   id: number
   name: string
@@ -18,6 +29,8 @@ export interface Penduduk {
   nama_lengkap: string
   nik: string
   nomor_kk: string
+  dasawisma_id?: number | null
+  dasawisma?: Dasawisma | null
   nomor_ktp?: string | null
   tempat_lahir?: string | null
   tanggal_lahir?: string | null
@@ -137,6 +150,8 @@ export interface BantuanPenerima {
   status_penerima: 'Menunggu' | 'Diterima' | 'Ditolak' | 'Selesai'
   status_verifikasi?: 'Menunggu Verifikasi' | 'Terverifikasi' | 'Ditolak' | string | null
   tanggal_verifikasi?: string | null
+  nomor_undangan?: string | null
+  barcode_pengambilan?: string | null
   catatan?: string | null
   catatan_operator?: string | null
   bantuan?: Bantuan

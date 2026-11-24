@@ -5,12 +5,13 @@ import AdminLayout from '../../../../src/components/layouts/admin'
 import PageHeader from '../../../../src/components/ui/page-header'
 import FormSelect from '../../../../src/components/form/select'
 import FormInput from '../../../../src/components/form/input'
+import FormFile from '../../../../src/components/form/file'
 import FormTextarea from '../../../../src/components/form/textarea'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
 import ConfirmModal from '../../../../src/components/modal/Confirm'
 import { useAlert } from '../../../../src/context/AlertContext'
-import api from '../../../../src/lib/api'
+import api, { getStorageUrl } from '../../../../src/lib/api'
 import { Penduduk, Bantuan, BantuanPenerima } from '../../../../src/types'
 
 export default function AdminBantuanEdit() {
@@ -28,6 +29,9 @@ export default function AdminBantuanEdit() {
   const [statusVerifikasi, setStatusVerifikasi] = useState('Terverifikasi')
   const [tanggalVerifikasi, setTanggalVerifikasi] = useState('')
   const [tanggalMenerima, setTanggalMenerima] = useState('')
+  const [nomorUndangan, setNomorUndangan] = useState('')
+  const [barcodeFile, setBarcodeFile] = useState<File | null>(null)
+  const [currentBarcodeUrl, setCurrentBarcodeUrl] = useState<string | null>(null)
   const [catatan, setCatatan] = useState('')
   const [catatanOperator, setCatatanOperator] = useState('')
   const [submitting, setSubmitting] = useState(false)
@@ -51,6 +55,8 @@ export default function AdminBantuanEdit() {
           setStatusVerifikasi(bp.status_verifikasi || (bp.status_penerima === 'Diterima' || bp.status_penerima === 'Selesai' ? 'Terverifikasi' : 'Menunggu Verifikasi'))
           setTanggalVerifikasi(bp.tanggal_verifikasi ? bp.tanggal_verifikasi.substring(0, 10) : '')
           setTanggalMenerima(bp.tanggal_menerima ? bp.tanggal_menerima.substring(0, 10) : '')
+          setNomorUndangan(bp.nomor_undangan || '')
+          setCurrentBarcodeUrl(bp.barcode_pengambilan ? getStorageUrl(bp.barcode_pengambilan) : null)
           setCatatan(bp.catatan || '')
           setCatatanOperator(bp.catatan_operator || '')
         }
@@ -74,15 +80,21 @@ export default function AdminBantuanEdit() {
     setValidationErrors({})
 
     try {
-      await api.put('/admin/bantuan/' + id, {
-        penduduk_id: pendudukId,
-        bantuan_id: bantuanId,
-        status_penerima: statusPenerima,
-        status_verifikasi: statusVerifikasi,
-        tanggal_verifikasi: tanggalVerifikasi || null,
-        tanggal_menerima: tanggalMenerima || null,
-        catatan,
-        catatan_operator: catatanOperator,
+      const formData = new FormData()
+      formData.append('_method', 'PUT')
+      formData.append('penduduk_id', pendudukId)
+      formData.append('bantuan_id', bantuanId)
+      formData.append('status_penerima', statusPenerima)
+      formData.append('status_verifikasi', statusVerifikasi)
+      if (tanggalVerifikasi) formData.append('tanggal_verifikasi', tanggalVerifikasi)
+      if (tanggalMenerima) formData.append('tanggal_menerima', tanggalMenerima)
+      if (nomorUndangan) formData.append('nomor_undangan', nomorUndangan)
+      if (barcodeFile) formData.append('barcode_pengambilan', barcodeFile)
+      if (catatan) formData.append('catatan', catatan)
+      if (catatanOperator) formData.append('catatan_operator', catatanOperator)
+
+      await api.post('/admin/bantuan/' + id, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       })
 
       setShowConfirm(false)
@@ -234,6 +246,47 @@ export default function AdminBantuanEdit() {
               placeholder="Catatan penyerahan bantuan, pihak yang mengambil, atau nomor tanda terima..."
               error={validationErrors.catatan?.[0]}
             />
+          </div>
+
+          {/* Bagian Barcode & Dokumen Undangan Pengambilan */}
+          <div className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-4 space-y-4">
+            <div className="flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+              </svg>
+              <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-900">
+                Tahap 3: Surat Undangan & Barcode Pengambilan (Bantuan Top-Down)
+              </h4>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Untuk bantuan resmi dari pemerintah/Kemensos/PT Pos, unggah surat undangan atau barcode pengambilan agar warga dapat langsung melihat dan menunjukkan barcode di ponsel saat pengambilan bantuan.
+            </p>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormInput
+                label="Nomor Undangan / Kode Barcode"
+                name="nomor_undangan"
+                value={nomorUndangan}
+                onChange={(e) => setNomorUndangan(e.target.value)}
+                placeholder="Contoh: POS-2026-004521 / UND-019"
+                error={validationErrors.nomor_undangan?.[0]}
+                helperText="Opsional. Nomor unik barcode/undangan penyaluran"
+              />
+
+              <FormFile
+                label="Unggah Barcode / Surat Undangan"
+                name="barcode_pengambilan"
+                accept=".jpg,.jpeg,.png,.webp,.pdf"
+                currentFileUrl={currentBarcodeUrl}
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    setBarcodeFile(e.target.files[0])
+                  }
+                }}
+                error={validationErrors.barcode_pengambilan?.[0]}
+                helperText="Format: JPG, PNG, WEBP, atau PDF (maks. 4MB). Unggah file baru untuk memperbarui."
+              />
+            </div>
           </div>
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

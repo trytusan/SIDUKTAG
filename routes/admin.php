@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\BantuanController;
 use App\Http\Controllers\Admin\JenisBantuanController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\KartuKeluargaController;
+use App\Http\Controllers\Admin\DasawismaController;
 use App\Http\Controllers\Admin\JenisSuratController;
 use App\Http\Controllers\Admin\PendudukController;
 use App\Http\Controllers\Admin\PengajuanSuratController;
@@ -39,6 +40,16 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::get('/{id}/edit', [KartuKeluargaController::class, 'edit'])->name('edit');
         Route::put('/{id}', [KartuKeluargaController::class, 'update'])->name('update');
         Route::delete('/{id}', [KartuKeluargaController::class, 'destroy'])->name('destroy');
+    });
+
+    Route::prefix('dasawisma')->name('dasawisma.')->group(function () {
+        Route::get('/', [DasawismaController::class, 'index'])->name('index');
+        Route::get('/list', [DasawismaController::class, 'listAll'])->name('list');
+        Route::post('/', [DasawismaController::class, 'store'])->name('store');
+        Route::get('/{id}', [DasawismaController::class, 'show'])->name('show');
+        Route::put('/{id}', [DasawismaController::class, 'update'])->name('update');
+        Route::delete('/{id}', [DasawismaController::class, 'destroy'])->name('destroy');
+        Route::post('/{id}/assign-anggota', [DasawismaController::class, 'assignAnggota'])->name('assign');
     });
 
     Route::prefix('pengajuan-surat')->name('pengajuan-surat.')->group(function () {

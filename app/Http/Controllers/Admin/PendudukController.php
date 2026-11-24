@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Penduduk;
 use App\Models\KartuKeluarga;
+use App\Models\Dasawisma;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -427,6 +428,9 @@ class PendudukController extends Controller
             // GEOTAGGING FIELDS
             'latitude' => ['nullable', 'string', 'max:50'],
             'longitude' => ['nullable', 'string', 'max:50'],
+
+            // DASAWISMA
+            'dasawisma_id' => ['nullable', 'integer', 'exists:dasawisma,id'],
         ];
 
         // Jika bukan Kepala Keluarga, No KK harus sudah ada di tabel kartu_keluarga
@@ -489,7 +493,7 @@ class PendudukController extends Controller
     public function index(Request $request)
     {
         // 1. Inisialisasi Query dengan Eager Loading
-        $query = Penduduk::with('kartuKeluarga');
+        $query = Penduduk::with(['kartuKeluarga', 'dasawisma']);
 
         // 2. Filter Pencarian (Nama, NIK, No KK)
         $query->when($request->filled('search'), function ($q) use ($request) {
@@ -520,6 +524,10 @@ class PendudukController extends Controller
 
         $query->when($request->filled('status_dalam_keluarga'), function ($q) use ($request) {
             return $q->where('status_dalam_keluarga', $request->status_dalam_keluarga);
+        });
+
+        $query->when($request->filled('dasawisma_id'), function ($q) use ($request) {
+            return $q->where('dasawisma_id', $request->dasawisma_id);
         });
 
         $query->when($request->boolean('hanya_kepala_keluarga'), function ($q) {
@@ -565,13 +573,22 @@ class PendudukController extends Controller
         return view('admin.penduduk.index', compact('penduduk'));
     }
 
-    public function create(): View
+    public function create(Request $request)
     {
-        return view('admin.penduduk.create');
+        $listDasawisma = Dasawisma::orderBy('nama_dasawisma', 'asc')->get(['id', 'nama_dasawisma']);
+
+        if ($request->wantsJson() || $request->is('api/*')) {
+            return response()->json([
+                'listDasawisma' => $listDasawisma,
+            ]);
+        }
+
+        return view('admin.penduduk.create', compact('listDasawisma'));
     }
+
     public function show(Request $request, int $id)
     {
-        $penduduk = Penduduk::with(['kartuKeluarga', 'bantuanPenerima.bantuan', 'user'])->findOrFail($id);
+        $penduduk = Penduduk::with(['kartuKeluarga', 'dasawisma', 'bantuanPenerima.bantuan', 'user'])->findOrFail($id);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
@@ -584,15 +601,17 @@ class PendudukController extends Controller
 
     public function edit(Request $request, int $id)
     {
-        $penduduk = Penduduk::with('kartuKeluarga')->findOrFail($id);
+        $penduduk = Penduduk::with(['kartuKeluarga', 'dasawisma'])->findOrFail($id);
+        $listDasawisma = Dasawisma::orderBy('nama_dasawisma', 'asc')->get(['id', 'nama_dasawisma']);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
                 'penduduk' => $penduduk,
+                'listDasawisma' => $listDasawisma,
             ]);
         }
 
-        return view('admin.penduduk.edit', compact('penduduk'));
+        return view('admin.penduduk.edit', compact('penduduk', 'listDasawisma'));
     }
     public function destroy(Request $request, int $id)
     {

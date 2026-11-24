@@ -20,6 +20,7 @@ class Penduduk extends Model
         'nama_lengkap',
         'nik',
         'nomor_kk',
+        'dasawisma_id',
         'nomor_ktp',
         'tempat_lahir',
         'tanggal_lahir',
@@ -90,6 +91,11 @@ class Penduduk extends Model
     public function bantuanPenerima(): HasMany
     {
         return $this->hasMany(BantuanPenerima::class, 'penduduk_id');
+    }
+
+    public function dasawisma(): BelongsTo
+    {
+        return $this->belongsTo(Dasawisma::class, 'dasawisma_id');
     }
     protected function kategoriUmur(): Attribute
     {

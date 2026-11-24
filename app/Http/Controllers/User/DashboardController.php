@@ -13,7 +13,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $penduduk = $user->penduduk;
+        $penduduk = $user->penduduk?->load('dasawisma');
 
         $totalPengajuan = PengajuanSurat::where('user_id', $user->id)->count();
 

@@ -76,7 +76,7 @@ class KartuKeluargaController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
-        $penduduk = $user->penduduk;
+        $penduduk = $user->penduduk?->load('dasawisma');
         $nomorKk = $penduduk?->nomor_kk;
 
         // Eager load relasi anggota keluarga jika nomor KK tersedia
@@ -269,7 +269,7 @@ class KartuKeluargaController extends Controller
     public function show(Request $request, int $id)
     {
         $user = $request->user();
-        $penduduk = $user->penduduk;
+        $penduduk = $user->penduduk?->load('dasawisma');
         $kartuKeluarga = KartuKeluarga::with('anggota')->findOrFail($id);
 
         if ($penduduk && $kartuKeluarga->nomor_kk !== $penduduk->nomor_kk) {

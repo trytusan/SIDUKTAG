@@ -516,6 +516,11 @@ export default function AdminPendudukIndex() {
                       >
                         {item.status_dalam_keluarga || 'Anggota'}
                       </span>
+                      {item.dasawisma && (
+                        <span className="inline-flex items-center text-[10px] font-semibold text-indigo-700 bg-indigo-50 border border-indigo-200 px-1.5 py-0.5 rounded">
+                          {item.dasawisma.nama_dasawisma}
+                        </span>
+                      )}
                     </div>
                   </div>
                 ),

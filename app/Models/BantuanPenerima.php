@@ -14,12 +14,13 @@ class BantuanPenerima extends Model
 
     protected $fillable = [
         'bantuan_id',     // Menghubungkan ke tabel 'bantuan' (Master Program dari Admin)
-        'penduduk_id',    // Menghubungkan ke tabel 'penduduk' (Data User yang mengajukan)
+        'penduduk_id',    // Menghubungkan ke tabel 'penduduk' (Data User penerima bantuan)
         'tanggal_menerima',
-        'status_penerima', // Contoh: Menunggu, Diterima, Ditolak
         'status_penerima', // Contoh: Menunggu, Diterima, Ditolak, Selesai
         'status_verifikasi', // Menunggu Verifikasi, Terverifikasi, Ditolak
         'tanggal_verifikasi',
+        'nomor_undangan',      // Nomor / Kode barcode surat undangan pengambilan bansos
+        'barcode_pengambilan', // Berkas foto / scan / PDF barcode undangan bansos
         'catatan',
         'catatan_operator',
     ];
