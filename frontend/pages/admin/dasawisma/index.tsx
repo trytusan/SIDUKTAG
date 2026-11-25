@@ -19,6 +19,9 @@ export default function AdminDasawismaIndex() {
   const [data, setData] = useState<PaginatedResponse<Dasawisma> | null>(null)
   const [stats, setStats] = useState<{
     total_dasawisma: number
+    total_kk_terpetakan: number
+    total_kk_belum_terpetakan: number
+    total_kk_banjar: number
     total_warga_terpetakan: number
     total_warga_belum_terpetakan: number
   } | null>(null)
@@ -150,10 +153,10 @@ export default function AdminDasawismaIndex() {
   }
 
   return (
-    <AdminLayout pageTitle="Kelola Dasawisma" subtitle="Master data pengelompokan keluarga binaan PKK Lingkungan Saba">
+    <AdminLayout pageTitle="Kelola Dasawisma" subtitle="Master data pengelompokan 10 Kartu Keluarga binaan PKK Lingkungan Saba">
       <PageHeader
         title="Data Kelompok Dasawisma"
-        description="Kelola kelompok binaan PKK Banjar Saba untuk memudahkan pemantauan dan penyaluran program"
+        description="Kelola kelompok binaan PKK Banjar Saba (standar 10 KK per kelompok) untuk memudahkan pemantauan dan pelayanan warga"
         actions={[
           {
             label: 'Tambah Kelompok Dasawisma',
@@ -181,22 +184,22 @@ export default function AdminDasawismaIndex() {
           }
         />
         <CardStat
-          title="Warga Terpetakan"
-          value={stats ? `${stats.total_warga_terpetakan} Orang` : '-'}
+          title="KK Terbina (Terpetakan)"
+          value={stats ? `${stats.total_kk_terpetakan} / ${stats.total_kk_banjar} KK` : '-'}
           variant="emerald"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
           }
         />
         <CardStat
-          title="Belum Masuk Kelompok"
-          value={stats ? `${stats.total_warga_belum_terpetakan} Orang` : '-'}
+          title="Total Jiwa Terbina"
+          value={stats ? `${stats.total_warga_terpetakan} Jiwa` : '-'}
           variant="amber"
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
             </svg>
           }
         />
@@ -257,17 +260,32 @@ export default function AdminDasawismaIndex() {
                 ),
               },
               {
-                key: 'anggota_count',
-                label: 'Jumlah Anggota',
+                key: 'keluarga_count',
+                label: 'Kapasitas KK (Ideal 10 KK)',
                 className: 'text-center',
-                render: (item: Dasawisma) => (
-                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-200 px-3 py-1 text-xs font-bold text-indigo-700">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                    {item.anggota_count || 0} Warga
-                  </span>
-                ),
+                render: (item: Dasawisma) => {
+                  const kkCount = item.keluarga_count ?? 0
+                  const isFull = kkCount >= 10
+                  return (
+                    <div className="inline-flex flex-col items-center">
+                      <span className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1 text-xs font-bold ${
+                        isFull 
+                          ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
+                          : kkCount > 0 
+                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                            : 'bg-slate-50 border-slate-200 text-slate-500'
+                      }`}>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                        </svg>
+                        {kkCount} / 10 KK
+                      </span>
+                      <span className="text-[11px] text-slate-400 mt-0.5 font-medium">
+                        {item.anggota_count || 0} Jiwa Warga
+                      </span>
+                    </div>
+                  )
+                },
               },
               {
                 key: 'actions',
@@ -278,13 +296,12 @@ export default function AdminDasawismaIndex() {
                     <Link
                       href={`/admin/dasawisma/${item.id}`}
                       className="inline-flex items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-200 transition"
-                      title="Lihat anggota warga di kelompok ini"
+                      title="Kelola Kartu Keluarga di kelompok ini"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
-                      Anggota
+                      Kelola KK
                     </Link>
                     <button
                       type="button"
@@ -381,11 +398,11 @@ export default function AdminDasawismaIndex() {
               </div>
 
               <FormTextarea
-                label="Wilayah Cakupan / Keterangan"
+                label="Wilayah Cakupan / Keterangan (Song Rumah / Gang)"
                 name="keterangan"
                 value={keterangan}
                 onChange={(e) => setKeterangan(e.target.value)}
-                placeholder="Contoh: Cakupan rumah warga di Gang Kenanga dan sekitarnya..."
+                placeholder="Contoh: Cakupan 10 rumah warga di Gang Kenanga persong rumah..."
                 rows={2}
                 error={validationErrors.keterangan?.[0]}
               />
@@ -415,7 +432,7 @@ export default function AdminDasawismaIndex() {
       <ConfirmModal
         isOpen={deleteTarget !== null}
         title="Hapus Kelompok Dasawisma?"
-        message={`Apakah Anda yakin ingin menghapus kelompok "${deleteTarget?.nama_dasawisma}"? Warga yang tergabung di kelompok ini akan dilepaskan (tidak terhapus dari data kependudukan).`}
+        message={`Apakah Anda yakin ingin menghapus kelompok "${deleteTarget?.nama_dasawisma}"? Kartu Keluarga yang tergabung di kelompok ini akan dilepaskan (tidak terhapus dari data kependudukan).`}
         confirmText="Ya, Hapus Kelompok"
         cancelText="Batal"
         variant="danger"

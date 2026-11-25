@@ -13,8 +13,8 @@ class KartuKeluargaController extends Controller
 {
     public function index(Request $request)
     {
-        // 1. Inisialisasi query dengan hitung anggota otomatis
-        $query = KartuKeluarga::withCount('anggota');
+        // 1. Inisialisasi query dengan hitung anggota otomatis dan relasi dasawisma
+        $query = KartuKeluarga::with('dasawisma')->withCount('anggota');
 
         // 2. Export Excel
         if ($request->export === 'excel') {
@@ -91,7 +91,7 @@ class KartuKeluargaController extends Controller
 
     public function show(Request $request, int $id)
     {
-        $kartuKeluarga = KartuKeluarga::with('anggota')->findOrFail($id);
+        $kartuKeluarga = KartuKeluarga::with(['anggota', 'dasawisma'])->findOrFail($id);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
@@ -106,15 +106,17 @@ class KartuKeluargaController extends Controller
 
     public function edit(Request $request, int $id)
     {
-        $kartuKeluarga = KartuKeluarga::findOrFail($id);
+        $kartuKeluarga = KartuKeluarga::with('dasawisma')->findOrFail($id);
+        $listDasawisma = \App\Models\Dasawisma::orderBy('nama_dasawisma', 'asc')->get(['id', 'nama_dasawisma']);
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([
-                'kartuKeluarga' => $kartuKeluarga
+                'kartuKeluarga' => $kartuKeluarga,
+                'listDasawisma' => $listDasawisma,
             ]);
         }
 
-        return view('admin.kartu-keluarga.edit', compact('kartuKeluarga'));
+        return view('admin.kartu-keluarga.edit', compact('kartuKeluarga', 'listDasawisma'));
     }
 
     public function update(Request $request, int $id)
@@ -125,9 +127,15 @@ class KartuKeluargaController extends Controller
             'nomor_kk' => ['required', 'digits:16', 'unique:kartu_keluarga,nomor_kk,' . $kartuKeluarga->id],
             'nama_kepala_keluarga' => ['required', 'string', 'max:255'],
             'alamat_keluarga' => ['required', 'string'],
+            'dasawisma_id' => ['nullable', 'exists:dasawisma,id'],
         ]);
 
         $kartuKeluarga->update($validated);
+
+        if (array_key_exists('dasawisma_id', $validated)) {
+            \App\Models\Penduduk::where('nomor_kk', $kartuKeluarga->nomor_kk)
+                ->update(['dasawisma_id' => $validated['dasawisma_id']]);
+        }
 
         if ($request->wantsJson() || $request->is('api/*')) {
             return response()->json([

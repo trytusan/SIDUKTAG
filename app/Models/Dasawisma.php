@@ -20,7 +20,15 @@ class Dasawisma extends Model
     ];
 
     /**
-     * Anggota penduduk yang terdaftar dalam Dasawisma ini
+     * Daftar Kartu Keluarga (KK) yang terdaftar dalam Dasawisma ini
+     */
+    public function keluarga(): HasMany
+    {
+        return $this->hasMany(KartuKeluarga::class, 'dasawisma_id');
+    }
+
+    /**
+     * Anggota penduduk (jiwa) yang terdaftar dalam Dasawisma ini
      */
     public function anggota(): HasMany
     {

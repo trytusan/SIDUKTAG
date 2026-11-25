@@ -130,6 +130,19 @@ export default function AdminKartuKeluargaDetail() {
                 {kartuKeluarga.jumlah_anggota || anggota.length} Orang
               </p>
             </div>
+
+            <div>
+              <p className="text-xs font-medium text-slate-500">Kelompok Dasawisma (PKK)</p>
+              <div className="mt-1">
+                {kartuKeluarga.dasawisma ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-50 border border-indigo-200 px-3 py-1 text-xs font-bold text-indigo-700">
+                    🌸 {kartuKeluarga.dasawisma.nama_dasawisma}
+                  </span>
+                ) : (
+                  <span className="text-slate-400 italic text-xs">Belum terdaftar di Dasawisma</span>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 

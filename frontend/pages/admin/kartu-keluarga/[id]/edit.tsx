@@ -5,6 +5,7 @@ import AdminLayout from '../../../../src/components/layouts/admin'
 import PageHeader from '../../../../src/components/ui/page-header'
 import FormInput from '../../../../src/components/form/input'
 import FormTextarea from '../../../../src/components/form/textarea'
+import FormSelect from '../../../../src/components/form/select'
 import AlertError from '../../../../src/components/ui/alert-error'
 import LoadingSpinner from '../../../../src/components/ui/loading'
 import ConfirmModal from '../../../../src/components/modal/Confirm'
@@ -17,12 +18,14 @@ export default function AdminKartuKeluargaEdit() {
   const { id } = router.query
   const { showAlert } = useAlert()
   const [kartuKeluarga, setKartuKeluarga] = useState<KartuKeluarga | null>(null)
+  const [listDasawisma, setListDasawisma] = useState<{ id: number; nama_dasawisma: string }[]>([])
   const [loadingInitial, setLoadingInitial] = useState(true)
 
   const [formData, setFormData] = useState({
     nomor_kk: '',
     nama_kepala_keluarga: '',
     alamat_keluarga: '',
+    dasawisma_id: '',
   })
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -36,11 +39,15 @@ export default function AdminKartuKeluargaEdit() {
         const res = await api.get('/admin/kartu-keluarga/' + id + '/edit')
         const kk: KartuKeluarga = res.data.kartuKeluarga
         setKartuKeluarga(kk)
+        if (res.data.listDasawisma) {
+          setListDasawisma(res.data.listDasawisma)
+        }
         if (kk) {
           setFormData({
             nomor_kk: kk.nomor_kk || '',
             nama_kepala_keluarga: kk.nama_kepala_keluarga || '',
             alamat_keluarga: kk.alamat_keluarga || '',
+            dasawisma_id: kk.dasawisma_id ? String(kk.dasawisma_id) : '',
           })
         }
       } catch (err) {
@@ -52,7 +59,7 @@ export default function AdminKartuKeluargaEdit() {
     fetchEdit()
   }, [id])
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -141,6 +148,21 @@ export default function AdminKartuKeluargaEdit() {
             rows={3}
             required
             error={validationErrors.alamat_keluarga?.[0]}
+          />
+
+          <FormSelect
+            label="Kelompok Dasawisma (PKK)"
+            name="dasawisma_id"
+            value={formData.dasawisma_id}
+            onChange={handleChange}
+            options={[
+              { value: '', label: '-- Tidak / Belum Masuk Kelompok Dasawisma --' },
+              ...listDasawisma.map((d) => ({
+                value: String(d.id),
+                label: `🌸 ${d.nama_dasawisma}`,
+              })),
+            ]}
+            helperText="Menetapkan Dasawisma untuk KK ini otomatis mengelompokkan seluruh anggota keluarga di dalamnya."
           />
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">

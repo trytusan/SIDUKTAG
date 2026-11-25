@@ -79,10 +79,10 @@ class KartuKeluargaController extends Controller
         $penduduk = $user->penduduk?->load('dasawisma');
         $nomorKk = $penduduk?->nomor_kk;
 
-        // Eager load relasi anggota keluarga jika nomor KK tersedia
+        // Eager load relasi anggota keluarga dan dasawisma jika nomor KK tersedia
         $kartuKeluarga = null;
         if ($nomorKk) {
-            $kartuKeluarga = KartuKeluarga::with(['anggota' => function ($query) {
+            $kartuKeluarga = KartuKeluarga::with(['dasawisma', 'anggota' => function ($query) {
                 $query->orderByRaw("CASE WHEN status_dalam_keluarga = 'Kepala Keluarga' THEN 1 ELSE 2 END")
                       ->orderBy('tanggal_lahir', 'asc');
             }])->where('nomor_kk', $nomorKk)->first();

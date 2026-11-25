@@ -45,11 +45,13 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::prefix('dasawisma')->name('dasawisma.')->group(function () {
         Route::get('/', [DasawismaController::class, 'index'])->name('index');
         Route::get('/list', [DasawismaController::class, 'listAll'])->name('list');
+        Route::get('/available-keluarga', [DasawismaController::class, 'availableKeluarga'])->name('available-keluarga');
         Route::post('/', [DasawismaController::class, 'store'])->name('store');
         Route::get('/{id}', [DasawismaController::class, 'show'])->name('show');
         Route::put('/{id}', [DasawismaController::class, 'update'])->name('update');
         Route::delete('/{id}', [DasawismaController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/assign-anggota', [DasawismaController::class, 'assignAnggota'])->name('assign');
+        Route::post('/{id}/assign-keluarga', [DasawismaController::class, 'assignKeluarga'])->name('assign-keluarga');
+        Route::post('/{id}/assign-anggota', [DasawismaController::class, 'assignKeluarga'])->name('assign');
     });
 
     Route::prefix('pengajuan-surat')->name('pengajuan-surat.')->group(function () {

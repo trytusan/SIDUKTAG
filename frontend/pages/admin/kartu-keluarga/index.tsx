@@ -186,6 +186,19 @@ export default function AdminKartuKeluargaIndex() {
                 render: (item: any) => ((item.anggota_count ?? item.jumlah_anggota ?? 0) + ' Jiwa'),
               },
               {
+                key: 'dasawisma',
+                label: 'Dasawisma',
+                render: (item: KartuKeluarga) => (
+                  item.dasawisma ? (
+                    <span className="inline-flex items-center gap-1 rounded-xl bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                      🌸 {item.dasawisma.nama_dasawisma}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-slate-400 italic">Belum Masuk</span>
+                  )
+                ),
+              },
+              {
                 key: 'actions',
                 label: 'Aksi',
                 render: (item: KartuKeluarga) => (

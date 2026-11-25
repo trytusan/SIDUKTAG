@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany; // Ubah ini
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class KartuKeluarga extends Model
 {
@@ -17,7 +18,16 @@ class KartuKeluarga extends Model
         'nama_kepala_keluarga',
         'alamat_keluarga',
         'jumlah_anggota',
+        'dasawisma_id',
     ];
+
+    /**
+     * Relasi ke Dasawisma (Satu KK dinaungi oleh satu Dasawisma)
+     */
+    public function dasawisma(): BelongsTo
+    {
+        return $this->belongsTo(Dasawisma::class, 'dasawisma_id');
+    }
 
     /**
      * Relasi ke Penduduk (Satu KK memiliki banyak Penduduk)

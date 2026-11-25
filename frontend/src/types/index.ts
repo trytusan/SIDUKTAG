@@ -4,6 +4,7 @@ export interface Dasawisma {
   ketua_dasawisma?: string | null
   nomor_telepon_ketua?: string | null
   keterangan?: string | null
+  keluarga_count?: number
   anggota_count?: number
   created_at?: string
   updated_at?: string
@@ -82,6 +83,8 @@ export interface KartuKeluarga {
   rt?: string | null
   rw?: string | null
   jumlah_anggota: number
+  dasawisma_id?: number | null
+  dasawisma?: Dasawisma | null
   latitude?: string | number | null
   longitude?: string | number | null
   anggota?: Penduduk[]
